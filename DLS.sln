@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migration", "Migration\Migr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{3A1D4B8B-FADA-4A5A-AC21-F71081332B8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rtemas.DLS.App", "Data Logger 1.3\Rtemas.DLS.App.csproj", "{9FE142EA-2F26-8818-C970-3001D2CD7061}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rtemas.DLS.App", "App\Rtemas.DLS.App.csproj", "{9782248F-5EAB-C981-31BC-C832E33B5F98}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +53,10 @@ Global
 		{3A1D4B8B-FADA-4A5A-AC21-F71081332B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A1D4B8B-FADA-4A5A-AC21-F71081332B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A1D4B8B-FADA-4A5A-AC21-F71081332B8D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9FE142EA-2F26-8818-C970-3001D2CD7061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9FE142EA-2F26-8818-C970-3001D2CD7061}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9FE142EA-2F26-8818-C970-3001D2CD7061}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9FE142EA-2F26-8818-C970-3001D2CD7061}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9782248F-5EAB-C981-31BC-C832E33B5F98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9782248F-5EAB-C981-31BC-C832E33B5F98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9782248F-5EAB-C981-31BC-C832E33B5F98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9782248F-5EAB-C981-31BC-C832E33B5F98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
