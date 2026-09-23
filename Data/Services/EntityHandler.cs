@@ -165,6 +165,9 @@ namespace Data.Services
                         if (postIt.postItID == 0)
                         {
 
+                            if (existingLog.Author == null)
+                                throw new InvalidOperationException("Author can't be null");
+
                             // create new entity
                             var newPostIt = new PostIt
                             {
@@ -212,12 +215,12 @@ namespace Data.Services
             catch (ArgumentNullException nullex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(nullex, "UpdateLogAsync(log)", "InvalidOperationException");
+                await writer.HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "UpdateLogAsync(log)");
+                await writer.HandleExceptionAsync(ex);
             }
         }
 
@@ -278,12 +281,12 @@ namespace Data.Services
             catch (ArgumentNullException nullex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(nullex, "UpdateProfilePicAsync(email, filePath)", "ArgumentNullException");
+                await writer.HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "UpdateProfilePicAsync(email, filePath)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return isUpdated;
@@ -321,12 +324,12 @@ namespace Data.Services
             catch (ArgumentNullException nullex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(nullex, "UpdateUser(user)", "ArgumentNullException");
+                await writer.HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "UpdateUser(user)");
+                await writer.HandleExceptionAsync(ex);
             }
             return isUpdated;
         }
@@ -360,12 +363,12 @@ namespace Data.Services
             catch (ArgumentNullException nullex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(nullex, "ChangePasswordAsync(password, email)", "ArgumentNullException");
+                await writer.HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "ChangePasswordAsync(password, email)");
+                await writer.HandleExceptionAsync(ex);
             }
             return isUpdated;
         }

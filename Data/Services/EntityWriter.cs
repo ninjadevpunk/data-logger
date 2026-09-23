@@ -3,6 +3,7 @@ using Core.Models.App_Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -149,33 +150,15 @@ namespace Data.Services
             }
             catch (EmailConflictException mailex)
             {
-                await HandleExceptionAsync(new DataError
-                {
-                    PublicMessage = "The email you entered has been taken. Please use a different one.",
-                    TechnicalMessage = mailex.Message,
-                    MethodName = "AddAccount(account)",
-                    ExceptionType = "EmailConflictException"
-                });
+                await HandleExceptionAsync(mailex);
             }
             catch (ArgumentNullException nullex)
             {
-                await HandleExceptionAsync(new DataError
-                {
-                    PublicMessage = "The account could not be created because the account data was not initialised.",
-                    TechnicalMessage = nullex.Message,
-                    MethodName = "AddAccount(account)",
-                    ExceptionType = "ArgumentNullException"
-                });
+                await HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(new DataError
-                {
-                    PublicMessage = "A problem occurred on our end so please try again later. We apologise for any inconvenience caused.",
-                    TechnicalMessage = ex.Message,
-                    MethodName = "AddAccount(account)",
-                    ExceptionType = ex.GetType().Name
-                });
+                await HandleExceptionAsync(ex);
             }
 
             return accountCreated;
@@ -221,16 +204,16 @@ namespace Data.Services
             }
             catch (InvalidCastException castx)
             {
-                await HandleExceptionAsync(castx, "CreateLOG(log)", "InvalidCastException");
+                await HandleExceptionAsync(castx);
             }
             catch (OperationCanceledException opex)
             {
-                await HandleExceptionAsync(opex, "CreateLOG(log)", "OperationCanceledException");
+                await HandleExceptionAsync(opex);
 
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex, "CreateLOG(log)");
+                await HandleExceptionAsync(ex);
             }
 
             return false;
@@ -244,44 +227,59 @@ namespace Data.Services
             var onlineUser = await reader.FindAccountByID(scope, master, userId) ?? new();
             log.Author = onlineUser;
             var app = log.Application;
-            app.User = onlineUser;
 
-            var existingApp = await reader.FindApplication(scope, master, userId, app.Name);
+            if (app != null)
+            {
+                app.User = onlineUser;
 
-            var project = log.Project;
-            project.User = onlineUser;
+                var existingApp = await reader.FindApplication(scope, master, userId, app.Name);
+
+                var project = log.Project;
+                if (project != null)
+                {
+                    project.User = onlineUser;
+
+                    if (existingApp != null)
+                    {
+                        app = existingApp;
+
+                        var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
+
+                        if (existingProject != null)
+                        {
+                            project = existingProject;
+                        }
+
+                    }
+
+                    if (project.Name.Contains("Unnamed Project", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
+
+                        if (existingProject != null)
+                        {
+                            project = existingProject;
+                        }
+                    }
+                }
+
+                log.Application = app;
+
+                if (project != null)
+                    project.Application = app;
+
+                log.Project = project;
+            }
+
             var output = log.Output;
-            log.Output = await reader.FindOutput(scope, master, log.Output.Name) ?? output;
+            if (output != null)
+                log.Output = await reader.FindOutput(scope, master, output.Name) ?? output;
+
             var type = log.Type;
-            log.Type = await reader.FindType(scope, master, log.Type.Name) ?? type;
-
-            if (existingApp != null)
-            {
-                app = existingApp;
-
-                var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
-
-                if (existingProject != null)
-                {
-                    project = existingProject;
-                }
-
-            }
-
-            if (project.Name.Contains("Unnamed Project", StringComparison.OrdinalIgnoreCase))
-            {
-                var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
-
-                if (existingProject != null)
-                {
-                    project = existingProject;
-                }
-            }
-
-            log.Application = app;
-            project.Application = app;
-            log.Project = project;
+            if (type != null)
+                log.Type = await reader.FindType(scope, master, type.Name) ?? type;
         }
+
 
         private string ValidateString(string input)
         {
@@ -302,7 +300,7 @@ namespace Data.Services
             foreach (PostIt postIt in log.PostItList)
             {
 
-                if (postIt.Subject != null)
+                if (postIt.Subject != null && log.Application != null && log.Project != null)
                 {
                     var appID = log.Application.appID;
                     var projectID = log.Project.projectID;
@@ -427,7 +425,15 @@ namespace Data.Services
         #region Feedback Creation
 
 
-
+        /// <summary>
+        /// Creates a feedback message and saves it to the database.
+        /// </summary>
+        /// <param name="accountID">The ID of the account reporting the feedback.</param>
+        /// <param name="description">The description of the feedback or issue being reported.</param>
+        /// <param name="canContact">Indicates whether the user can be contacted regarding the feedback.</param>
+        /// <param name="isAutoFeed">Indicates whether the feedback was generated automatically.</param>
+        /// <param name="category">The category assigned to the feedback.</param>
+        /// <returns>Returns the ID of the created feedback message, or -1 if the feedback could not be created.</returns>
         public async Task<int> CreateFeedback(int accountID, string description, bool canContact, bool isAutoFeed = true, FeedbackType category = FeedbackType.Bug)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -462,24 +468,52 @@ namespace Data.Services
             return -1;
         }
 
-        public async Task HandleExceptionAsync(Exception ex, string methodName, string exceptionType = "")
+
+
+        /// <summary>
+        /// Handles an exception by creating an automatic exception feedback report.
+        /// </summary>
+        /// <param name="ex">The exception that occurred.</param>
+        /// <param name="methodName">The name of the method where the exception occurred.</param>
+        /// <returns>A task representing the asynchronous feedback creation operation.</returns>
+        public async Task HandleExceptionAsync(Exception ex, [CallerMemberName] string methodName = "")
         {
             // Build the exception description
-            var description = $"{exceptionType ?? "Exception"} occurred near {methodName}: {ex.Message}" +
-                  (ex.InnerException != null ? $" | Inner: {ex.InnerException.Message}" : "");
+            var exceptionName = ex?.GetType().Name ?? "Exception";
+            var message = ex?.Message ?? "Unknown cause.";
+            var description = $"{exceptionName} occurred near {methodName}: {message}";
+
+            if (ex?.InnerException is Exception inner)
+            {
+                description += $" Inner exception: {inner.Message}";
+            }
 
             // Log to CreateFeedback
             await CreateFeedback(1, description, false, true, FeedbackType.Exception);
         }
 
-        public async Task HandleExceptionAsync(DataError error)
-        {
-            // Build the exception description
-            var description = $"{error.ExceptionType ?? "Exception"} occurred near {error.MethodName}: {error.TechnicalMessage}";
 
-            // Log to CreateFeedback
-            await CreateFeedback(1, description, false, true, FeedbackType.Exception);
+
+        /// <summary>
+        /// Handles a data error by creating an automatic exception feedback report.
+        /// </summary>
+        /// <param name="error">The data error containing the exception information.</param>
+        /// <param name="methodName">The name of the method where the error occurred.</param>
+        /// <returns>A task representing the asynchronous feedback creation operation.</returns>
+        public async Task HandleExceptionAsync(DataError error, [CallerMemberName] string methodName = "")
+        {
+            var exceptionName = error.Exception?.GetType().Name ?? "Exception";
+            var message = error.Exception?.Message ?? "Unknown cause.";
+            var description = $"{exceptionName} occurred near {methodName}: {message}";
+
+            if (error.Exception?.InnerException is Exception inner)
+            {
+                description += $" Inner exception: {inner.Message}";
+            }
+
+            await CreateFeedback(1, description, false, category: FeedbackType.Exception);
         }
+
 
 
 

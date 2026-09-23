@@ -110,7 +110,7 @@ namespace Data.Services
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
             return await master.CodingLogs
-                .Where(c => c.accountID == userId && !new[] { 1, 2 }.Contains(c.Application.appID))
+                .Where(c => c.accountID == userId && !new[] { 1, 2 }.Contains(c.Application!.appID))
                 .Include(l => l.Author)
                 .Include(l => l.Project)
                 .Include(l => l.Application)
@@ -128,7 +128,7 @@ namespace Data.Services
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
             return await master.CodingLogs
-                .Where(qt => qt.accountID == userId && qt.Application.appID == 1)
+                .Where(qt => qt.accountID == userId && qt.Application!.appID == 1)
                 .OrderBy(qt => qt.Start)
                 .ToListAsync();
         }
@@ -139,7 +139,7 @@ namespace Data.Services
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
             return await master.AndroidCodingLogs
-                .Where(a => a.accountID == userId && a.Application.appID == 2)
+                .Where(a => a.accountID == userId && a.Application!.appID == 2)
                 .OrderBy(a => a.Start)
                 .ToListAsync();
         }
@@ -649,13 +649,13 @@ namespace Data.Services
             }
             catch (EmailConflictException mailex)
             {
-                await writer.HandleExceptionAsync(mailex, "EmailExists(email)", "EmailConflictException");
+                await writer.HandleExceptionAsync(mailex);
 
                 return true;
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "EmailExists(email)");
+                await writer.HandleExceptionAsync(ex);
 
                 return true;
             }
@@ -687,13 +687,13 @@ namespace Data.Services
             }
             catch (EmailConflictException mailex)
             {
-                await writer.HandleExceptionAsync(mailex, "EmailExists(scope,email)", "EmailConflictException");
+                await writer.HandleExceptionAsync(mailex);
 
                 return true;
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "EmailExists(email)");
+                await writer.HandleExceptionAsync(ex);
 
                 return true;
             }
@@ -764,7 +764,7 @@ namespace Data.Services
                 var appID = await master.Applications
                     .Where(a => a.Name == app.Name
                                 && a.Category == app.Category
-                                && (a.User.accountID == 1 || a.User.accountID == app.User.accountID))
+                                && (a.User!.accountID == 1 || a.User.accountID == app.User!.accountID))
                     .Select(a => a.appID)
                     .FirstOrDefaultAsync();
 
@@ -772,11 +772,11 @@ namespace Data.Services
             }
             catch (ArgumentNullException nullex)
             {
-                await writer.HandleExceptionAsync(nullex, "FindAppID(app)", "ArgumentNullException");
+                await writer.HandleExceptionAsync(nullex);
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindAppID(app)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return -1;
@@ -800,6 +800,9 @@ namespace Data.Services
 
             try
             {
+                if (project.Application == null)
+                    return 1;
+
                 // Retrieve APPLICATION ID
                 int appID = await FindAppID(project.Application);
 
@@ -809,7 +812,9 @@ namespace Data.Services
                     var projectID = await master.Projects
                         .Where(p => p.Name == project.Name
                         && p.Category == project.Category
+                        && p.Application != null
                         && p.Application.appID == project.Application.appID
+                        && p.User != null
                         && (p.User.accountID == 1 || p.User.accountID == id))
                         .Select(p => p.projectID)
                         .FirstOrDefaultAsync();
@@ -821,11 +826,11 @@ namespace Data.Services
             }
             catch (OperationCanceledException opex)
             {
-                await writer.HandleExceptionAsync(opex, "FindProjectID(project)", "OperationCanceledException");
+                await writer.HandleExceptionAsync(opex);
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectID(project)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return 1;
@@ -901,6 +906,8 @@ namespace Data.Services
                     .Where(s => s.Subject == subject.Subject
                         && (s.accountID == 1 || s.accountID == id)
                         && s.Category == subject.Category
+                        && s.Application != null && s.Project != null
+                        && subject.Application != null && subject.Project != null
                             && s.Application.appID == subject.Application.appID
                                 && s.Project.projectID == subject.Project.projectID)
                     .Select(s => s.subjectID)
@@ -1641,12 +1648,12 @@ namespace Data.Services
                 foreach (var log in logs)
                 {
                     bool matches =
-                           log.Project.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Application.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                           log.Project!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Application!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.Start.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.End.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Output.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Type.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
+                        || log.Output!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Type!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
 
                     if (!matches && log.PostItList != null)
                     {
@@ -1657,17 +1664,17 @@ namespace Data.Services
                             var suggestion = RtfConverter.ToPlainText(postIt.Suggestion);
                             var comment = RtfConverter.ToPlainText(postIt.Comment);
 
-                            if (error.Error != null)
-                                await writer.CreateFeedback(1, error.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (error.Exception != null)
+                                await writer.CreateFeedback(1, error.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (solution.Error != null)
-                                await writer.CreateFeedback(1, solution.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (solution.Exception != null)
+                                await writer.CreateFeedback(1, solution.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (suggestion.Error != null)
-                                await writer.CreateFeedback(1, suggestion.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (suggestion.Exception != null)
+                                await writer.CreateFeedback(1, suggestion.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (comment.Error != null)
-                                await writer.CreateFeedback(1, comment.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (comment.Exception != null)
+                                await writer.CreateFeedback(1, comment.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
                             matches =
                                    (!string.IsNullOrEmpty(error.Text) && error.Text.Contains(searchBarText, StringComparison.OrdinalIgnoreCase))
@@ -1742,15 +1749,15 @@ namespace Data.Services
                 var result = new List<CodingLOG>();
 
                 foreach (var log in logs.Where(l =>
-                    l.Application.appID == appID))
+                    l.Application!.appID == appID))
                 {
                     bool matches =
-                           log.Project.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Application.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                           log.Project!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Application!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.Start.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.End.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Output.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Type.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
+                        || log.Output!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Type!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
 
                     if (!matches && log.PostItList != null)
                     {
@@ -1761,17 +1768,17 @@ namespace Data.Services
                             var suggestion = RtfConverter.ToPlainText(postIt.Suggestion);
                             var comment = RtfConverter.ToPlainText(postIt.Comment);
 
-                            if (error.Error != null)
-                                await writer.CreateFeedback(1, error.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (error.Exception != null)
+                                await writer.CreateFeedback(1, error.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (solution.Error != null)
-                                await writer.CreateFeedback(1, solution.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (solution.Exception != null)
+                                await writer.CreateFeedback(1, solution.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (suggestion.Error != null)
-                                await writer.CreateFeedback(1, suggestion.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (suggestion.Exception != null)
+                                await writer.CreateFeedback(1, suggestion.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (comment.Error != null)
-                                await writer.CreateFeedback(1, comment.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (comment.Exception != null)
+                                await writer.CreateFeedback(1, comment.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
                             matches =
                                    (!string.IsNullOrEmpty(error.Text) && error.Text.Contains(searchBarText, StringComparison.OrdinalIgnoreCase))
@@ -1847,16 +1854,16 @@ namespace Data.Services
                 var result = new List<CodingLOG>();
 
                 foreach (var log in logs.Where(l =>
-                    l.Project.projectID == projectID &&
-                    l.Application.appID == appID))
+                    l.Project!.projectID == projectID &&
+                    l.Application!.appID == appID))
                 {
                     bool matches =
-                           log.Project.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Application.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                           log.Project!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Application!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.Start.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.End.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Output.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Type.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
+                        || log.Output!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Type!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
 
                     if (!matches && log.PostItList != null)
                     {
@@ -1867,17 +1874,17 @@ namespace Data.Services
                             var suggestion = RtfConverter.ToPlainText(postIt.Suggestion);
                             var comment = RtfConverter.ToPlainText(postIt.Comment);
 
-                            if (error.Error != null)
-                                await writer.CreateFeedback(1, error.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (error.Exception != null)
+                                await writer.CreateFeedback(1, error.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (solution.Error != null)
-                                await writer.CreateFeedback(1, solution.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (solution.Exception != null)
+                                await writer.CreateFeedback(1, solution.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (suggestion.Error != null)
-                                await writer.CreateFeedback(1, suggestion.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (suggestion.Exception != null)
+                                await writer.CreateFeedback(1, suggestion.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
-                            if (comment.Error != null)
-                                await writer.CreateFeedback(1, comment.Error.TechnicalMessage, false, true, FeedbackType.Exception);
+                            if (comment.Exception != null)
+                                await writer.CreateFeedback(1, comment.Exception?.Message ?? "Unknown cause", false, true, FeedbackType.Exception);
 
                             matches =
                                    (!string.IsNullOrEmpty(error.Text) &&
