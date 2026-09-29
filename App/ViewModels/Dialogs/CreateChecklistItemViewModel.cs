@@ -1,5 +1,5 @@
-﻿using Data_Logger_1._3.Commands.NotesCommands;
-using Data_Logger_1._3.Models;
+﻿using Core.Models;
+using Data_Logger_1._3.Commands.NotesCommands;
 using MVVMEssentials.ViewModels;
 using System.Windows.Input;
 
@@ -7,19 +7,15 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 {
     public class CreateChecklistItemViewModel : ViewModelBase
     {
-        public readonly CheckListItem _CheckListItem;
+        public readonly CheckListItem? _CheckListItem;
 
-        public ICommand DeleteItem {  get; set; }
+        public ICommand? DeleteItem {  get; set; }
 
 
         #region Constructors
 
 
 
-        public CreateChecklistItemViewModel()
-        {
-            //
-        }
 
         public CreateChecklistItemViewModel(CreateCheckListViewModel createCheckListViewModel, CheckListItem checkListItem)
         {
@@ -55,7 +51,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        private string item;
+        private string item = string.Empty;
         public string Item
         {
             get

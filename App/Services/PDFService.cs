@@ -1,5 +1,5 @@
-﻿using Data_Logger_1._3.Models;
-using Data_Logger_1._3.ViewModels.Dialogs;
+﻿using Core.Models;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using SkiaSharp;
 using Svg.Skia;
 using Syncfusion.Pdf;
@@ -10,7 +10,7 @@ using System.Drawing;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Services
 {
@@ -57,7 +57,7 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        private async Task ExportLogToPDF(LOG log, CacheContext context)
+        private async Task ExportLogToPDF(LOG log, LogContext context)
         {
             try
             {
@@ -481,7 +481,7 @@ namespace Data_Logger_1._3.Services
 
                 switch (context)
                 {
-                    case CacheContext.AndroidStudio:
+                    case LogContext.AndroidStudio:
                         {
 
                             if (log is CodingLOG clog)
@@ -551,7 +551,7 @@ namespace Data_Logger_1._3.Services
 
                             break;
                         }
-                    case CacheContext.Graphics:
+                    case LogContext.Graphics:
                         {
                             if(log is GraphicsLOG glog)
                             {
@@ -634,7 +634,7 @@ namespace Data_Logger_1._3.Services
 
                             break;
                         }
-                    case CacheContext.Film:
+                    case LogContext.Film:
                         {
                             if(log is FilmLOG flog)
                             {
@@ -676,7 +676,7 @@ namespace Data_Logger_1._3.Services
 
                             break;
                         }
-                    case CacheContext.Flexi:
+                    case LogContext.Flexi:
                         {
 
                             if(log is FlexiNotesLOG flxlog)
@@ -960,7 +960,7 @@ namespace Data_Logger_1._3.Services
         public async Task ExportQtLogToPDF(LOG log)
         {
 
-            await ExportLogToPDF((CodingLOG)log, CacheContext.Qt);
+            await ExportLogToPDF((CodingLOG)log, LogContext.Qt);
         }
 
 
@@ -970,7 +970,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task ExportASLogToPDF(LOG log)
         {
-            await ExportLogToPDF((AndroidCodingLOG)log, CacheContext.AndroidStudio);
+            await ExportLogToPDF((AndroidCodingLOG)log, LogContext.AndroidStudio);
         }
 
 
@@ -980,7 +980,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task ExportCodingLogToPDF(LOG log)
         {
-            await ExportLogToPDF((CodingLOG)log, CacheContext.Coding);
+            await ExportLogToPDF((CodingLOG)log, LogContext.Coding);
 
         }
 
@@ -991,7 +991,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task ExportGraphicsLogToPDF(LOG log)
         {
-            await ExportLogToPDF((GraphicsLOG)log, CacheContext.Graphics);
+            await ExportLogToPDF((GraphicsLOG)log, LogContext.Graphics);
         }
 
 
@@ -1001,7 +1001,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task ExportFilmLogToPDF(LOG log)
         {
-            await ExportLogToPDF((FilmLOG)log, CacheContext.Film);
+            await ExportLogToPDF((FilmLOG)log, LogContext.Film);
         }
 
 
@@ -1011,7 +1011,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task ExportFlexiLogToPDF(LOG log)
         {
-            await ExportLogToPDF((FlexiNotesLOG)log, CacheContext.Flexi);
+            await ExportLogToPDF((FlexiNotesLOG)log, LogContext.Flexi);
         }
     }
 }

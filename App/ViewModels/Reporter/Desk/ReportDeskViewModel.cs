@@ -1,9 +1,10 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
@@ -16,7 +17,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         protected readonly IDataService _dataService;
         protected readonly PDFService _pdfService;
 
-        public abstract CacheContext Context { get; }
+        public abstract LogContext Context { get; }
 
         protected bool AwaitCall = true;
 

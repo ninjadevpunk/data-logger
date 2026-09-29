@@ -1,41 +1,33 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Models;
+﻿using Core.DTOs.Cache;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.Dialogs;
-using System.Collections.ObjectModel;
-using static Data_Logger_1._3.Services.CacheMaster;
+using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    public class CodeLOGViewModel : LOGViewModel
+    internal class CodeLOGViewModel : LOGViewModel
     {
-        public readonly CodingLOG _CodeLOG;
-        public override CacheContext LOGViewModelContext => CacheContext.Coding;
-
 
 
         #region Constructors
 
 
 
-        public CodeLOGViewModel(CodingLOG codingLOG, LogCacheViewModel logCacheViewModel, 
-            ObservableCollection<PostItViewModel> createPostItViewModels, IDataService dataService) :
-            base(codingLOG, logCacheViewModel, createPostItViewModels, dataService)
+        public CodeLOGViewModel(NavigationService navigationService, CodingCacheDTO codingCacheDTO, CodingViewModel codingViewModel, 
+            IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
+            : base(navigationService, codingCacheDTO, codingViewModel, dataService, cacheService, isCacheSave)
         {
-            _CodeLOG = codingLOG;
-            EditCommand = new EditCommand(LOGViewModelContext, _vm._navigationService, _vm);
-            ViewCommand = new ViewCommand(_vm._navigationService, LOGViewModelContext);
+            EditCommand = new EditCommand(LOGViewModelContext, navigationService, codingCacheDTO);
+            ViewCommand = new ViewCommand(navigationService, LOGViewModelContext);
+            
 
-            _cacheMaster.SaveCodeViewModel(this, LOGViewModelContext);
-        }
+            if(_isCacheSave)
+            {
+                _cacheMaster.SaveCodeCache(codingCacheDTO);
+            }
 
-        public CodeLOGViewModel(CodingLOG codingLOG, LogCacheViewModel logCacheViewModel, IDataService dataService) :
-            base(codingLOG, logCacheViewModel, dataService)
-        {
-            _CodeLOG = codingLOG;
-            EditCommand = new EditCommand(LOGViewModelContext, _vm._navigationService, _vm);
-            ViewCommand = new ViewCommand(_vm._navigationService, LOGViewModelContext);
         }
 
 
@@ -44,17 +36,6 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         #endregion
 
 
-
-        #region Properties
-
-
-
-
-
-
-
-
-        #endregion
 
 
 
@@ -64,7 +45,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
         protected override void DeleteCacheItem()
         {
-            DeleteCacheFile(StartAsID, LOGViewModelContext);
+            DeleteCacheFile(StartAsCacheID, LOGViewModelContext);
             DeleteCacheItemCommand.Execute(this);
         }
 

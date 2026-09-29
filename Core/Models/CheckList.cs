@@ -16,7 +16,7 @@ namespace Core.Models
 
 
         [ForeignKey("accountID")]
-        public ACCOUNT Author { get; set; }
+        public ACCOUNT? Author { get; set; }
 
         public int accountID { get; set; }
 
@@ -27,7 +27,7 @@ namespace Core.Models
         public int logID { get; set; }
 
         [Required]
-        public virtual NoteItem NoteItem { get; set; }
+        public virtual NoteItem? NoteItem { get; set; }
 
         /// <summary>
         /// Collection of items in the checklist.

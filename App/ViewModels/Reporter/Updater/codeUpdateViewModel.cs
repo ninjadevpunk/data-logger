@@ -1,23 +1,24 @@
-﻿using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Models;
+using Core.Models.App_Models;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
-using static Data_Logger_1._3.Services.CacheMaster;
+using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 {
     public class codeUpdateViewModel : ReporterUpdaterViewModel
     {
         public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
-        public override CacheContext Context => CacheContext.Coding;
+        public override LogContext Context => LogContext.Coding;
         public override string LogType => "CODING LOG";
 
-        protected readonly CodeReportDeskViewModel _reportDeskViewModel;
+        protected readonly CodeReportDeskViewModel? _reportDeskViewModel;
         private readonly QtReportDeskViewModel? _qtReportDeskViewModel;
 
         private const string Qt = "Qt Creator";
-        protected const string AndroidStudio = "Android Studio Meerkat 2024.3.1";
+        protected const string AndroidStudio = "Android Studio Quail 4 — 2026.1.4";
         protected const string VisualStudio = "Visual Studio Community 2022";
 
         private bool QtOnly = false;
@@ -35,7 +36,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
             BugsFound = 0;
             ApplicationOpened = false;
 
-            EditCommand = new UpdateCommand(Context, this, _reportDeskViewModel, _navigationService, _dataService, log);
+            EditCommand = new UpdateCommand(Context, this, reportDeskViewModel, navigationService, dataService, log);
             ClearLoggerCommand = new EF_ResetLoggerCommand();
         }
 
@@ -59,7 +60,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 
             }
 
-            EditCommand = new UpdateCommand(Context, this, _reportDesk, _navigationService, _dataService, log);
+            EditCommand = new UpdateCommand(Context, this, reportDeskViewModel, navigationService, dataService, log);
             ClearLoggerCommand = new EF_ResetLoggerCommand();
         }
 
@@ -99,7 +100,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
             LoadQtOutputs();
             LoadQtTypes();
 
-            UpdateCommand = new UpdateCommand(CacheContext.Qt, this, _qtReportDeskViewModel, _navigationService, _dataService, log);
+            UpdateCommand = new UpdateCommand(LogContext.Qt, this, _qtReportDeskViewModel, _navigationService, _dataService, log);
         }
 
         private void LoadProjectsAndApplications()
@@ -109,7 +110,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 
             foreach (ProjectClass project in items)
             {
-                if (project.Application.Name != Qt && project.Application.Name != AndroidStudio)
+                if (project.Application?.Name != Qt && project.Application?.Name != AndroidStudio)
                     _projects.Add(project.Name);
             }
 
@@ -126,7 +127,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 
             foreach (ProjectClass project in items)
             {
-                if (project.Application.Name == Qt)
+                if (project.Application?.Name == Qt)
                     _projects.Add(project.Name);
             }
         }
@@ -219,12 +220,12 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
         {
             if (QtOnly && _qtReportDeskViewModel is not null)
             {
-                var count = await _dataService.QtLogCount();
+                var count = await _dataService.QtLogCountAsync();
                 LogCount = $"{_qtReportDeskViewModel.Logs.Count} Logs";
             }
             else if (_reportDeskViewModel is not null)
             {
-                var count = await _dataService.LogCount(Category);
+                var count = await _dataService.LogCountAsync(Category);
                 LogCount = $"{_reportDeskViewModel.Logs.Count} Logs";
             }
         }

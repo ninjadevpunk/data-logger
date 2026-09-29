@@ -3,7 +3,6 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net8.0-windows7.0</TargetFramework>
-		<RootNamespace>Data_Logger_1._3</RootNamespace>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<UseWPF>true</UseWPF>
@@ -14,6 +13,7 @@
 		<PackageProjectUrl>https://datalogger.space</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/ninjadevpunk/DataLoggerSLine.git</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RootNamespace>Data_Logger_1._3</RootNamespace>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,16 +27,12 @@
 	<ItemGroup>
 		<Compile Remove="Converters\**" />
 		<Compile Remove="DLSTests\**" />
-		<Compile Remove="Resources\Converters\**" />
 		<EmbeddedResource Remove="Converters\**" />
 		<EmbeddedResource Remove="DLSTests\**" />
-		<EmbeddedResource Remove="Resources\Converters\**" />
 		<None Remove="Converters\**" />
 		<None Remove="DLSTests\**" />
-		<None Remove="Resources\Converters\**" />
 		<Page Remove="Converters\**" />
 		<Page Remove="DLSTests\**" />
-		<Page Remove="Resources\Converters\**" />
 		
 	</ItemGroup>
 
@@ -52,10 +48,6 @@
 		<None Remove="Assets\viewer_wallpaper.png" />
 		<None Remove="Components\SplashScreen1.png" />
 		<None Remove="DevIcon.ico" />
-		<None Remove="Fonts\Red Hat Display.ttf" />
-		<None Remove="Fonts\Zekton Bold Italic.ttf" />
-		<None Remove="Fonts\Zekton Italic.ttf" />
-		<None Remove="Fonts\Zekton Light.ttf" />
 		<None Remove="ReleaseIcon.ico" />
 	</ItemGroup>
 
@@ -123,9 +115,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="Design\Design.csproj" />
-	  <ProjectReference Include="FileSys\FileSys.csproj" />
+	  <ProjectReference Include="..\Core\Core.csproj" />
+	  <ProjectReference Include="..\Data\Data.csproj" />
+	  <ProjectReference Include="..\Design\Design.csproj" />
+	  <ProjectReference Include="..\FileSys\FileSys.csproj" />
 	</ItemGroup>
+
 
 	<ItemGroup>
 		<Resource Include="Assets\Data Logger 1.3 logo icon.ico">
@@ -138,24 +133,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="Assets\viewer_wallpaper.png">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Red Hat Display.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Zekton Bold Italic.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Zekton Bold.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Zekton Italic.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Zekton Light.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Resource>
-		<Resource Include="Fonts\Zekton.ttf">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Resource>
 		<Resource Include="ReleaseIcon.ico">
@@ -174,24 +151,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="Assets\login\attribution\Ayo Ogunseinde.txt">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display Bold Italic.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display Bold.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display Italic.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display Medium.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display SemiBold Italic.ttf">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-		<None Update="Fonts\PDF\Red Hat Display SemiBold.ttf">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="README.md">

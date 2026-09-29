@@ -1,12 +1,13 @@
-﻿using Data_Logger_1._3.Commands.ReporterCommands;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands;
 using Data_Logger_1._3.Services;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
     public class ASReportDeskViewModel : ReportDeskViewModel
     {
-        public override CacheContext Context => CacheContext.AndroidStudio;
+        public override LogContext Context => LogContext.AndroidStudio;
 
         public ASReportDeskViewModel(NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
         {

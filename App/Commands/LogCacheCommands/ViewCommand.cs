@@ -1,9 +1,10 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.DTOs.Cache;
+using Core.Enums;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
@@ -16,64 +17,31 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
     public class ViewCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly CacheContext _cacheContext = CacheContext.Coding;
+        private readonly LogContext _cacheContext = LogContext.Coding;
         private ViewType viewType = ViewType.Cache;
-        private readonly LOG _log;
+        private readonly LogCacheDTO _logCacheDTO;
 
-        public ViewCommand(NavigationService navigationService, CacheContext cacheContext)
+        public ViewCommand(NavigationService navigationService, LogContext logContext)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _cacheContext = cacheContext;
-                viewType = ViewType.Cache;
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _cacheContext = logContext;
+            viewType = ViewType.Cache;
         }
 
-        public ViewCommand(NavigationService navigationService, CacheContext cacheContext, ViewType viewType,
-            CodingLOG codingLog)
+        public ViewCommand(NavigationService navigationService, LogContext logContext, ViewType viewType,
+            LogCacheDTO logCacheDTO)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _log = codingLog;
-                _cacheContext = cacheContext;
-                this.viewType = viewType;
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _logCacheDTO = logCacheDTO;
+            _cacheContext = logContext;
+            this.viewType = viewType;
         }
 
-        public ViewCommand(LOG log, NavigationService navigationService, CacheContext cacheContext, ViewType viewType)
+        public ViewCommand(LOG log, NavigationService navigationService, LogContext logContext, ViewType viewType)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _cacheContext = cacheContext;
-                this.viewType = viewType;
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _cacheContext = logContext;
+            this.viewType = viewType;
         }
 
         protected override async Task ExecuteAsync(object parameter)
@@ -86,7 +54,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
                         {
                             switch (_cacheContext)
                             {
-                                case CacheContext.Qt:
+                                case LogContext.Qt:
                                     {
                                         var log = parameter as QtLOGViewModel;
 
@@ -97,7 +65,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 
                                         break;
                                     }
-                                case CacheContext.AndroidStudio:
+                                case LogContext.AndroidStudio:
                                     {
                                         var log = parameter as AndroidLOGViewModel;
 
@@ -108,42 +76,9 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 
                                         break;
                                     }
-                                case CacheContext.Coding:
+                                case LogContext.Coding:
                                     {
                                         var log = parameter as CodeLOGViewModel;
-
-                                        if (log == null)
-                                            throw new ArgumentNullException(nameof(log));
-
-                                        await _navigationService.NavigateToViewer(log);
-
-                                        break;
-                                    }
-                                case CacheContext.Graphics:
-                                    {
-                                        var log = parameter as GraphicsLOGViewModel;
-
-                                        if (log == null)
-                                            throw new ArgumentNullException(nameof(log));
-
-                                        await _navigationService.NavigateToViewer(log);
-
-                                        break;
-                                    }
-                                case CacheContext.Film:
-                                    {
-                                        var log = parameter as FilmLOGViewModel;
-
-                                        if (log == null)
-                                            throw new ArgumentNullException(nameof(log));
-
-                                        await _navigationService.NavigateToViewer(log);
-
-                                        break;
-                                    }
-                                case CacheContext.Flexi:
-                                    {
-                                        var log = parameter as FlexiLOGViewModel;
 
                                         if (log == null)
                                             throw new ArgumentNullException(nameof(log));

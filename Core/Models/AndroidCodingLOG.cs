@@ -85,7 +85,6 @@ namespace Core.Models
         public AndroidCodingLOG(SCOPE scope, DateTime sync, DateTime startingGradleDaemon,
             DateTime runBuild, DateTime loadBuild, DateTime configureBuild, DateTime allProjects)
         {
-            SetApplication();
             Scope = scope;
             Sync = sync;
             StartingGradleDaemon = startingGradleDaemon;
@@ -99,7 +98,6 @@ namespace Core.Models
             SCOPE scope, DateTime sync, DateTime startingGradleDaemon,
             DateTime runBuild, DateTime loadBuild, DateTime configureBuild, DateTime allProjects) : base(bugs, success)
         {
-            SetApplication();
             Scope = scope;
             Sync = sync;
             StartingGradleDaemon = startingGradleDaemon;
@@ -114,7 +112,6 @@ namespace Core.Models
             SCOPE scope, DateTime sync, DateTime startingGradleDaemon,
             DateTime runBuild, DateTime loadBuild, DateTime configureBuild, DateTime allProjects) : base(id, author, projectName, applicationName, startTime, endTime, output, type, postItList, bugs, success)
         {
-            SetApplication();
             Scope = scope;
             Sync = sync;
             StartingGradleDaemon = startingGradleDaemon;
@@ -122,12 +119,6 @@ namespace Core.Models
             LoadBuild = loadBuild;
             ConfigureBuild = configureBuild;
             AllProjects = allProjects;
-        }
-
-        private void SetApplication()
-        {
-            Application = new(2, new ACCOUNT(1, "", "admin", "", "support@datalogger.co.za", "pcsx2024", false, "", "", "", false), "Android Studio Meerkat 2024.3.1",
-                CATEGORY.CODING, true);
         }
 
 

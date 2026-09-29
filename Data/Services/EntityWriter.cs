@@ -1,5 +1,7 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Cache;
+using Core.Models;
 using Core.Models.App_Models;
+using Data.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
@@ -9,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using static Core.Models.FeedbackMessage;
 using static Core.Models.NotesLOG;
-using static Data.Services.EntityReader;
 
 namespace Data.Services
 {
@@ -42,9 +43,9 @@ namespace Data.Services
         /// <summary>
         /// Sets the currently online user to online.
         /// </summary>
-        /// <param name="account">The account that is online.</param>
+        /// <param name="userId">The user's ID</param>
         /// <returns>Returns whether the account is set successfully.</returns>
-        public async Task<bool> SetCurrentUser(ACCOUNT account)
+        public async Task<bool> SetCurrentUserAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -55,17 +56,17 @@ namespace Data.Services
                 var all = await master.Accounts.ToListAsync();
 
                 foreach (var a in all)
-                    a.IsOnline = (a.accountID == account.accountID);
+                    a.IsOnline = (a.accountID == userId);
 
                 await master.SaveChangesAsync();
 
-                var user = await master.Accounts.FirstOrDefaultAsync(a => a.accountID == account.accountID);
+                var user = await master.Accounts.FirstOrDefaultAsync(a => a.accountID == userId);
 
                 return user?.IsOnline ?? false;
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex, "SetCurrentUser(account)");
+                await HandleExceptionAsync(ex, "SetCurrentUserAsync(account)");
             }
 
             return false;
@@ -76,7 +77,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="account">The account to sign out</param>
         /// <returns>Returns whether the account is unset successfully.</returns>
-        public async Task<bool> UnsetCurrentUser(ACCOUNT account)
+        public async Task<bool> UnsetCurrentUserAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -90,7 +91,7 @@ namespace Data.Services
 
                 foreach (var u in onlineUsers)
                 {
-                    if (u.accountID == account.accountID)
+                    if (u.accountID == userId)
                         u.IsOnline = false;
                 }
 
@@ -100,7 +101,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await HandleExceptionAsync(ex, "UnsetCurrentUser(account)");
+                await HandleExceptionAsync(ex, "UnsetCurrentUserAsync(account)");
             }
 
             return false;
@@ -112,7 +113,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="account">The account that will be added to the database.</param>
         /// <returns">A boolean value that indicated if the process was successful or not.</returns>
-        public async Task<bool> AddAccount(ACCOUNT account)
+        public async Task<(bool, int)> AddAccount(ACCOUNT account)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -126,27 +127,24 @@ namespace Data.Services
                     throw new ArgumentNullException($"\"{nameof(account)}\" - Account not initialised. Operation aborted.");
 
 
-                if (!await reader.EmailExists(scope, account.Email))
-                {
-                    account.IsOnline = false;
-
-                    var hiddenPassword = account.Password;
-                    account.Password = string.Empty;
-
-
-                    await master.Accounts.AddAsync(account);
-                    await master.SaveChangesAsync();
-
-                    account.Password = SaltedSHA256Hash(hiddenPassword, account.accountID.ToString());
-
-                    await master.SaveChangesAsync();
-
-
-                    accountCreated = true;
-                }
-                else
+                if (await reader.EmailExists(scope, account.Email))
                     throw new EmailConflictException("Email exists!");
 
+                account.IsOnline = false;
+
+                var hiddenPassword = account.Password;
+                account.Password = string.Empty;
+
+
+                await master.Accounts.AddAsync(account);
+                await master.SaveChangesAsync();
+
+                account.Password = SaltedSHA256Hash(hiddenPassword, account.accountID.ToString());
+
+                await master.SaveChangesAsync();
+
+
+                accountCreated = true;
             }
             catch (EmailConflictException mailex)
             {
@@ -161,7 +159,7 @@ namespace Data.Services
                 await HandleExceptionAsync(ex);
             }
 
-            return accountCreated;
+            return (accountCreated, account.accountID);
 
         }
 
@@ -179,10 +177,10 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Creates a log in the database.
+        /// Creates a logCacheDTO in the database.
         /// </summary>
-        /// <param name="log">The log being stored.</param>
-        public async Task<bool> CreateLOG(LOG log, int id)
+        /// <param name="logCacheDTO">The logCacheDTO being stored.</param>
+        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -192,10 +190,10 @@ namespace Data.Services
             {
                 await using var transaction = await master.Database.BeginTransactionAsync();
 
-                await PrepareLogDetails(log, scope, master, id);
-                await PreparePostItDetails(log, scope, master, id);
+                await PrepareLogDetailsAsync(logCacheDTO, scope, master, id);
+                await PreparePostItDetailsAsync(logCacheDTO, scope, master, id);
 
-                await InsertSubLogDetails(log, scope, master);
+                await InsertSubLogDetails(logCacheDTO, scope, master);
 
                 await master.SaveChangesAsync();
                 await transaction.CommitAsync();
@@ -220,13 +218,14 @@ namespace Data.Services
         }
 
 
-        private async Task PrepareLogDetails(LOG log, AsyncServiceScope scope, EntityMaster master, int userId)
+        private async Task PrepareLogDetailsAsync(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master, int userId)
         {
             var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 
-            var onlineUser = await reader.FindAccountByID(scope, master, userId) ?? new();
-            log.Author = onlineUser;
-            var app = log.Application;
+            var onlineUser = await reader.FindAccountByID(scope, master, userId) ?? throw new InvalidOperationException("No user logged in!");
+
+            // TODO: Create entity with CacheDTO
+            var app = logCacheDTO.Application;
 
             if (app != null)
             {
@@ -234,7 +233,7 @@ namespace Data.Services
 
                 var existingApp = await reader.FindApplication(scope, master, userId, app.Name);
 
-                var project = log.Project;
+                var project = logCacheDTO.Project;
                 if (project != null)
                 {
                     project.User = onlineUser;
@@ -263,21 +262,21 @@ namespace Data.Services
                     }
                 }
 
-                log.Application = app;
+                logCacheDTO.Application = app;
 
                 if (project != null)
                     project.Application = app;
 
-                log.Project = project;
+                logCacheDTO.Project = project;
             }
 
-            var output = log.Output;
+            var output = logCacheDTO.Output;
             if (output != null)
-                log.Output = await reader.FindOutput(scope, master, output.Name) ?? output;
+                logCacheDTO.Output = await reader.FindOutput(scope, master, output.Name) ?? output;
 
-            var type = log.Type;
+            var type = logCacheDTO.Type;
             if (type != null)
-                log.Type = await reader.FindType(scope, master, type.Name) ?? type;
+                logCacheDTO.Type = await reader.FindType(scope, master, type.Name) ?? type;
         }
 
 
@@ -288,7 +287,7 @@ namespace Data.Services
             return regex.IsMatch(input) ? input : string.Empty;
         }
 
-        private async Task PreparePostItDetails(LOG log, AsyncServiceScope scope, EntityMaster master, int id)
+        private async Task PreparePostItDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master, int id)
         {
             var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 

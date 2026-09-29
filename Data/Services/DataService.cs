@@ -1,39 +1,27 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Cache;
+using Core.DTOs.Identity;
+using Core.Enums;
+using Core.Interfaces;
+using Core.Models;
 using Core.Models.App_Models;
 using Data.Interfaces;
-using FileSys.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using static Core.Models.LOG;
-using static FileSys.Services.CacheMaster;
 
 namespace Data.Services
 {
     public class DataService : IDataService
     {
-        private readonly CacheMaster _cachemaster;
         private readonly IServiceProvider _serviceProvider;
 
-        private readonly AuthService _authService;
-
-        private const string Qt = "Qt Creator";
-        private const string Android = "Android Studio Meerkat 2024.3.1";
-
-        internal ProjectsLIST SQLITE_PROJECTS { get; private set; } = new();
-        internal ApplicationsLIST SQLITE_APPLICATIONS { get; private set; } = new();
-        internal List<SubjectClass> SQLITE_SUBJECTS { get; private set; } = new();
-
-        IReadOnlyList<ProjectClass> IDataService.SQLITE_PROJECTS => SQLITE_PROJECTS;
-        IReadOnlyList<ApplicationClass> IDataService.SQLITE_APPLICATIONS => SQLITE_APPLICATIONS;
-        IReadOnlyList<SubjectClass> IDataService.SQLITE_SUBJECTS => SQLITE_SUBJECTS;
+        private readonly IAuthService _authService;
 
 
-        public DataService(CacheMaster cachemaster, AuthService authService, IServiceProvider serviceProvider)
+
+        public DataService(IAuthService authService, IServiceProvider serviceProvider)
         {
-            _cachemaster = cachemaster;
-
             _authService = authService;
             _serviceProvider = serviceProvider;
         }
@@ -56,93 +44,69 @@ namespace Data.Services
         /// <summary>
         /// Signs in the current user by setting them as the current user in the database.
         /// </summary>
-        public async Task SignInUser()
+        public async Task SignInUserAsync()
         {
-            var account = _authService?.Account;
-            if (account == null)
+            var user = _authService.GetUser();
+            if (user == null)
                 return;
 
-            await UseWriterAsync(writer => writer.SetCurrentUser(account));
+            await UseWriterAsync(writer => writer.SetCurrentUserAsync(user.UserId));
         }
 
         /// <summary>
         /// Sets the currently online user to online.
         /// </summary>
-        /// <param name="account">The account that is online.</param>
-        /// <returns>Returns whether the account is set successfully.</returns>
-        public async Task<bool> SetCurrentUser(ACCOUNT account) => await UseWriterAsync(writer => writer.SetCurrentUser(account));
+        /// <param name="userId">The user's ID</param>
+        /// <returns>Returns whether the user is set successfully.</returns>
+        public async Task<bool> SetCurrentUserAsync(int userId) => await UseWriterAsync(writer => writer.SetCurrentUserAsync(userId));
+
 
         /// <summary>
         /// Signs in the current user by setting them as the current user in the database.
         /// </summary>
         /// <param name="email">User's email.</param>
         /// <param name="password">User's password.</param>
-        /// <returns>Returns a tuple: (success flag, the ACCOUNT object if sign-in succeeded ?? otherwise null is returned).</returns>
-        public async Task<(bool Success, ACCOUNT? Account)> SignInUser(string email, string password)
+        /// <returns>Returns a tuple: (success flag, a UserDTO if sign-in succeeded Otherwise null is returned).</returns>
+        public async Task<(bool Success, UserDTO? Account)> SignInUserAsync(string email, string password)
         {
-            var temporaryAccount = await UseReaderAsync(reader => reader.FindAccountByEmail(email, password));
+            var temporaryAccount = await UseReaderAsync(reader => reader.FindAccountByEmailAsync(email, password));
 
             if (temporaryAccount == null)
                 return (false, null);
 
-            temporaryAccount.IsOnline = true;
+            int id = temporaryAccount.UserId;
 
-            var result = await UseWriterAsync(writer => writer.SetCurrentUser(temporaryAccount));
+            var result = await UseWriterAsync(writer => writer.SetCurrentUserAsync(id));
 
             return (result, temporaryAccount);
         }
 
 
 
-        public async Task<bool> SignOutUser()
+        public async Task<bool> SignOutUserAsync()
         {
-            var account = _authService?.Account;
-            if (account == null)
+            var user = _authService.GetUser();
+            if (user == null)
                 return false;
 
-            return await UseWriterAsync(writer => writer.UnsetCurrentUser(account));
+            return await UseWriterAsync(writer => writer.UnsetCurrentUserAsync(user.UserId));
         }
 
 
-        private static bool IsValidEmail(string email)
-        {
-            // Regular expression pattern for email validation
-            string pattern = @"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
+        
 
-            // Check if the email matches the pattern
-            return Regex.IsMatch(email, pattern);
-        }
-
-        public async Task<string> UpdateProfilePic(string emailAddress)
+        public async Task<string> UpdateProfilePicAsync(string emailAddress)
         {
             return await UseReaderAsync(reader => reader.RetrieveProfilePic(emailAddress));
         }
 
 
-        public ACCOUNT? GetUser()
-        {
-            return _authService.Account;
-        }
-
-        public string? GetAuthorName()
-        {
-            return _authService.Account?.FirstName + " " + _authService.Account?.LastName;
-        }
-
-        public CacheMaster GetCachemaster()
-        {
-            return _cachemaster;
-        }
-
-        public string? GetDisplayPic()
-        {
-            return _authService.Account?.ProfilePic;
-        }
 
 
-        private async Task<ACCOUNT> EnsureValidUserAsync()
+        private async Task<UserDTO> EnsureValidUserAsync()
         {
-            var user = GetUser();
+            var user = _authService.GetUser();
+
             if (user == null)
             {
                 var ex = new InvalidOperationException("Cannot perform operation without a valid logged-in user.");
@@ -162,23 +126,23 @@ namespace Data.Services
         /// <summary>
         /// Retrieves projects from the database and populates SQLITE_PROJECTS, skipping unnamed projects.
         /// </summary>
-        public async Task InitialiseProjectsLISTAsync()
+        public async Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync()
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_PROJECTS.Clear();
+            List<string> SQLITE_PROJECTS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync(async reader =>
             {
-                var collection = await reader.ListProjects(user.accountID);
+                var collection = await reader.ListProjects(user.UserId);
 
                 foreach (var pro in collection)
                 {
-                    if (pro != null && pro.Name != "Unnamed Project")
-                        SQLITE_PROJECTS.Add(pro);
+                    if (pro != null)
+                        SQLITE_PROJECTS.Add(pro.Name);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_PROJECTS;
             });
         }
 
@@ -190,24 +154,49 @@ namespace Data.Services
         /// <summary>
         /// Retrieves projects from the database of a specified category and populates SQLITE_PROJECTS, skipping unnamed projects.
         /// </summary>
-        /// <param name="category">The type of project.</param>
-        public async Task InitialiseProjectsLISTAsync(LOG.CATEGORY category)
+        /// <param name="appName">The name of the app to filter by</param>
+        public async Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(string appName)
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_PROJECTS.Clear();
+            List<string> SQLITE_PROJECTS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListProjects(category, user.accountID);
+                var collection = await reader.ListProjects(appName, user.UserId);
 
                 foreach (var pro in collection)
                 {
-                    if (pro != null && pro.Name != "Unnamed Project")
-                        SQLITE_PROJECTS.Add(pro);
+                    if (pro != null)
+                        SQLITE_PROJECTS.Add(pro.Name);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_PROJECTS;
+            });
+        }
+
+
+        /// <summary>
+        /// Retrieves projects from the database of a specified category and populates SQLITE_PROJECTS, skipping unnamed projects.
+        /// </summary>
+        /// <param name="category">The type of project.</param>
+        public async Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(LOG.CATEGORY category)
+        {
+            var user = await EnsureValidUserAsync();
+
+            List<string> SQLITE_PROJECTS = [];
+
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
+            {
+                var collection = await reader.ListProjects(category, user.UserId);
+
+                foreach (var pro in collection)
+                {
+                    if (pro != null)
+                        SQLITE_PROJECTS.Add(pro.Name);
+                }
+
+                return SQLITE_PROJECTS;
             });
         }
 
@@ -218,23 +207,23 @@ namespace Data.Services
         /// <summary>
         /// Retrieves applications from the database and populates SQLITE_APPLICATIONS.
         /// </summary>
-        public async Task InitialiseApplicationsLISTAsync()
+        public async Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync()
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_APPLICATIONS.Clear();
+            List<string> SQLITE_APPLICATIONS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListApplications(user.accountID);
+                var collection = await reader.ListApplications(user.UserId);
 
                 foreach (var app in collection)
                 {
                     if (app != null)
-                        SQLITE_APPLICATIONS.Add(app);
+                        SQLITE_APPLICATIONS.Add(app.Name);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_APPLICATIONS;
             });
         }
 
@@ -245,23 +234,23 @@ namespace Data.Services
         /// Retrieves applications from the database of a specified category and populates SQLITE_APPLICATIONS.
         /// </summary>
         /// <param name="category">The type of application.</param>
-        public async Task InitialiseApplicationsLISTAsync(LOG.CATEGORY category)
+        public async Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync(LOG.CATEGORY category)
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_APPLICATIONS.Clear();
+            List<string> SQLITE_APPLICATIONS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListApplications(category, user.accountID);
+                var collection = await reader.ListApplications(category, user.UserId);
 
                 foreach (var app in collection)
                 {
                     if (app != null)
-                        SQLITE_APPLICATIONS.Add(app);
+                        SQLITE_APPLICATIONS.Add(app.Name);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_APPLICATIONS;
             });
         }
 
@@ -272,23 +261,23 @@ namespace Data.Services
         /// Retrieves subjects from the database of a specified category and populates SQLITE_SUBJECTS, skipping "No Subject".
         /// </summary>
         /// <param name="category">The type of subjects being retrieved.</param>
-        public async Task InitialiseSubjectsLIST(LOG.CATEGORY category)
+        public async Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(LOG.CATEGORY category)
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_SUBJECTS.Clear();
+            List<string> SQLITE_SUBJECTS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListSubjects(category, user.accountID);
+                var collection = await reader.ListSubjects(category, user.UserId);
 
                 foreach (var subject in collection)
                 {
                     if (subject != null && subject.Subject != "No Subject")
-                        SQLITE_SUBJECTS.Add(subject);
+                        SQLITE_SUBJECTS.Add(subject.Subject);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_SUBJECTS;
             });
         }
 
@@ -298,26 +287,54 @@ namespace Data.Services
         /// Retrieves subjects from the database for a specific project and populates SQLITE_SUBJECTS.
         /// </summary>
         /// <param name="project">Subjects from the specified ProjectClass will be retrieved only.</param>
-        public async Task InitialiseSubjectsLIST(ProjectClass project)
+        public async Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(ProjectClass project)
         {
             var user = await EnsureValidUserAsync();
 
-            SQLITE_SUBJECTS.Clear();
+            List<string> SQLITE_SUBJECTS = [];
 
-            await UseReaderAsync<Task>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListSubjects(project, user.accountID);
+                var collection = await reader.ListSubjects(project, user.UserId);
 
                 foreach (var subject in collection)
                 {
                     if (subject != null)
-                        SQLITE_SUBJECTS.Add(subject);
+                        SQLITE_SUBJECTS.Add(subject.Subject);
                 }
 
-                return Task.CompletedTask;
+                return SQLITE_SUBJECTS;
             });
         }
 
+        /// <summary>
+        /// Retrieves subjects from the database for a specific project and populates SQLITE_SUBJECTS.
+        /// </summary>
+        /// <param name="project">Subjects from the specified ProjectClass will be retrieved only.</param>
+        public async Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(string appName, string projectName)
+        {
+            var user = await EnsureValidUserAsync();
+
+            List<string> SQLITE_SUBJECTS = [];
+
+            var project = await FindProjectAsync(user.UserId, projectName, appName);
+
+            return await UseReaderAsync(async reader =>
+            {
+                if (project == null)
+                    return [];
+
+                var collection = await reader.ListSubjects(project, user.UserId);
+
+                foreach (var subject in collection)
+                {
+                    if (subject != null)
+                        SQLITE_SUBJECTS.Add(subject.Subject);
+                }
+
+                return SQLITE_SUBJECTS;
+            });
+        }
 
 
 
@@ -331,7 +348,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="project">Subjects from the specified ProjectClass will be retrieved ONLY.</param>
         /// <returns>Returns the subjects as a List.</returns>
-        public async Task<List<SubjectClass>> ListSubjects(ProjectClass project)
+        public async Task<IEnumerable<SubjectClass>> ListSubjects(ProjectClass project)
         {
             try
             {
@@ -342,7 +359,7 @@ namespace Data.Services
                 {
                     var user = await EnsureValidUserAsync();
                     var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
-                    return await reader.ListSubjects(project, user.accountID);
+                    return await reader.ListSubjects(project, user.UserId);
                 }
                 catch (InvalidOperationException invex)
                 {
@@ -365,7 +382,7 @@ namespace Data.Services
         /// Retrieves all Qt outputs from the database.
         /// </summary>
         /// <returns>Returns the Qt outputs as a List.</returns>
-        public async Task<List<OutputClass>> ListQtOutputs()
+        public async Task<IEnumerable<string>> ListQtOutputsAsync()
         {
             try
             {
@@ -392,14 +409,14 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<OutputClass>();
+            return [];
         }
 
         /// <summary>
         /// Retrieves all Android Studio outputs from the database.
         /// </summary>
         /// <returns>Returns the AS outputs as a List.</returns>
-        public async Task<List<OutputClass>> ListASOutputs()
+        public async Task<IEnumerable<string>> ListASOutputsAsync()
         {
             try
             {
@@ -426,7 +443,7 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<OutputClass>();
+            return [];
         }
 
         /// <summary>
@@ -434,7 +451,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="category">The type of outputs.</param>
         /// <returns>Returns the outputs as a List.</returns>
-        public async Task<List<OutputClass>> ListOutputs(CATEGORY category)
+        public async Task<IEnumerable<string>> ListOutputsAsync(CATEGORY category)
         {
             try
             {
@@ -461,7 +478,7 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<OutputClass>();
+            return [];
         }
 
 
@@ -470,7 +487,7 @@ namespace Data.Services
         /// Retrieves all Qt types from the database.
         /// </summary>
         /// <returns>Returns the Qt types as a List, or null if an error occurs.</returns>
-        public async Task<List<TypeClass>> ListQtTypes()
+        public async Task<IEnumerable<string>> ListQtTypesAsync()
         {
             try
             {
@@ -497,14 +514,14 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<TypeClass>();
+            return [];
         }
 
         /// <summary>
         /// Retrieves all Android Studio types from the database.
         /// </summary>
         /// <returns>Returns the AS types as a List, or null if an error occurs.</returns>
-        public async Task<List<TypeClass>> ListASTypes()
+        public async Task<IEnumerable<string>> ListASTypesAsync()
         {
             try
             {
@@ -531,7 +548,7 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<TypeClass>();
+            return [];
         }
 
         /// <summary>
@@ -539,7 +556,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="category">The category of types to retrieve.</param>
         /// <returns>Returns the types as a List, or null if an error occurs.</returns>
-        public async Task<List<TypeClass>> ListTypes(CATEGORY category)
+        public async Task<IEnumerable<string>> ListTypesAsync(CATEGORY category)
         {
             try
             {
@@ -566,7 +583,7 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<TypeClass>();
+            return [];
         }
 
 
@@ -583,24 +600,35 @@ namespace Data.Services
         /// </summary>
         private async Task<T> UseReaderAsync<T>(Func<EntityReader, Task<T>> func)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
-            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-
             try
             {
-                return await func(reader);
-            }
-            catch (InvalidOperationException invex)
-            {
-                await writer.HandleExceptionAsync(invex);
-                throw;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
+                var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+                try
+                {
+                    return await func(reader);
+                }
+                catch (InvalidOperationException invex)
+                {
+                    await writer.HandleExceptionAsync(invex);
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    await writer.HandleExceptionAsync(ex);
+                    throw;
+                }
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex);
-                throw;
+                Debug.WriteLine($"Exception occurred in UseReaderAsync:{ex.Message}");
             }
+
+#pragma warning disable CS8603 // Possible null reference return.
+            return default;
+#pragma warning restore CS8603 // Possible null reference return.
         }
 
         /// <summary>
@@ -659,7 +687,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="email">The email provided by the user signing up.</param>
         /// <returns>Returns whether the email exists or not. Will throw an ExmailConflictException if the email exists.</returns>
-        public Task<bool> EmailExists(string email)
+        public Task<bool> EmailExistsAsync(string email)
         {
             return UseReaderAsync(reader => reader.EmailExists(email));
         }
@@ -671,7 +699,7 @@ namespace Data.Services
         /// <param name="ID">The application ID.</param>
         /// <param name="name">The application name.</param>
         /// <returns>Returns the ApplicationClass if found; otherwise null.</returns>
-        public Task<ApplicationClass?> FindApplication(int ID, string name)
+        public Task<ApplicationClass?> FindApplicationAsync(int ID, string name)
         {
             return UseReaderAsync(reader => reader.FindApplication(ID, name));
         }
@@ -682,7 +710,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="appID">The application ID.</param>
         /// <returns>Returns the ApplicationClass if found; otherwise null.</returns>
-        public Task<ApplicationClass?> FindApplicationByID(int appID)
+        public Task<ApplicationClass?> FindApplicationByIDAsync(int appID)
         {
             return UseReaderAsync(reader => reader.FindApplicationByID(appID));
         }
@@ -694,17 +722,28 @@ namespace Data.Services
         /// <param name="projectName">The project name.</param>
         /// <param name="appID">The application ID.</param>
         /// <returns>Returns the ProjectClass if found; otherwise null.</returns>
-        public Task<ProjectClass?> FindProject(int? userID, string projectName, int appID)
+        public Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID)
         {
-            return UseReaderAsync(reader => reader.FindProject(userID, projectName, appID));
+            return UseReaderAsync(reader => reader.FindProjectAsync(userID, projectName, appID));
         }
+
+        /// <summary> 
+        /// Finds a project based on project name and app name. Throws if a user is not logged in.
+        /// </summary>
+        /// <param name="userID">The logged in user</param>
+        /// <param name="projectName">The project's name</param>
+        /// <param name="appName">The app's name</param>
+        /// <returns>A project object from the database</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, string appName) 
+            => UseReaderAsync(reader => reader.FindProjectAsync(userID, projectName, appName));
 
         /// <summary>
         /// Finds a project by its ID.
         /// </summary>
         /// <param name="projectID">The project ID.</param>
         /// <returns>Returns the ProjectClass if found; otherwise null.</returns>
-        public Task<ProjectClass?> FindProjectByID(int projectID)
+        public Task<ProjectClass?> FindProjectByIDAsync(int projectID)
         {
             return UseReaderAsync(reader => reader.FindProjectByID(projectID));
         }
@@ -714,7 +753,7 @@ namespace Data.Services
         /// <summary>
         /// Finds an output by its name.
         /// </summary>
-        public Task<OutputClass?> FindOutput(string name)
+        public Task<OutputClass?> FindOutputAsync(string name)
         {
             return UseReaderAsync(reader => reader.FindOutput(name));
         }
@@ -722,7 +761,7 @@ namespace Data.Services
         /// <summary>
         /// Finds an output by its ID.
         /// </summary>
-        public Task<OutputClass?> FindOutputByID(int outputID)
+        public Task<OutputClass?> FindOutputByIDAsync(int outputID)
         {
             return UseReaderAsync(reader => reader.FindOutputByID(outputID));
         }
@@ -730,7 +769,7 @@ namespace Data.Services
         /// <summary>
         /// Finds a type by its name.
         /// </summary>
-        public Task<TypeClass?> FindType(string name)
+        public Task<TypeClass?> FindTypeAsync(string name)
         {
             return UseReaderAsync(reader => reader.FindType(name));
         }
@@ -738,7 +777,7 @@ namespace Data.Services
         /// <summary>
         /// Finds a type by its ID.
         /// </summary>
-        public Task<TypeClass?> FindTypeByID(int typeID)
+        public Task<TypeClass?> FindTypeByIDAsync(int typeID)
         {
             return UseReaderAsync(reader => reader.FindTypeByID(typeID));
         }
@@ -746,19 +785,19 @@ namespace Data.Services
         /// <summary>
         /// Finds a subject by its name and category.
         /// </summary>
-        public async Task<SubjectClass?> FindSubject(string subject, LOG.CATEGORY category, int appID, int projectID)
+        public async Task<SubjectClass?> FindSubjectAsync(string subject, LOG.CATEGORY category, int appID, int projectID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FindSubject(subject, category, user.accountID, appID, projectID));
+            return await UseReaderAsync(reader => reader.FindSubject(subject, category, user.UserId, appID, projectID));
         }
 
         /// <summary>
         /// Finds the ID of a subject.
         /// </summary>
-        public async Task<int> FindSubjectID(SubjectClass subject)
+        public async Task<int> FindSubjectIDAsync(SubjectClass subject)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FindSubjectID(subject, user.accountID));
+            return await UseReaderAsync(reader => reader.FindSubjectID(subject, user.UserId));
         }
 
 
@@ -781,28 +820,23 @@ namespace Data.Services
 
 
 
-        public void SaveLOG(LOG log, string filePath)
-        {
-            _cachemaster.SaveLog(log, filePath);
-        }
-
         /// <summary>
-        /// Inserts a log into the database.
+        /// Inserts a logCacheDTO into the database.
         /// </summary>
-        /// <param name="log">The log to insert.</param>
-        /// <returns>Returns true if the log was successfully created; otherwise false.</returns>
-        public async Task<bool> CreateLOG(LOG log)
+        /// <param name="logCacheDTO">The logCacheDTO to insert.</param>
+        /// <returns>Returns true if the logCacheDTO was successfully created; otherwise false.</returns>
+        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO)
         {
             var user = await EnsureValidUserAsync();
-            return await UseWriterAsync(writer => writer.CreateLOG(log, user.accountID));
+            return await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO, user.UserId));
         }
 
         /// <summary>
-        /// Adds the provided account to the database.
+        /// Adds the provided user to the database.
         /// </summary>
-        /// <param name="account">The account to add to the database.</param>
+        /// <param name="account">The user to add to the database.</param>
         /// <returns>A boolean value indicating whether the operation was successful.</returns>
-        public async Task<bool> AddAccount(ACCOUNT account)
+        public async Task<(bool, int)> AddAccountAsync(ACCOUNT account)
         {
             return await UseWriterAsync(writer => writer.AddAccount(account));
         }
@@ -821,40 +855,41 @@ namespace Data.Services
 
 
 
-        /// <summary>
-        /// Retrieves all logs from the database.
-        /// </summary>
-        /// <returns>Returns a List of LOG objects, or null if an error occurs.</returns>
-        public Task<List<LOG>> RetrieveLogs(int userId)
-        {
-            return UseReaderAsync(reader => reader.RetrieveLogs(userId));
-        }
 
         /// <summary>
         /// Retrieves logs from the database for a specific cache context.
         /// </summary>
-        /// <param name="context">The cache context to filter logs.</param>
-        /// <param name="id">The logged in user's id.</param>
+        /// <param name="context">The logCacheDTO context to filter logs.</param>
         /// <returns>Returns an IEnumerable of LOG objects, or null if an error occurs.</returns>
-        public async Task<IEnumerable<LOG>?> RetrieveLogs(CacheContext context)
+        public async Task<IEnumerable<LOG>?> RetrieveLogsAsync(LogContext context)
         {
             var user = await EnsureValidUserAsync();
-            int id = user.accountID;
+            int id = user.UserId;
 
             return await UseReaderAsync<IEnumerable<LOG>>(async reader =>
             {
                 return context switch
                 {
-                    CacheContext.Qt => await reader.RetrieveQtCodingLogs(id),
-                    CacheContext.AndroidStudio => await reader.RetrieveAndroidCodingLogs(id),
-                    CacheContext.Coding => await reader.RetrieveCodingLogs(id),
-                    CacheContext.Graphics => await reader.RetrieveGraphicsLogs(id),
-                    CacheContext.Film => await reader.RetrieveFilmLogs(id),
-                    CacheContext.Flexi => await reader.RetrieveFlexiNotesLogs(id),
+                    LogContext.Qt => await reader.RetrieveQtCodingLogsAsync(id),
+                    LogContext.AndroidStudio => await reader.RetrieveAndroidCodingLogsAsync(id),
+                    LogContext.Coding => await reader.RetrieveCodingLogsAsync(id),
+                    LogContext.Graphics => await reader.RetrieveGraphicsLogsAsync(id),
+                    LogContext.Film => await reader.RetrieveFilmLogsAsync(id),
+                    LogContext.Flexi => await reader.RetrieveFlexiNotesLogsAsync(id),
                     _ => Enumerable.Empty<LOG>()
                 };
             });
 
+        }
+
+        /// <summary>
+        /// Retrieves notes from the database that belong to a specific user.
+        /// </summary>
+        /// <param name="id">The logged in user's id.</param>
+        /// <returns>Returns an IEnumerable of note items, or null if an error occurs.</returns>
+        public async Task<IEnumerable<NoteItem>?> RetrieveGenericNotesAsync(int id)
+        {
+            return await UseReaderAsync<IEnumerable<NoteItem>>(async reader => await reader.RetrieveGenericNotesAsync(id));
         }
 
 
@@ -865,7 +900,7 @@ namespace Data.Services
         /// Counts the total number of logs.
         /// </summary>
         /// <returns>The total count of logs, or 0 if an error occurs.</returns>
-        public Task<int> LogCount()
+        public Task<int> LogCountAsync()
         {
             return UseReaderAsync(reader => reader.LogCount());
         }
@@ -873,32 +908,32 @@ namespace Data.Services
         /// <summary>
         /// Counts the number of logs in a specific category.
         /// </summary>
-        /// <param name="category">The log category to count.</param>
+        /// <param name="category">The logCacheDTO category to count.</param>
         /// <returns>The count of logs in the specified category, or 0 if an error occurs.</returns>
-        public async Task<int?> LogCount(LOG.CATEGORY category)
+        public async Task<int> LogCountAsync(LOG.CATEGORY category)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.LogCount(category, user.accountID));
+            return await UseReaderAsync(reader => reader.LogCountAsync(category, user.UserId));
         }
 
         /// <summary>
         /// Counts the total number of Qt logs.
         /// </summary>
         /// <returns>The count of Qt logs, or 0 if an error occurs.</returns>
-        public async Task<int> QtLogCount()
+        public async Task<int> QtLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.QtLogCount(user.accountID));
+            return await UseReaderAsync(reader => reader.QtLogCountAsync(user.UserId));
         }
 
         /// <summary>
         /// Counts the total number of Android Studio logs.
         /// </summary>
         /// <returns>The count of AS logs, or 0 if an error occurs.</returns>
-        public async Task<int> ASLogCount()
+        public async Task<int> ASLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.ASLogCount(user.accountID));
+            return await UseReaderAsync(reader => reader.ASLogCountAsync(user.UserId));
         }
 
         /// <summary>
@@ -908,7 +943,7 @@ namespace Data.Services
         public async Task<int> FlexiLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FlexiNotesLogCount(user.accountID));
+            return await UseReaderAsync(reader => reader.FlexiNotesLogCountAsync(user.UserId));
         }
 
 
@@ -926,20 +961,20 @@ namespace Data.Services
         /// <summary>
         /// Searches Qt logs based on a search text.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText) =>
-            UseReaderAsync(reader => reader.SearchQtLogs(searchBarText));
+        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText) =>
+            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText));
 
         /// <summary>
         /// Searches Qt logs within a specific project.
         /// </summary>
         public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID) =>
-            UseReaderAsync(reader => reader.SearchQtLogs(searchBarText, projectID));
+            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectID));
 
         /// <summary>
         /// Searches Qt logs within a specific project and application.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID, int appID) =>
-            UseReaderAsync(reader => reader.SearchQtLogs(searchBarText, projectID, appID));
+        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID) =>
+            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectID, appID));
 
 
         // ---------------- Coding Logs ----------------
@@ -947,27 +982,27 @@ namespace Data.Services
         /// <summary>
         /// Searches coding logs based on a search text.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogs(searchBarText, user.accountID));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.UserId));
         }
         /// <summary>
         /// Searches coding logs within a specific project.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int projectID)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogs(searchBarText, projectID, user.accountID));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, projectID, user.UserId));
         }
 
         /// <summary>
         /// Searches coding logs within a specific project and application.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int projectID, int appID)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogs(searchBarText, user.accountID, projectID, appID));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.UserId, projectID, appID));
         }
 
 
@@ -1006,9 +1041,9 @@ namespace Data.Services
         }
 
         /// <summary>
-        /// Saves all pending changes on the current log to the database through the reader.
+        /// Saves all pending changes on the current logCacheDTO to the database through the reader.
         /// </summary>
-        /// <param name="log">The edited log</param>
+        /// <param name="log">The edited logCacheDTO</param>
         public async Task UpdateLogAsync(LOG log)
         {
             await UseHandlerAsync<Task>(async handler =>
@@ -1075,37 +1110,37 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Deletes a log from the database.
+        /// Deletes a logCacheDTO from the database.
         /// </summary>
-        /// <param name="log">The log to delete.</param>
+        /// <param name="log">The logCacheDTO to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        public Task<bool> DeleteLOG(LOG log)
+        public Task<bool> DeleteLOGAsync(LOG log)
         {
-            return UseHandlerAsync(handler => handler.DeleteLOG(log));
+            return UseHandlerAsync(handler => handler.DeleteLOGAsync(log));
         }
 
         /// <summary>
-        /// Deletes a log from the database by its ID.
+        /// Deletes a logCacheDTO from the database by its ID.
         /// </summary>
-        /// <param name="ID">The ID of the log to delete.</param>
+        /// <param name="ID">The ID of the logCacheDTO to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        public Task<bool> DeleteLOGByID(int ID) =>
-            UseHandlerAsync(handler => handler.DeleteLOGByID(ID));
+        public Task<bool> DeleteLOGByIDAsync(int ID) =>
+            UseHandlerAsync(handler => handler.DeleteLOGByIDAsync(ID));
 
         /// <summary>
         /// Deletes a note from the database by its ID.
         /// </summary>
         /// <param name="ID">The ID of the note to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        public Task<bool> DeleteNote(int ID) =>
-            UseHandlerAsync(handler => handler.DeleteNote(ID));
+        public Task<bool> DeleteNoteAsync(int ID) =>
+            UseHandlerAsync(handler => handler.DeleteNoteAsync(ID));
 
         /// <summary>
-        /// Deletes a user's account from the database using the provided account ID.
+        /// Deletes a user's user from the database using the provided user ID.
         /// </summary>
-        /// <param name="id">The ID of the account to delete.</param>
-        /// <returns>Returns true if the account was deleted successfully, false otherwise.</returns>
-        public Task<bool> DeleteAccountByID(int ID) =>
+        /// <param name="id">The ID of the user to delete.</param>
+        /// <returns>Returns true if the user was deleted successfully, false otherwise.</returns>
+        public Task<bool> DeleteAccountByIDAsync(int ID) =>
             UseHandlerAsync(handler => handler.DeleteAccountAsync(ID));
 
 
@@ -1129,26 +1164,6 @@ namespace Data.Services
 
 
         #endregion
-
-
-        #region Cache Management
-
-
-
-
-        public void DeleteCacheFile(string id, CacheContext cacheContext)
-        {
-            _cachemaster.DeleteViewModel(id, cacheContext);
-        }
-
-
-
-
-
-
-        #endregion
-
-
 
 
 

@@ -1,13 +1,14 @@
-﻿using Data_Logger_1._3.Models.App_Models;
-using Data_Logger_1._3.Services;
+﻿using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.Commands;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using Data_Logger_1._3.Models;
 using Data_Logger_1._3.ViewModels.Reporter.Result;
-using static Data_Logger_1._3.Services.CacheMaster;
+using Data.Interfaces;
+using static FileSys.Services.CacheMaster;
+using Core.Models.App_Models;
+using Core.Models;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -21,14 +22,14 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
         private readonly IDataService _dataService;
         private readonly NavigationService _navigationService;
 
-        public CacheContext Context { get; set; } = CacheContext.Coding;
+        public LogContext Context { get; set; } = LogContext.Coding;
 
-        public SearchCommand(ReportDeskViewModel reportDesk, IDataService dataService, NavigationService navigationService, CacheContext cacheContext)
+        public SearchCommand(ReportDeskViewModel reportDesk, IDataService dataService, NavigationService navigationService, LogContext logContext)
         {
             _reportDesk = reportDesk ?? throw new ArgumentNullException(nameof(reportDesk));
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-            Context = cacheContext;
+            Context = logContext;
         }
 
         public SearchCommand()
@@ -69,7 +70,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
 
                 switch (Context)
                 {
-                    case CacheContext.Qt:
+                    case LogContext.Qt:
                         {
                             List<CodingLOG> list;
 
@@ -83,13 +84,13 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
 
                             if (qtReportDesk.Project == "ANY" && !string.IsNullOrEmpty(qtReportDesk.Query))
                             {
-                                list = await _dataService.SearchQtLogs(qtReportDesk.Query);
+                                list = await _dataService.SearchQtLogsAsync(qtReportDesk.Query);
                             }
                             else
                             {
                                 list = projectFilter is null || appFilter is null ?
                                     throw new ArgumentNullException("Project not found.") :
-                                    await _dataService.SearchQtLogs(qtReportDesk.Query, projectFilter.projectID, appFilter.appID);
+                                    await _dataService.SearchQtLogsAsync(qtReportDesk.Query, projectFilter.projectID, appFilter.appID);
 
                             }
 
@@ -107,19 +108,19 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
 
                             break;
                         }
-                    case CacheContext.AndroidStudio:
+                    case LogContext.AndroidStudio:
                         {
                             break;
                         }
-                    case CacheContext.Graphics:
+                    case LogContext.Graphics:
                         {
                             break;
                         }
-                    case CacheContext.Film:
+                    case LogContext.Film:
                         {
                             break;
                         }
-                    case CacheContext.Flexi:
+                    case LogContext.Flexi:
                         {
                             break;
                         }
@@ -139,17 +140,17 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                             {
                                 if (codeReportDesk.Project == "ANY" && codeReportDesk.Application == "ANY")
                                 {
-                                    list = await _dataService.SearchCodingLogs(codeReportDesk.Query);
+                                    list = await _dataService.SearchCodingLogsAsync(codeReportDesk.Query);
                                 }
                                 else if (codeReportDesk.Project == "ANY")
                                 {
-                                    list = await _dataService.SearchCodingLogs(codeReportDesk.Query, appFilter.appID);
+                                    list = await _dataService.SearchCodingLogsAsync(codeReportDesk.Query, appFilter.appID);
                                 }
                                 else
                                 {
                                     list = projectFilter is null || appFilter is null
                                         ? throw new ArgumentNullException("Project not found.")
-                                        : await _dataService.SearchCodingLogs(codeReportDesk.Query,
+                                        : await _dataService.SearchCodingLogsAsync(codeReportDesk.Query,
                                             projectFilter.projectID, appFilter.appID);
                                 }
                             }

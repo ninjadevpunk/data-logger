@@ -48,5 +48,27 @@ namespace Core.Models
             }
         }
 
+        public override bool Equals(object? obj)
+        {
+            return obj is Settings other &&
+                   AppTheme == other.AppTheme &&
+                   Equals(User, other.User) &&
+                   ShowUpdatePopup == other.ShowUpdatePopup;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(AppTheme, User, ShowUpdatePopup);
+        }
+
+        public static bool operator ==(Settings? left, Settings? right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(Settings? left, Settings? right)
+        {
+            return !Equals(left, right);
+        }
     }
 }

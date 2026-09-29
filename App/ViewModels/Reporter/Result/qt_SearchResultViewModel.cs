@@ -1,17 +1,17 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
+﻿using Core.Models;
+using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Commands.ReporterCommands;
-using Data_Logger_1._3.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter
 {
     public class qt_SearchResultViewModel : SearchResultViewModel
     {
         private readonly CodingLOG _QtCodingLOG;
-        public override CacheContext SearchResultContext => CacheContext.Qt;
+        public override LogContext SearchResultContext => LogContext.Qt;
 
         public qt_SearchResultViewModel(CodingLOG codingLOG, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService) : 
             base(codingLOG, reportDeskViewModel, navigationService)

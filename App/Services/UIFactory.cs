@@ -1,11 +1,11 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.Views.Dialogs;
+﻿using Data_Logger_1._3.Views.Dialogs;
 using Data_Logger_1._3.Views.ReportPages;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 
 namespace Data_Logger_1._3.Services
 {

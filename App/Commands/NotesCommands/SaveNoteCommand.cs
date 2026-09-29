@@ -1,6 +1,7 @@
 ﻿using System.Windows;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+using Core.Models;
+using Core.Models.App_Models;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
@@ -62,18 +63,18 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                     NoteItem noteItem = new();
 
                     ACCOUNT account = _dataService.GetUser();
-                    ApplicationClass? dataLoggerNotesApp = await _dataService.FindApplicationByID(15);
+                    ApplicationClass? dataLoggerNotesApp = await _dataService.FindApplicationByIDAsync(15);
 
                     noteItem.Author = account;
-                    noteItem.Project = await _dataService.FindProjectByID(1);
+                    noteItem.Project = await _dataService.FindProjectByIDAsync(1);
 
                     if (dataLoggerNotesApp != null)
                     {
                         noteItem.Application = dataLoggerNotesApp;
                         noteItem.Start = DateTime.Parse(_createNoteViewModel.CreationDate);
                         noteItem.End = DateTime.Parse(_createNoteViewModel.ModifiedDate);
-                        noteItem.Output = await _dataService.FindOutputByID(37);
-                        noteItem.Type = await _dataService.FindTypeByID(39);
+                        noteItem.Output = await _dataService.FindOutputByIDAsync(37);
+                        noteItem.Type = await _dataService.FindTypeByIDAsync(39);
 
                         noteItem.Subject = _createNoteViewModel.NoteSubject;
                         noteItem.NoteContent = _createNoteViewModel.NoteContent;
@@ -82,7 +83,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
 
 
                         // Send to database
-                        await _dataService.CreateLOG(noteItem);
+                        await _dataService.CreateLOGAsync(noteItem);
 
                         var list = _notesViewModel.NoteItems;
                         list.Add(new NoteLOGViewModel(_dataService, _notesViewModel, noteItem));

@@ -1,19 +1,20 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
+﻿using Core.Models;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Commands.ReporterCommands;
-using Data_Logger_1._3.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
     public class code_SearchResultViewModel : SearchResultViewModel
     {
-        public override CacheContext SearchResultContext => CacheContext.Coding;
+        public override LogContext SearchResultContext => LogContext.Coding;
 
         public code_SearchResultViewModel(NavigationService navigationService, IDataService dataService, CodingLOG codingLOG, 
             CodeReportDeskViewModel codeReportDeskViewModel)

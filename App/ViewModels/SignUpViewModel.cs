@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Commands;
+﻿using Core.Interfaces;
+using Data_Logger_1._3.Commands;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
 using System.Windows;
@@ -12,11 +13,11 @@ namespace Data_Logger_1._3.ViewModels
     {
 
 
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
         private readonly UIFactory _factory;
 
-        public SignUpViewModel(AuthService authService, NavigationService navigationService, UIFactory uiFactory)
+        public SignUpViewModel(IAuthService authService, NavigationService navigationService, UIFactory uiFactory)
         {
             _authService = authService;
             _navigationService = navigationService;
@@ -66,7 +67,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private Visibility showDefault;
+        private Visibility showDefault = Visibility.Hidden;
         public Visibility ShowDefault
         {
             get
@@ -81,7 +82,7 @@ namespace Data_Logger_1._3.ViewModels
         }
 
 
-        private string name;
+        private string name = string.Empty;
         public string Name
         {
             get
@@ -95,7 +96,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string surname;
+        private string surname = string.Empty;
         public string Surname
         {
             get
@@ -109,7 +110,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string password;
+        private string password = string.Empty;
         public string Password
         {
             get
@@ -123,7 +124,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string email;
+        private string email = string.Empty;
         public string Email
         {
             get
@@ -181,7 +182,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string companyName;
+        private string companyName = string.Empty;
         public string CompanyName
         {
             get
@@ -195,7 +196,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string companyAddress;
+        private string companyAddress = string.Empty;
         public string CompanyAddress
         {
             get
@@ -209,7 +210,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string companyLogo;
+        private string companyLogo = string.Empty;
         public string CompanyLogo
         {
             get
@@ -223,7 +224,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string statusMessage;
+        private string statusMessage = string.Empty;
         public string StatusMessage
         {
             get
@@ -237,8 +238,8 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private Brush statusMessageColour;
-        public Brush StatusMessageColour
+        private Brush? statusMessageColour;
+        public Brush? StatusMessageColour
         {
             get
             {

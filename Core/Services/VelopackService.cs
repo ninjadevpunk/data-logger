@@ -1,7 +1,6 @@
 ﻿using Core.Interfaces;
 using System.Diagnostics;
 using Velopack;
-using Velopack.Locators;
 using Velopack.Sources;
 
 namespace Core.Services

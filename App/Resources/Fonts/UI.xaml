@@ -1,9 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    <FontFamily x:Key="Red Hat Display">pack://application:,,,/Fonts/#Red Hat Display</FontFamily>
-    <FontFamily x:Key="Zekton Light">pack://application:,,,/Fonts/#Zekton Light</FontFamily>
-    
-
-
-</ResourceDictionary>

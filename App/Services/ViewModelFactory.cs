@@ -1,16 +1,20 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Interfaces;
+using Core.Models;
+using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using MVVMEssentials.ViewModels;
 
 namespace Data_Logger_1._3.Services
 {
-    public class ViewModelFactory
+    internal class ViewModelFactory
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -26,13 +30,14 @@ namespace Data_Logger_1._3.Services
             return new CreateChecklistItemViewModel(createCheckListViewModel, checklistItem);
         }
 
-        public codeCreateViewModel CreateQtCodeCreateViewModel()
+        public QTcodeCreateViewModel CreateQtCodeCreateViewModel()
         {
-            return new codeCreateViewModel(
+            return new QTcodeCreateViewModel(
                 _serviceProvider.GetRequiredService<NavigationService>(),
                 _serviceProvider.GetRequiredService<CodingQtViewModel>(),
-                "Qt",
-                _serviceProvider.GetRequiredService<IDataService>()
+                _serviceProvider.GetRequiredService<IAuthService>(),
+                _serviceProvider.GetRequiredService<IDataService>(),
+                _serviceProvider.GetRequiredService<ICacheService>()
             );
         }
 
@@ -41,7 +46,9 @@ namespace Data_Logger_1._3.Services
             return new codeCreateViewModel(
                 _serviceProvider.GetRequiredService<NavigationService>(),
                 _serviceProvider.GetRequiredService<CodingViewModel>(), 
-                _serviceProvider.GetRequiredService<IDataService>()
+                _serviceProvider.GetRequiredService<IAuthService>(), 
+                _serviceProvider.GetRequiredService<IDataService>(),
+                _serviceProvider.GetRequiredService<ICacheService>()
             );
         }
 
@@ -64,7 +71,7 @@ namespace Data_Logger_1._3.Services
                 );
         }
 
-        public async Task<PostItViewModel> CreatePostItViewModel(LoggerCreateViewModel loggerCreateViewModel, LOG.CATEGORY category)
+        public async Task<PostItViewModel> CreatePostItViewModel(LoggerViewModel loggerCreateViewModel, LOG.CATEGORY category)
         {
             var postItVM = new PostItViewModel(
                 _serviceProvider.GetRequiredService<NavigationService>(),

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
@@ -7,7 +8,7 @@ namespace Data_Logger_1._3.Services
     /// <summary>
     /// Class for BitmapImage management and related tasks.
     /// </summary>
-    public class BitmapService
+    internal class BitmapService
     {
         /// <summary>
         /// Helper method to resize an image to a maximum dimension of 128 pixels while maintaining the aspect ratio.
@@ -28,7 +29,7 @@ namespace Data_Logger_1._3.Services
             return new TransformedBitmap(bitmap, new ScaleTransform(scale, scale));
         }
 
-
+        // TODO: Delete
         /// <summary>
         /// Saves a temporary profile picture to the permanent profile picture directory.
         /// </summary>
@@ -53,7 +54,8 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                App.LogException(ex);
+                //App.LogExceptionAsync(ex);
+                Debug.WriteLine(ex, "Exception occurred in SaveProfilePicture");
                 return string.Empty;
             }
         }
@@ -82,11 +84,13 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                App.LogException(ex);
+                //App.LogExceptionAsync(ex);
+                Debug.WriteLine(ex, "Exception occurred in TempSaveResizedImage");
                 return string.Empty;
             }
         }
 
+        // TODO: DELETE
         /// <summary>
         /// Deletes profile pics saved in temp folder created by Browse button logic
         /// </summary>
@@ -114,34 +118,36 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                App.LogException(ex);
+                //App.LogExceptionAsync(ex);
+                Debug.WriteLine(ex, "Exception occurred in DeleteTempProfilePics");
             }
         }
 
         public static BitmapImage? LoadImage(string path)
         {
-            try
-            {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.EndInit();
-                bitmap.Freeze();
+            var bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(path, UriKind.RelativeOrAbsolute);
+            bitmap.CacheOption = BitmapCacheOption.OnLoad;
+            bitmap.EndInit();
+            bitmap.Freeze();
 
-                return bitmap;
-            }
-            catch (Exception ex)
-            {
-                App.LogException(ex);
-                return null;
-            }
+            return bitmap;
         }
 
         public static bool IsTemporaryProfilePic(string path)
         {
-            string tempFolder = Path.Combine(Path.GetTempPath(), "Data Logger", "Temp Profile Pics");
-            return path.StartsWith(tempFolder, StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                string tempFolder = Path.Combine(Path.GetTempPath(), "Data Logger", "Temp Profile Pics");
+                return path.StartsWith(tempFolder, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                //App.LogExceptionAsync(ex);
+                Debug.WriteLine(ex, "Exception occurred in LoadImage");
+            }
+            return false;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Core.Models.App_Models
         public int typeID { get; set; }
 
 
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 
@@ -23,7 +23,7 @@ namespace Core.Models.App_Models
         public string Name { get; set; } = "NONE";
 
 
-        public ApplicationClass Application { get; set; }
+        public ApplicationClass? Application { get; set; }
         public int appID { get; set; } = 3;
 
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
@@ -64,25 +64,29 @@ namespace Core.Models.App_Models
         {
             return obj is TypeClass @class &&
                    typeID == @class.typeID &&
-                   User.Equals(@class.User) &&
+                   User == @class.User &&
                    Name == @class.Name &&
-                   Application.Equals(@class.Application) &&
+                   Application == @class.Application &&
                    Category == @class.Category;
         }
 
         public override int GetHashCode()
         {
+            // Natively safe with nulls
             return HashCode.Combine(typeID, User, Name, Application, Category);
         }
 
-        public static bool operator ==(TypeClass left, TypeClass right)
+        public static bool operator ==(TypeClass? left, TypeClass? right)
         {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
             return left.Equals(right);
         }
 
-        public static bool operator !=(TypeClass left, TypeClass right)
+        public static bool operator !=(TypeClass? left, TypeClass? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
         }
+
     }
 }

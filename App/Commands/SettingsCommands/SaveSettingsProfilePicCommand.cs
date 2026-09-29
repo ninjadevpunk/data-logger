@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Utilities;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 using System.IO;
@@ -57,7 +58,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 {
                     _settingsViewModel.DisplayPicPath = string.Empty;
                     _settingsViewModel.SignUpImage = null;
-                    oldProfilePicPath = "/Assets/login/user.png";
+                    oldProfilePicPath = Constants.Avatar;
                     _settingsViewModel.DefaultPicVisibility = Visibility.Visible;
                 }
                 else

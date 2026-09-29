@@ -1,45 +1,26 @@
-﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.LogViewModels;
-using System.Collections.ObjectModel;
-using System.Windows;
+﻿using Core.Enums;
+using Data.Interfaces;
+using Data_Logger_1._3.Services;
 
 
 namespace Data_Logger_1._3.ViewModels.Dashboard
 {
-    public class CodingAndroidViewModel : CodingViewModel
+    internal class CodingAndroidViewModel : CodingViewModel
     {
+        public override LogContext Context => LogContext.AndroidStudio;
 
         public CodingAndroidViewModel(NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
         {
-            CacheItems = new ObservableCollection<AndroidLOGViewModel>();
-
+            CacheItems = [];
         }
 
         public CodingAndroidViewModel(string logCount, NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
         {
-            CacheItems = new ObservableCollection<AndroidLOGViewModel>();
 
             LogCount = logCount;
 
         }
 
-        private ObservableCollection<AndroidLOGViewModel> cacheItems;
-        public ObservableCollection<AndroidLOGViewModel> CacheItems
-        {
-            get
-            {
-                return cacheItems;
-            }
-            set
-            {
-                cacheItems = value;
-
-                NoLogsMessageVisibility = CacheItems.Count == 0 ? Visibility.Visible : Visibility.Hidden;
-                
-
-                OnPropertyChanged(nameof(CacheItems));
-            }
-        }
 
         public async Task AutoStart()
         {
@@ -51,7 +32,7 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
         {
             if (CacheItems is not null)
             {
-                var count = await _dataService.ASLogCount();
+                var count = await _dataService.ASLogCountAsync();
                 LogCount = $"{CacheItems.Count} android logs cached | {count} total logs";
             }
         }

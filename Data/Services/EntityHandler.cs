@@ -392,7 +392,7 @@ namespace Data.Services
 
 
 
-        public async Task<bool> DeleteLOG(LOG log)
+        public async Task<bool> DeleteLOGAsync(LOG log)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
 
@@ -412,13 +412,13 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "DeleteLOG(log)");
+                await writer.HandleExceptionAsync(ex, "DeleteLOGAsync(log)");
             }
 
             return false;
         }
 
-        public async Task<bool> DeleteLOGByID(int ID)
+        public async Task<bool> DeleteLOGByIDAsync(int ID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
 
@@ -441,13 +441,13 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "DeleteLOGByID(ID)");
+                await writer.HandleExceptionAsync(ex, "DeleteLOGByIDAsync(ID)");
             }
 
             return false;
         }
 
-        public async Task<bool> DeleteNote(int ID)
+        public async Task<bool> DeleteNoteAsync(int ID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -469,7 +469,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "DeleteNote(ID)");
+                await writer.HandleExceptionAsync(ex, "DeleteNoteAsync(ID)");
             }
 
             return false;

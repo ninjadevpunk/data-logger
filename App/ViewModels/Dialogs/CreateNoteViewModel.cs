@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Commands.NotesCommands;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.LogViewModels;
@@ -9,8 +10,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 {
     public class CreateNoteViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
-        private readonly NavigationService _navigationService;
+        private readonly IDataService? _dataService;
+        private readonly NavigationService? _navigationService;
 
 
 
@@ -45,7 +46,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             NoteContent = "";
         }
 
-        private string noteSubject;
+        private string noteSubject = string.Empty;
         public string NoteSubject
         {
             get
@@ -60,9 +61,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        public string CreationDate { get; set; }
+        public string CreationDate { get; set; } = string.Empty;
 
-        private string modifiedDate;
+        private string modifiedDate = string.Empty;
         public string ModifiedDate
         {
             get
@@ -77,7 +78,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         }
 
 
-        private string date;
+        private string date = string.Empty;
         public string Date
         {
             get
@@ -92,7 +93,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         }
 
-        private string noteContent;
+        private string noteContent = string.Empty;
         public string NoteContent
         {
             get

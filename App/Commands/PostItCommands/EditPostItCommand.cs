@@ -1,6 +1,6 @@
 ﻿using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
@@ -8,7 +8,7 @@ namespace Data_Logger_1._3.Commands.PostItCommands
     public class EditPostItCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly LoggerCreateViewModel _loggerCreateViewModel;
+        private readonly LoggerViewModel _loggerCreateViewModel;
 
 
         public EditPostItCommand()
@@ -16,7 +16,7 @@ namespace Data_Logger_1._3.Commands.PostItCommands
 
         }
 
-        public EditPostItCommand(NavigationService navigationService, LoggerCreateViewModel loggerCreateViewModel)
+        public EditPostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel)
         {
             try
             {

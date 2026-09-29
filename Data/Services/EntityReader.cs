@@ -1,6 +1,8 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Identity;
+using Core.Models;
 using Core.Models.App_Models;
-using Data.Utilities;
+using Core.Utilities;
+using Data.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
@@ -89,7 +91,7 @@ namespace Data.Services
         }
 
 
-        public async Task<List<LOG>> RetrieveLogs(int userId)
+        public async Task<List<LOG>> RetrieveLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -104,7 +106,7 @@ namespace Data.Services
         /// Retrieves Coding logs.
         /// </summary>
         /// <returns>Returns a list of CodingLOG objects.</returns>
-        public async Task<List<CodingLOG>> RetrieveCodingLogs(int userId)
+        public async Task<List<CodingLOG>> RetrieveCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -122,7 +124,7 @@ namespace Data.Services
                 .ToListAsync();
         }
 
-        public async Task<List<CodingLOG>> RetrieveQtCodingLogs(int userId)
+        public async Task<List<CodingLOG>> RetrieveQtCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -133,7 +135,7 @@ namespace Data.Services
                 .ToListAsync();
         }
 
-        public async Task<List<AndroidCodingLOG>> RetrieveAndroidCodingLogs(int userId)
+        public async Task<List<AndroidCodingLOG>> RetrieveAndroidCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -144,7 +146,7 @@ namespace Data.Services
                 .ToListAsync();
         }
 
-        public async Task<List<GraphicsLOG>> RetrieveGraphicsLogs(int userId)
+        public async Task<List<GraphicsLOG>> RetrieveGraphicsLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -155,7 +157,7 @@ namespace Data.Services
                 .ToListAsync();
         }
 
-        public async Task<List<FilmLOG>> RetrieveFilmLogs(int userId)
+        public async Task<List<FilmLOG>> RetrieveFilmLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -166,7 +168,7 @@ namespace Data.Services
                 .ToListAsync();
         }
 
-        public async Task<List<FlexiNotesLOG>> RetrieveFlexiNotesLogs(int userId)
+        public async Task<List<FlexiNotesLOG>> RetrieveFlexiNotesLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -178,7 +180,7 @@ namespace Data.Services
         }
 
 
-        public async Task<List<NoteItem>> RetrieveGenericNotes(int id)
+        public async Task<List<NoteItem>> RetrieveGenericNotesAsync(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -188,6 +190,13 @@ namespace Data.Services
                 .ToListAsync();
         }
 
+
+
+        /// <summary>
+        /// Retrieves notes from the database that belong to a specific user.
+        /// </summary>
+        /// <param name="id">The logged in user's id.</param>
+        /// <returns>Returns an IEnumerable of note items, or null if an error occurs.</returns>
         public async Task<List<CheckList>> RetrieveCheckList(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -260,10 +269,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception near FindAccountByID(id): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception near FindAccountByID(id): {ex.Message}");
 
                 return null;
             }
@@ -280,16 +287,14 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception near FindAccountByID(id): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception near FindAccountByID(id): {ex.Message}");
 
                 return null;
             }
         }
 
-        public async Task<ACCOUNT?> FindAccountByEmail(string emailAddress, string password)
+        public async Task<UserDTO?> FindAccountByEmailAsync(string emailAddress, string password)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -302,17 +307,20 @@ namespace Data.Services
 
                 if (account is not null && VerifyPassword(account, password))
                 {
-                    return account;
+                    return new UserDTO
+                    {
+                        UserId = account.accountID,
+                        Name = account.FirstName,
+                        Surname = account.LastName
+                    };
                 }
 
                 return null;
             }
             catch (Exception ex)
             {
-                var description = $"Exception near FindAccountByEmail(email,password): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception near FindAccountByEmailAsync(email,password): {ex.Message}");
 
                 return null;
             }
@@ -333,7 +341,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplication(name)");
+                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
             }
 
             return null;
@@ -358,7 +366,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplication(name)");
+                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
             }
 
             return null;
@@ -381,7 +389,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplication(name)");
+                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
             }
 
             return null;
@@ -403,13 +411,13 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplicationByID(appID)");
+                await writer.HandleExceptionAsync(ex, "FindApplicationByIDAsync(appID)");
             }
 
             return null;
         }
 
-        public async Task<ProjectClass?> FindProject(int? userID, string projectName, int appID)
+        public async Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -430,7 +438,35 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProject(projectName, appID)");
+                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
+            }
+
+            return null;
+        }
+
+        
+        public async Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, string appName)
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                if (userID == null)
+                    throw new ArgumentNullException("userID is required to find a user's projects!");
+
+                var project = await master.Projects
+                    .Where(p => (p.accountID == userID || p.accountID == 1)
+                                && p.Name == projectName
+                                && p.Application.Name == appName)
+                    .FirstOrDefaultAsync();
+
+                return project;
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
             }
 
             return null;
@@ -455,7 +491,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProject(projectName, appID)");
+                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
             }
 
             return null;
@@ -477,7 +513,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectByID(projectID)");
+                await writer.HandleExceptionAsync(ex, "FindProjectByIDAsync(projectID)");
             }
 
             return null;
@@ -497,7 +533,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutput(name)");
+                await writer.HandleExceptionAsync(ex, "FindOutputAsync(name)");
             }
 
             return null;
@@ -515,7 +551,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutput(name)");
+                await writer.HandleExceptionAsync(ex, "FindOutputAsync(name)");
             }
 
             return null;
@@ -536,7 +572,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutputByID(outputID)");
+                await writer.HandleExceptionAsync(ex, "FindOutputByIDAsync(outputID)");
             }
 
             return null;
@@ -556,7 +592,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindType(name)");
+                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
             }
 
             return null;
@@ -574,7 +610,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindType(name)");
+                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
             }
 
             return null;
@@ -595,7 +631,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeByID(typeID)");
+                await writer.HandleExceptionAsync(ex, "FindTypeByIDAsync(typeID)");
             }
 
             return null;
@@ -737,10 +773,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception near FindAccountID(account): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception near FindAccountID(account): {ex.Message}");
 
                 return -1;
             }
@@ -856,7 +890,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindType(name)");
+                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
             }
 
             return null;
@@ -879,7 +913,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindType(name)");
+                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
             }
 
             return null;
@@ -918,7 +952,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindSubjectID(subject)");
+                await writer.HandleExceptionAsync(ex, "FindSubjectIDAsync(subject)");
             }
 
             return subjectKey;
@@ -941,10 +975,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception in LogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception in LogCountAsync: {ex.Message}");
 
                 return -1;
             }
@@ -954,7 +986,7 @@ namespace Data.Services
         /// Counts all logs in the database regardless of category.
         /// </summary>
         /// <returns>Returns the log count.</returns>
-        public async Task<int?> LogCount(CATEGORY category, int id)
+        public async Task<int> LogCountAsync(CATEGORY category, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -966,18 +998,17 @@ namespace Data.Services
                 return await master.Logs
                     .Where(l => l.accountID == id)
                     .Where(l => l.Category == category)
+                    .Where(l => !new[] {1, 2}.Contains(l.appID))
                     .CountAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception in LogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception in LogCountAsync: {ex.Message}");
 
             }
 
-            return null;
+            return -1;
         }
 
 
@@ -985,7 +1016,7 @@ namespace Data.Services
         /// Counts the number of Qt logs.
         /// </summary>
         /// <returns>The count of Qt logs ONLY.</returns>
-        public async Task<int> QtLogCount(int id)
+        public async Task<int> QtLogCountAsync(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1002,10 +1033,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception in QtLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception in QtLogCountAsync: {ex.Message}");
 
                 return -1;
             }
@@ -1015,7 +1044,7 @@ namespace Data.Services
         /// Counts the number of Android Studio logs.
         /// </summary>
         /// <returns>The count of Android Studio logs ONLY.</returns>
-        public async Task<int> ASLogCount(int id)
+        public async Task<int> ASLogCountAsync(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1032,10 +1061,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ASLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ASLogCountAsync: {ex.Message}");
                 return -1;
             }
 
@@ -1063,10 +1090,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near CodingLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near CodingLogCount: {ex.Message}");
 
                 return -1;
             }
@@ -1092,10 +1117,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near GraphicsLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near GraphicsLogCount: {ex.Message}");
 
                 return -1;
             }
@@ -1120,10 +1143,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near FilmLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near FilmLogCount: {ex.Message}");
 
                 return -1;
             }
@@ -1149,10 +1170,8 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near NoteItemCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near NoteItemCount: {ex.Message}");
 
                 return -1;
             }
@@ -1163,7 +1182,7 @@ namespace Data.Services
         /// Counts the number of flexible notes logs.
         /// </summary>
         /// <returns>Returns the count of flexible notes logs.</returns>
-        public async Task<int> FlexiNotesLogCount(int id)
+        public async Task<int> FlexiNotesLogCountAsync(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1178,9 +1197,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near FlexiNotesLogCount: {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
 
                 return -1;
             }
@@ -1195,7 +1212,7 @@ namespace Data.Services
         /// Retrieves applications from the database that belong to the currently online user.
         /// </summary>
         /// <returns>A List of ApplicationClass objects.</returns>
-        public async Task<List<ApplicationClass>> ListApplications(int id)
+        public async Task<IEnumerable<ApplicationClass>> ListApplications(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1211,12 +1228,10 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListApplications(category): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
             }
 
-            return new();
+            return [];
 
         }
 
@@ -1226,7 +1241,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="category">The category in which the application falls under in terms of logs.</param>
         /// <returns>A List of ApplicationClass objects.</returns>
-        public async Task<List<ApplicationClass>> ListApplications(CATEGORY category, int id)
+        public async Task<IEnumerable<ApplicationClass>> ListApplications(CATEGORY category, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1244,12 +1259,10 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListApplications(category): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
             }
 
-            return new();
+            return [];
         }
 
 
@@ -1258,7 +1271,7 @@ namespace Data.Services
         /// Retrieves projects from the database that belong to the currently online user.
         /// </summary>
         /// <returns>A List of ProjectClass objects.</returns>
-        public async Task<List<ProjectClass>> ListProjects(int id)
+        public async Task<IEnumerable<ProjectClass>> ListProjects(int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1268,20 +1281,17 @@ namespace Data.Services
             {
                 return await master.Projects
                     .Where(p => new[] { 1, id }.Contains(p.accountID))
-                    .Where(p => p.Name != "Unnamed Project")
                     .Include(p => p.User)
                     .Include(p => p.Application)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListProjects(category): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListProjects(category): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
 
@@ -1290,7 +1300,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="category">The category in which the project falls under in terms of logs.</param>
         /// <returns>A List of ProjectClass objects.</returns>
-        public async Task<List<ProjectClass>> ListProjects(CATEGORY category, int id)
+        public async Task<IEnumerable<ProjectClass>> ListProjects(CATEGORY category, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1301,20 +1311,47 @@ namespace Data.Services
                 return await master.Projects
                     .Where(p => new[] { 1, id }.Contains(p.accountID))
                     .Where(p => p.Category == category)
-                    .Where(p => p.Name != "Unnamed Project")
+                    .Where(p => !new[] {1, 2}.Contains(p.Application.appID) && !new[] { Constants.Qt, Constants.Android }.Contains(p.Application.Name))
                     .Include(p => p.User)
                     .Include(p => p.Application)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListProjects(category): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListProjects(category): {ex.Message}");
             }
 
-            return new();
+            return [];
+        }
+
+        /// <summary>
+        /// Retrieves projects from the database that belong to the currently online user for a specific application.
+        /// Excludes projects with the name "Unnamed Project".
+        /// </summary>
+        /// <param name="appName">The application to filter projects by.</param>
+        /// <returns>A List of ProjectClass objects.</returns>
+        public async Task<IEnumerable<ProjectClass>> ListProjects(string appName, int id)
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                return await master.Projects
+                    .Where(p => new[] { 1, id }.Contains(p.accountID))
+                    .Where(p => p.Application.Name == appName)
+                    .Include(p => p.User)
+                    .Include(p => p.Application)
+                    .ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex, "ListProjects(app)");
+            }
+
+            return [];
         }
 
 
@@ -1325,7 +1362,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="app">The application to filter projects by.</param>
         /// <returns>A List of ProjectClass objects.</returns>
-        public async Task<List<ProjectClass>> ListProjects(ApplicationClass app, int id)
+        public async Task<IEnumerable<ProjectClass>> ListProjects(ApplicationClass app, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1346,7 +1383,7 @@ namespace Data.Services
                 await writer.HandleExceptionAsync(ex, "ListProjects(app)");
             }
 
-            return new();
+            return [];
         }
 
 
@@ -1359,7 +1396,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="project"></param>
         /// <returns></returns>
-        public async Task<List<SubjectClass>> ListSubjects(CATEGORY category, int id)
+        public async Task<IEnumerable<SubjectClass>> ListSubjects(CATEGORY category, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1378,13 +1415,11 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListSubjects(category): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListSubjects(category): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
         /// <summary>
@@ -1392,7 +1427,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="project">The project in which the subjects preside.</param>
         /// <returns>A List with SubjectClass objects.</returns>
-        public async Task<List<SubjectClass>> ListSubjects(ProjectClass project, int id)
+        public async Task<IEnumerable<SubjectClass>> ListSubjects(ProjectClass project, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1413,21 +1448,20 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListSubjects(project): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListSubjects(project): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
+
 
 
         /// <summary>
         /// Retrieves Qt outputs from the database.
         /// </summary>
         /// <returns>A List of Qt OutputClass objects.</returns>
-        public async Task<List<OutputClass>> ListQtOutputs()
+        public async Task<IEnumerable<string>> ListQtOutputs()
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1438,24 +1472,23 @@ namespace Data.Services
                 return await master.Outputs
                     .Where(o => o.appID == 1)
                     .Include(o => o.Application)
+                    .Select(o => o.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListQtOutputs(): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListQtOutputsAsync(): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
         /// <summary>
         /// Retrieves Qt outputs from the database.
         /// </summary>
         /// <returns>A List of Qt OutputClass objects.</returns>
-        public async Task<List<OutputClass>> ListASOutputs()
+        public async Task<IEnumerable<string>> ListASOutputs()
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1466,17 +1499,16 @@ namespace Data.Services
                 return await master.Outputs
                     .Where(o => o.appID == 2)
                     .Include(o => o.Application)
+                    .Select(o => o.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListASOutputs(): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListASOutputsAsync(): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
         /// <summary>
@@ -1484,7 +1516,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="application">The outputs are only found in a particular application.</param>
         /// <returns>A List of OutputClass objects.</returns>
-        public async Task<List<OutputClass>> ListOutputs(CATEGORY category)
+        public async Task<IEnumerable<string>> ListOutputs(CATEGORY category)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1496,17 +1528,16 @@ namespace Data.Services
                     .Where(o => o.Category == category)
                     .Where(o => !new[] { 1, 2 }.Contains(o.appID))
                     .Include(o => o.Application)
+                    .Select(o => o.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListOutputs(application): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListOutputsAsync(application): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
 
@@ -1519,7 +1550,7 @@ namespace Data.Services
         /// Retrieves Qt outputs from the database.
         /// </summary>
         /// <returns>A List of Qt OutputClass objects.</returns>
-        public async Task<List<TypeClass>> ListQtTypes()
+        public async Task<IEnumerable<string>> ListQtTypes()
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1530,24 +1561,23 @@ namespace Data.Services
                 return await master.Types
                     .Where(t => t.appID == 1)
                     .Include(t => t.Application)
+                    .Select(t => t.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListQtTypes(): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListQtTypesAsync(): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
         /// <summary>
         /// Retrieves Qt outputs from the database.
         /// </summary>
         /// <returns>A List of Qt OutputClass objects.</returns>
-        public async Task<List<TypeClass>> ListASTypes()
+        public async Task<IEnumerable<string>> ListASTypes()
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1558,17 +1588,16 @@ namespace Data.Services
                 return await master.Types
                     .Where(t => t.appID == 2)
                     .Include(t => t.Application)
+                    .Select(t => t.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListASTypes(): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListASTypesAsync(): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
         /// <summary>
@@ -1576,7 +1605,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="application">The outputs are only found in a particular application.</param>
         /// <returns>A List of OutputClass objects.</returns>
-        public async Task<List<TypeClass>> ListTypes(CATEGORY category)
+        public async Task<IEnumerable<string>> ListTypes(CATEGORY category)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1588,31 +1617,30 @@ namespace Data.Services
                     .Where(t => t.Category == category)
                     .Where(t => !new[] { 1, 2 }.Contains(t.appID))
                     .Include(t => t.Application)
+                    .Select(t => t.Name)
                     .ToListAsync();
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near ListOutputs(application): {ex.Message}";
-
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
-                Debug.WriteLine(description);
+                await writer.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near ListOutputsAsync(application): {ex.Message}");
             }
 
-            return new();
+            return [];
         }
 
 
 
-        public async Task<List<CodingLOG>?> SearchQtLogs(string searchBarText)
+        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText)
         {
             return null;
         }
-        public async Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID)
+        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID)
         {
             return null;
         }
 
-        public async Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID, int appID)
+        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID)
         {
             return null;
         }
@@ -1622,7 +1650,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="searchBarText">The query for the database.</param>
         /// <returns>Returns a list of logs that match the search bar text.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int id)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1708,8 +1736,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near SearchCodingLogs(searchBarText): {ex.Message}";
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -1723,7 +1750,7 @@ namespace Data.Services
         /// <param name="searchBarText">The query for the database.</param>
         /// <param name="appID">The application that logs use.</param>
         /// <returns>A list of logs that match the search bar text that were created with the provided app filter.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int appID, int id)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int appID, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1812,8 +1839,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near SearchCodingLogs(searchBarText,appID): {ex.Message}";
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -1828,7 +1854,7 @@ namespace Data.Services
         /// <param name="projectID">The project that the log was created for.</param>
         /// <param name="appID">The application that logs use.</param>
         /// <returns>A list of logs that match the search bar text that were created with the provided app and project filter.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int id, int projectID, int appID)
+        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int id, int projectID, int appID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1924,8 +1950,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                var description = $"Exception occurred near SearchCodingLogs(searchBarText,projectID,appID): {ex.Message}";
-                await writer.CreateFeedback(1, description, false, true, FeedbackType.Exception);
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -1934,21 +1959,6 @@ namespace Data.Services
 
 
 
-
-
-        #region Exceptions
-
-
-
-        public class EmailConflictException : Exception
-        {
-            public EmailConflictException(string message) : base(message) { }
-        }
-
-
-
-
-        #endregion
 
     }
 }

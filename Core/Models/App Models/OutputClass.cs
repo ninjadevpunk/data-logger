@@ -15,7 +15,7 @@ namespace Core.Models.App_Models
         public int outputID { get; set; }
 
 
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 
@@ -24,7 +24,7 @@ namespace Core.Models.App_Models
 
 
         public int appID { get; set; } = 3;
-        public virtual ApplicationClass Application { get; set; }
+        public virtual ApplicationClass? Application { get; set; }
 
 
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
@@ -65,9 +65,9 @@ namespace Core.Models.App_Models
         {
             return obj is OutputClass @class &&
                    outputID == @class.outputID &&
-                   User.Equals(@class.User) &&
+                   User == @class.User &&
                    Name == @class.Name &&
-                   Application.Equals(@class.Application) &&
+                   Application == @class.Application &&
                    Category == @class.Category;
         }
 
@@ -76,14 +76,19 @@ namespace Core.Models.App_Models
             return HashCode.Combine(outputID, User, Name, Application, Category);
         }
 
-        public static bool operator ==(OutputClass left, OutputClass right)
+        public static bool operator ==(OutputClass? left, OutputClass? right)
         {
+            if (ReferenceEquals(left, right)) return true;
+
+            if (left is null || right is null) return false;
+
             return left.Equals(right);
         }
 
-        public static bool operator !=(OutputClass left, OutputClass right)
+        public static bool operator !=(OutputClass? left, OutputClass? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
         }
+
     }
 }

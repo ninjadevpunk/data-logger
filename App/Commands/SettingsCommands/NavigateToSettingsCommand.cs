@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands

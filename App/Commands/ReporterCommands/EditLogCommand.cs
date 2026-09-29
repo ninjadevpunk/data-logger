@@ -1,9 +1,9 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Models;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using Data_Logger_1._3.Models;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {

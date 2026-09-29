@@ -16,7 +16,7 @@ namespace Core.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int accountID { get; set; }
 
-        public string ProfilePic { get; set; }
+        public string? ProfilePic { get; set; }
 
 
         public string FirstName { get; set; } = "";
@@ -157,16 +157,16 @@ namespace Core.Models
 
         public static bool operator ==(ACCOUNT? left, ACCOUNT? right)
         {
-            if (ReferenceEquals(left, right)) return true;   // both null or same reference
-            if (left is null || right is null) return false; // one null, the other not
-            return left.Equals(right);                       // defer to Equals
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
+            return left.Equals(right);
         }
 
         public static bool operator !=(ACCOUNT? left, ACCOUNT? right)
         {
-            if (ReferenceEquals(left, right)) return false;  // both null or same reference
-            if (left is null || right is null) return true;  // one null, the other not
-            return !left.Equals(right);                      // defer to Equals
+            if (ReferenceEquals(left, right)) return false;
+            if (left is null || right is null) return true;
+            return !left.Equals(right);
         }
 
 

@@ -1,19 +1,15 @@
-﻿
-
+﻿using Core.DTOs.Cache;
+using Core.DTOs.Identity;
+using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
 using System.Runtime.CompilerServices;
 using static Core.Models.LOG;
-using static FileSys.Services.CacheMaster;
 
 namespace Data.Interfaces
 {
     public interface IDataService
     {
-        // Properties
-        IReadOnlyList<ProjectClass> SQLITE_PROJECTS { get; }
-        IReadOnlyList<ApplicationClass> SQLITE_APPLICATIONS { get; }
-        IReadOnlyList<SubjectClass> SQLITE_SUBJECTS { get; }
 
         // Save Database Changes
         Task SaveChangesAsync();
@@ -21,78 +17,90 @@ namespace Data.Interfaces
 
 
         // --- User / Account ---
-        Task SignInUser();
-        Task<(bool Success, ACCOUNT? Account)> SignInUser(string email, string password);
-        Task<bool> SignOutUser();
-        ACCOUNT? GetUser();
-        string? GetAuthorName();
-        string? GetDisplayPic();
-        Task<string> UpdateProfilePic(string emailAddress);
+        Task SignInUserAsync();
+
+        /// <summary>
+        /// Signs in the current user by setting them as the current user in the database.
+        /// </summary>
+        /// <param name="email">User's email.</param>
+        /// <param name="password">User's password.</param>
+        /// <returns>Returns a tuple: (success flag, a UserDTO if sign-in succeeded Otherwise null is returned).</returns>
+        Task<(bool Success, UserDTO? Account)> SignInUserAsync(string email, string password);
+        Task<bool> SignOutUserAsync();
+        Task<string> UpdateProfilePicAsync(string emailAddress);
 
         /// <summary>
         /// Sets the currently online user to online.
         /// </summary>
-        /// <param name="account">The account that is online.</param>
+        /// <param name="userId">The user's ID</param>
         /// <returns>Returns whether the account is set successfully.</returns>
-        Task<bool> SetCurrentUser(ACCOUNT account);
+        Task<bool> SetCurrentUserAsync(int userId);
 
         /// <summary>
         /// Adds the provided account to the database.
         /// </summary>
         /// <param name="account">The account to add to the database.</param>
         /// <returns>A boolean value indicating whether the operation was successful.</returns>
-        Task<bool> AddAccount(ACCOUNT account);
+        Task<(bool, int)> AddAccountAsync(ACCOUNT account);
 
         // --- Initialise methods ---
-        Task InitialiseProjectsLISTAsync();
-        Task InitialiseProjectsLISTAsync(LOG.CATEGORY category);
+        Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync();
+        Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(string appName);
+        Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(LOG.CATEGORY category);
 
-        Task InitialiseApplicationsLISTAsync();
-        Task InitialiseApplicationsLISTAsync(LOG.CATEGORY category);
+        Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync();
+        Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync(LOG.CATEGORY category);
 
-        Task InitialiseSubjectsLIST(LOG.CATEGORY category);
-        Task InitialiseSubjectsLIST(ProjectClass project);
+        Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(LOG.CATEGORY category);
+        Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(ProjectClass project);
+        Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(string appName, string projectName);
 
         // Inserts
-        Task<bool> CreateLOG(LOG log);
+        Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO);
 
 
         // Reads
-        Task<List<LOG>> RetrieveLogs(int userId);
-        Task<IEnumerable<LOG>?> RetrieveLogs(CacheContext context);
+        Task<IEnumerable<LOG>?> RetrieveLogsAsync(LogContext context);
 
-        Task<bool> EmailExists(string email);
-        Task<ApplicationClass?> FindApplication(int ID, string name);
-        Task<ApplicationClass?> FindApplicationByID(int appID);
-        Task<ProjectClass?> FindProject(int? userID, string projectName, int appID);
-        Task<ProjectClass?> FindProjectByID(int projectID);
-        Task<OutputClass?> FindOutput(string name);
-        Task<OutputClass?> FindOutputByID(int outputID);
-        Task<TypeClass?> FindType(string name);
-        Task<TypeClass?> FindTypeByID(int typeID);
-        Task<SubjectClass?> FindSubject(string subject, LOG.CATEGORY category, int appID, int projectID);
-        Task<int> FindSubjectID(SubjectClass subject);
+        /// <summary>
+        /// Retrieves notes from the database that belong to a specific user.
+        /// </summary>
+        /// <param name="id">The logged in user's id.</param>
+        /// <returns>Returns an IEnumerable of note items, or null if an error occurs.</returns>
+        Task<IEnumerable<NoteItem>?> RetrieveGenericNotesAsync(int id);
 
-        Task<List<OutputClass>> ListQtOutputs();
-        Task<List<OutputClass>> ListASOutputs();
-        Task<List<OutputClass>> ListOutputs(CATEGORY category);
+        Task<bool> EmailExistsAsync(string email);
+        Task<ApplicationClass?> FindApplicationAsync(int ID, string name);
+        Task<ApplicationClass?> FindApplicationByIDAsync(int appID);
+        Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID);
+        Task<ProjectClass?> FindProjectByIDAsync(int projectID);
+        Task<OutputClass?> FindOutputAsync(string name);
+        Task<OutputClass?> FindOutputByIDAsync(int outputID);
+        Task<TypeClass?> FindTypeAsync(string name);
+        Task<TypeClass?> FindTypeByIDAsync(int typeID);
+        Task<SubjectClass?> FindSubjectAsync(string subject, LOG.CATEGORY category, int appID, int projectID);
+        Task<int> FindSubjectIDAsync(SubjectClass subject);
 
-        Task<List<TypeClass>> ListQtTypes();
-        Task<List<TypeClass>> ListASTypes();
-        Task<List<TypeClass>> ListTypes(CATEGORY category);
+        Task<IEnumerable<string>> ListQtOutputsAsync();
+        Task<IEnumerable<string>> ListASOutputsAsync();
+        Task<IEnumerable<string>> ListOutputsAsync(CATEGORY category);
 
-        Task<int> LogCount();
-        Task<int?> LogCount(LOG.CATEGORY category);
-        Task<int> QtLogCount();
-        Task<int> ASLogCount();
+        Task<IEnumerable<string>> ListQtTypesAsync();
+        Task<IEnumerable<string>> ListASTypesAsync();
+        Task<IEnumerable<string>> ListTypesAsync(CATEGORY category);
+
+        Task<int> LogCountAsync();
+        Task<int> LogCountAsync(LOG.CATEGORY category);
+        Task<int> QtLogCountAsync();
+        Task<int> ASLogCountAsync();
         Task<int> FlexiLogCountAsync();
 
-        Task<List<CodingLOG>?> SearchQtLogs(string searchBarText);
+        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText);
         Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID);
-        Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID, int appID);
-        Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText);
-        Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int projectID);
-        Task<List<CodingLOG>?> SearchCodingLogs(string searchBarText, int projectID, int appID);
+        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID);
+        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText);
+        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID);
+        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID);
 
 
         // Deletes
@@ -102,32 +110,30 @@ namespace Data.Interfaces
         /// </summary>
         /// <param name="log">The log to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        Task<bool> DeleteLOG(LOG log);
+        Task<bool> DeleteLOGAsync(LOG log);
 
         /// <summary>
         /// Deletes a log from the database by its ID.
         /// </summary>
         /// <param name="ID">The ID of the log to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        Task<bool> DeleteLOGByID(int ID);
+        Task<bool> DeleteLOGByIDAsync(int ID);
 
         /// <summary>
         /// Deletes a note from the database by its ID.
         /// </summary>
         /// <param name="ID">The ID of the note to delete.</param>
         /// <returns>True if the deletion succeeded, false otherwise.</returns>
-        Task<bool> DeleteNote(int ID);
+        Task<bool> DeleteNoteAsync(int ID);
 
         /// <summary>
         /// Deletes a user's account from the database using the provided account ID.
         /// </summary>
         /// <param name="id">The ID of the account to delete.</param>
         /// <returns>Returns true if the account was deleted successfully, false otherwise.</returns>
-        Task<bool> DeleteAccountByID(int ID);
+        Task<bool> DeleteAccountByIDAsync(int ID);
 
-        // Cache
-        void SaveLOG(LOG log, string filePath);
-        void DeleteCacheFile(string id, CacheContext cacheContext);
+        
 
         // Settings
 

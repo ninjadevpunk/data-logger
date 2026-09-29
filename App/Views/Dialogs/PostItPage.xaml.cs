@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs;
+﻿using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -13,7 +13,7 @@ namespace Data_Logger_1._3.Views.Dialogs
         private readonly PostItViewModel? _postItViewModel;
         private readonly EF_PostItViewModel? _efPostItViewModel;
 
-        public PostItPage(PostItViewModel createPostItViewModel)
+        internal PostItPage(PostItViewModel createPostItViewModel)
         {
             InitializeComponent();
 
@@ -66,49 +66,6 @@ namespace Data_Logger_1._3.Views.Dialogs
             }
         }
 
-        private void on_Error_Text_Changed(object sender, TextChangedEventArgs e)
-        {
-            OnTextChanged(sender, e, inputText_ERROR, text =>
-            {
-                if (_postItViewModel != null)
-                    _postItViewModel.Display_Error= text;
-                else if (_efPostItViewModel != null)
-                    _efPostItViewModel.Display_Error= text;
-            });
-        }
-
-        private void on_Solution_Text_Changed(object sender, TextChangedEventArgs e)
-        {
-            OnTextChanged(sender, e, inputText_SOLUTION, text =>
-            {
-                if (_postItViewModel != null)
-                    _postItViewModel.Display_Solution= text;
-                else if (_efPostItViewModel != null)
-                    _efPostItViewModel.Display_Solution= text;
-            });
-        }
-
-        private void on_Suggestion_Text_Changed(object sender, TextChangedEventArgs e)
-        {
-            OnTextChanged(sender, e, inputText_SUGGESTION, text =>
-            {
-                if(_postItViewModel != null)
-                    _postItViewModel.Display_Suggestion = text;
-                else if(_efPostItViewModel != null)
-                    _efPostItViewModel.Display_Suggestion = text;
-            });
-        }
-
-        private void on_Comment_Text_Changed(object sender, TextChangedEventArgs e)
-        {
-            OnTextChanged(sender, e, inputText_COMMENT, text =>
-            {
-                if (_postItViewModel != null)
-                    _postItViewModel.Display_Comment= text;
-                else if (_efPostItViewModel != null)
-                    _efPostItViewModel.Display_Comment= text;
-            });
-        }
 
         private void onSelectionChanged(object sender, SelectionChangedEventArgs e)
         {

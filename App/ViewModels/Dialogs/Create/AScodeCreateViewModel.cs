@@ -1,39 +1,49 @@
-﻿using Data_Logger_1._3.Commands.LoggerCommands;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Enums;
+using Core.Interfaces;
+using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.CacheCommands;
+using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using FileSys.Interfaces;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    public class AScodeCreateViewModel : codeCreateViewModel
+    internal class AScodeCreateViewModel : codeCreateViewModel
     {
-        private readonly CodingAndroidViewModel _ASviewModel;
+        private readonly CodingAndroidViewModel _asCodingViewModel;
+        public override LogContext Context => LogContext.AndroidStudio;
+        protected override bool AppFieldEnabled => false;
+        public override ICommand AnnotateCommand => new AnnotateCommand(_navigationService, this, _asCodingViewModel, _authService, _dataService, 
+            _cacheService, Context);
 
-        public AScodeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IDataService dataService)
-            : base(navigationService, logCacheViewModel, dataService)
+        public AScodeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IAuthService authService,
+            IDataService dataService, ICacheService cacheService)
+            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
         {
-            ApplicationName = AndroidStudio;
+            if (_codingViewModel == null)
+                throw new InvalidOperationException("_codingViewModel is null in AScodeCreateViewModel constructor!");
+
+            _asCodingViewModel = (CodingAndroidViewModel)_codingViewModel;
+
+            ApplicationName = Constants.Android;
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
             ASOnly = true;
-            AppFieldEnabled = false;
             IsSimple = false;
             IsConsidered = false;
 
-            _ASviewModel = (CodingAndroidViewModel)_viewModel;
-
             
-
-            SaveCommand = new SaveCommand(this, _dataService);
-            AnnotateCommand = new AnnotateCommand(Context, _navigationService, this, _ASviewModel, _dataService);
+            SaveCommand = new SaveCommand(this, authService, dataService, cacheService);
         }
 
         public override async Task AutoStartAsync()
         {
-            await InitializeProjects();
-            await InitializeOutputTypes();
-            await InitializeLogTypes();
+            await LoadProjectsAndApplicationsAsync();
+            await LoadAndroidStudioOutputs();
+            await LoadAndroidStudioTypes();
 
             await UpdateLogCount();
         }
@@ -94,45 +104,38 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
 
-        private async Task InitializeProjects()
-        {
-            await _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING);
-            LoadProjects();
 
-            _applications.Clear();
-        }
-
-        private void LoadProjects()
+        private async Task LoadProjectsAndApplicationsAsync()
         {
-            var items = _dataService.SQLITE_PROJECTS;
+            var items = await _dataService.InitialiseProjectsLISTAsync(Constants.Android);
             _projects.Clear();
+            _applications.Clear();
 
-            foreach (ProjectClass project in items)
+            foreach (var project in items)
             {
-                if (project.Application.Name == AndroidStudio)
-                    _projects.Add(project.Name);
+                _projects.Add(project);
             }
         }
 
-        private async Task InitializeOutputTypes()
+        private async Task LoadAndroidStudioOutputs()
         {
             Output = "APK (*.apk)";
             _outputs.Clear();
             
-            foreach(var output in await _dataService.ListASOutputs())
+            foreach(var output in await _dataService.ListASOutputsAsync())
             {
-                _outputs.Add(output.Name);
+                _outputs.Add(output);
             }
         }
 
-        private async Task InitializeLogTypes()
+        private async Task LoadAndroidStudioTypes()
         {
             Type = "Sync";
             _types.Clear();
 
-            foreach(var type in await _dataService.ListASTypes())
+            foreach(var type in await _dataService.ListASTypesAsync())
             {
-                _types.Add(type.Name);
+                _types.Add(type);
             }
         }
 
@@ -153,12 +156,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
         public override async Task UpdateLogCount()
         {
-            if (ASOnly && _ASviewModel is not null)
-            {
-                var count = await _dataService.ASLogCount();
-                LogCount = $"{_ASviewModel.CacheItems.Count} Logs Cached";
-                _ASviewModel.LogCount = $"{_ASviewModel.CacheItems.Count} android logs cached | {count} total logs";
-            }
+            var count = await _dataService.ASLogCountAsync();
+            LogCount = $"{_asCodingViewModel.CacheItems.Count} Logs Cached";
+            _asCodingViewModel.LogCount = $"{_asCodingViewModel.CacheItems.Count} android logs cached | {count} total logs";
         }
 
         #endregion

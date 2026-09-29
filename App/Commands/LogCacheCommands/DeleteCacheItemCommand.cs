@@ -1,230 +1,78 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.DTOs.Cache;
+using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.LogViewModels;
+using FileSys.Interfaces;
 using MVVMEssentials.Commands;
-using System.Diagnostics;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
-    public class DeleteCacheItemCommand : AsyncCommandBase
+    internal class DeleteCacheItemCommand<TLOGViewModel> : AsyncCommandBase
     {
-        private readonly LogCacheViewModel _viewModel;
+        private readonly LogCacheDTO _logCacheDTO;
+        private readonly LogCacheViewModel _logCacheViewModel;
         private readonly IDataService _dataService;
+        private readonly ICacheService _cacheService;
         private readonly bool _timeUp;
+        private readonly Timer? _timer;
 
-        public DeleteCacheItemCommand(LogCacheViewModel logCacheViewModel, IDataService dataService, bool timeIsUp)
+        public DeleteCacheItemCommand(LogCacheViewModel logCacheViewModel, IDataService dataService, ICacheService cacheService,
+            LogCacheDTO logCacheDTO, bool timeIsUp, Timer? timer)
         {
-            try
-            {
-                _viewModel = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel));
-                _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-                _timeUp = timeIsUp;
-            }
-            catch (ArgumentNullException ex)
-            {
-                Debug.WriteLine($"Argument null exception found: {ex.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception found: {e.Message}");
-                // TODO
-            }
+            _logCacheViewModel = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel));
+            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
+            _logCacheDTO = logCacheDTO ?? throw new ArgumentNullException(nameof(logCacheDTO));
+            _timeUp = timeIsUp;
+            _timer = timer;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                var logViewModel = parameter as LOGViewModel;
-
-                if (logViewModel == null)
-                    throw new NullReferenceException("logViewModel is null.");
-
-                switch (logViewModel.LOGViewModelContext)
-                {
-                    case CacheContext.Qt:
-                        await HandleQtCacheItem((QtLOGViewModel)logViewModel);
-                        break;
-                    case CacheContext.AndroidStudio:
-                        await HandleAndroidCacheItem((AndroidLOGViewModel)logViewModel);
-                        break;
-                    case CacheContext.Coding:
-                        await HandleCodingCacheItem((CodeLOGViewModel)logViewModel);
-                        break;
-                    case CacheContext.Graphics:
-                        await HandleGraphicsCacheItem((GraphicsLOGViewModel)logViewModel);
-                        break;
-                    case CacheContext.Film:
-                        await HandleFilmCacheItem((FilmLOGViewModel)logViewModel);
-                        break;
-                    case CacheContext.Flexi:
-                        await HandleFlexiCacheItem((FlexiLOGViewModel)logViewModel);
-                        break;
-                }
+                var logViewModel = (TLOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand<TLOGViewModel>");
+                await HandleCodingCacheItem(logViewModel);
             }
             catch (InvalidCastException castx)
             {
-                await _dataService.HandleExceptionAsync(castx, "Execute() DeleteCacheItemCommand", "InvalidCastException");
+                await _dataService.HandleExceptionAsync(castx);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(e, "Execute() DeleteCacheItemCommand");
+                await _dataService.HandleExceptionAsync(ex);
             }
         }
 
-        private async Task HandleQtCacheItem(QtLOGViewModel item)
+
+        private async Task HandleCodingCacheItem(TLOGViewModel item)
         {
-            var tempQtDashBoardItems = ((CodingQtViewModel)_viewModel).CacheItems;
+            var tempCodingDashboardItems = _logCacheViewModel.CacheItems;
 
             if (_timeUp)
             {
                 // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._QtcodingLOG);
-
-                if (isLogged)
-                {
-                    tempQtDashBoardItems.Remove(item);
-                    ((CodingQtViewModel)_viewModel).CacheItems = tempQtDashBoardItems;
-                }
-            }
-            else
-            {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                await item._timer.DisposeAsync();
-                tempQtDashBoardItems.Remove(item);
-                ((CodingQtViewModel)_viewModel).CacheItems = tempQtDashBoardItems;
-            }
-        }
-
-        private async Task HandleAndroidCacheItem(AndroidLOGViewModel item)
-        {
-            var tempASDashboardItems = ((CodingAndroidViewModel)_viewModel).CacheItems;
-
-            if (_timeUp)
-            {
-                // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._AndroidCodingLOG);
-
-                if (isLogged)
-                {
-                    tempASDashboardItems.Remove(item);
-                    ((CodingAndroidViewModel)_viewModel).CacheItems = tempASDashboardItems;
-                }
-            }
-            else
-            {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                await item._timer.DisposeAsync();
-                tempASDashboardItems.Remove(item);
-                ((CodingAndroidViewModel)_viewModel).CacheItems = tempASDashboardItems;
-            }
-        }
-
-        private async Task HandleCodingCacheItem(CodeLOGViewModel item)
-        {
-            var tempCodingDashboardItems = ((CodingViewModel)_viewModel).CacheItems;
-
-            if (_timeUp)
-            {
-                // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._CodeLOG);
+                var codingCacheDTO = (CodingCacheDTO)_logCacheDTO;
+                bool isLogged = await _dataService.CreateLOGAsync(codingCacheDTO);
 
                 if (isLogged)
                 {
                     tempCodingDashboardItems.Remove(item);
-                    ((CodingViewModel)_viewModel).CacheItems = tempCodingDashboardItems;
-                    await ((CodingViewModel)_viewModel).UpdateLogCount();
+                    _logCacheViewModel.CacheItems = tempCodingDashboardItems;
+                    await _logCacheViewModel.UpdateLogCount();
 
                 }
             }
             else
             {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                await item._timer.DisposeAsync();
+                var context = _logCacheDTO.Context;
+
+                _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"), context);
+
                 tempCodingDashboardItems.Remove(item);
-                ((CodingViewModel)_viewModel).CacheItems = tempCodingDashboardItems;
-                await ((CodingViewModel)_viewModel).UpdateLogCount();
+                _logCacheViewModel.CacheItems = tempCodingDashboardItems;
+                await _logCacheViewModel.UpdateLogCount();
             }
         }
-
-        private async Task HandleGraphicsCacheItem(GraphicsLOGViewModel item)
-        {
-            var tempGraphicsDashboard = ((GraphicsViewModel)_viewModel).CacheItems;
-
-            if (_timeUp)
-            {
-                // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._GraphicsLOG);
-
-                if (isLogged)
-                {
-                    tempGraphicsDashboard.Remove(item);
-                    ((GraphicsViewModel)_viewModel).CacheItems = tempGraphicsDashboard;
-                }
-            }
-            else
-            {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                item._timer.Dispose();
-                tempGraphicsDashboard.Remove(item);
-                ((GraphicsViewModel)_viewModel).CacheItems = tempGraphicsDashboard;
-            }
-        }
-
-        private async Task HandleFilmCacheItem(FilmLOGViewModel item)
-        {
-            var tempFilmDashboardItems = ((FilmViewModel)_viewModel).CacheItems;
-
-            if (_timeUp)
-            {
-                // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._FilmLOG);
-
-                if (isLogged)
-                {
-                    tempFilmDashboardItems.Remove(item);
-                    ((FilmViewModel)_viewModel).CacheItems = tempFilmDashboardItems;
-                }
-            }
-            else
-            {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                item._timer.Dispose();
-                tempFilmDashboardItems.Remove(item);
-                ((FilmViewModel)_viewModel).CacheItems = tempFilmDashboardItems;
-            }
-        }
-
-        private async Task HandleFlexiCacheItem(FlexiLOGViewModel item)
-        {
-            var tempFlexiDashboardItems = ((FlexiViewModel)_viewModel).CacheItems;
-
-            if (_timeUp)
-            {
-                // Send data to database first
-                bool isLogged = await _dataService.CreateLOG(item._FlexiLOG);
-
-                if (isLogged)
-                {
-                    tempFlexiDashboardItems.Remove(item);
-                    ((FlexiViewModel)_viewModel).CacheItems = tempFlexiDashboardItems;
-                }
-            }
-            else
-            {
-                _dataService.DeleteCacheFile(item.StartAsID, item.LOGViewModelContext);
-                item._timer.Dispose();
-                tempFlexiDashboardItems.Remove(item);
-                ((FlexiViewModel)_viewModel).CacheItems = tempFlexiDashboardItems;
-            }
-        }
-
-
-
-
-
-
 
 
 

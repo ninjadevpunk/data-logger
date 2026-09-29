@@ -1,10 +1,12 @@
 ﻿using Data_Logger_1._3.Commands;
-using Data_Logger_1._3.Models;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
 using System.Windows;
 using System.Windows.Input;
 using Velopack;
+using Data.Interfaces;
+using Core.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
@@ -13,13 +15,13 @@ namespace Data_Logger_1._3.ViewModels
         private readonly IDataService _dataService;
         private readonly SettingsService? _settingsService;
         private readonly Settings? _settings;
-        private readonly VelopackService? _velopackService;
+        private readonly IVelopackService? _velopackService;
         private readonly UpdateInfo _updateInfo;
         public ICommand? UpdateNowCommand { get; set; }
         public ICommand? CancelUpdateCommand { get; set; }
         public ICommand? ManualUpdateNowCommand { get; set; }
 
-        public UpdaterViewModel(IDataService dataService, SettingsService settingsService, VelopackService velopackService,
+        public UpdaterViewModel(IDataService dataService, SettingsService settingsService, IVelopackService velopackService,
             UpdateInfo updateInfo)
         {
             UpdateStatus = "Updating...";
@@ -33,7 +35,7 @@ namespace Data_Logger_1._3.ViewModels
             CancelUpdateCommand = new CancelUpdateCommand(dataService);
         }
 
-        public UpdaterViewModel(IDataService dataService, VelopackService velopackService, UpdateInfo updateInfo)
+        public UpdaterViewModel(IDataService dataService, IVelopackService velopackService, UpdateInfo updateInfo)
         {
             UpdateStatus = "Downloading Update...";
             _dataService = dataService;

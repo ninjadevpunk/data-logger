@@ -1,70 +1,48 @@
-﻿using Data_Logger_1._3.Commands.LoggerCommands;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Enums;
+using Core.Interfaces;
+using Core.Models;
+using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.CacheCommands;
+using Data_Logger_1._3.Commands.DLSFileCommands;
+using Data_Logger_1._3.Commands.LoggerCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using static Data_Logger_1._3.Services.CacheMaster;
+using FileSys.Interfaces;
+using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    public class codeCreateViewModel : LoggerCreateViewModel
+    internal class codeCreateViewModel : LoggerCreateViewModel
     {
         public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
-        public override CacheContext Context => CacheContext.Coding;
+        public override LogContext Context => LogContext.Coding;
         public override string LogType => "CODING LOG";
 
-        protected readonly CodingViewModel _viewModel;
-        private readonly CodingQtViewModel? _QtviewModel;
+        protected readonly CodingViewModel _codingViewModel;
+        protected override bool AppFieldEnabled => true;
 
-        private const string Qt = "Qt Creator";
-        protected const string AndroidStudio = "Android Studio Meerkat 2024.3.1";
-        protected const string VisualStudio = "Visual Studio Community 2022";
 
-        private bool QtOnly = false;
-        protected bool ASOnly = false;
+        protected bool QtOnly;
+        protected bool ASOnly;
 
-        public codeCreateViewModel()
+        public override ICommand AnnotateCommand => new AnnotateCommand(_navigationService, this, _codingViewModel, _authService, _dataService, 
+            _cacheService, Context);
+        public override ICommand SaveCommand => new SaveCommand(this, _authService, _dataService, _cacheService);
+
+        public codeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IAuthService authService,
+            IDataService dataService, ICacheService cacheService)
+            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
         {
-
-        }
-
-        public codeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IDataService dataService)
-            : base(navigationService, logCacheViewModel, dataService)
-        {
-            _viewModel = (CodingViewModel)logCacheViewModel;
-            InitializeCommonFields(logCacheViewModel);
-
+            _codingViewModel = (CodingViewModel)logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel),
+                    "codeCreateViewModel");
+            InitializeCommonFields();
 
             BugsFound = 0;
             ApplicationOpened = false;
 
-            SaveCommand = new SaveCommand(this, _dataService);
-            AnnotateCommand = new AnnotateCommand(Context, _navigationService, this, _viewModel, _dataService);
             ClearLoggerCommand = new ResetLoggerCommand(this, Category);
         }
-
-
-
-        public codeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, string application, IDataService dataService)
-            : base(navigationService, logCacheViewModel, dataService)
-        {
-
-            if (application is Qt || application is "Qt")
-            {
-                _QtviewModel = (CodingQtViewModel)logCacheViewModel;
-            }
-            else
-            {
-                _viewModel = (CodingViewModel)logCacheViewModel;
-                InitializeCommonFields(logCacheViewModel);
-
-                AnnotateCommand = new AnnotateCommand(Context, _navigationService, this, _viewModel, _dataService);
-            }
-
-            SaveCommand = new SaveCommand(this, _dataService);
-            ClearLoggerCommand = new ResetLoggerCommand(this, Category);
-        }
-
 
 
 
@@ -77,9 +55,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
         public virtual async Task AutoStartAsync()
         {
-            await _dataService.InitialiseProjectsLISTAsync(Category);
-            await _dataService.InitialiseApplicationsLISTAsync(Category);
-            LoadProjectsAndApplications();
+            await LoadProjectsAndApplicationsAsync();
 
             await LoadDefaultOutputs();
             await LoadDefaultTypes();
@@ -90,78 +66,44 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         public virtual async Task AutoStartAsync(bool qtOnly)
         {
             await _dataService.InitialiseProjectsLISTAsync(Category);
-
-            if (qtOnly && _QtviewModel != null)
-            {
-                await InitializeQtFields(_QtviewModel);
-            }
-            else
-            {
-                LoadProjectsAndApplications();
-
-                await LoadDefaultOutputs();
-                await LoadDefaultTypes();
-            }
-
+            await LoadProjectsAndApplicationsAsync();
+            await LoadDefaultOutputs();
+            await LoadDefaultTypes();
             await UpdateLogCount();
         }
 
-        private void InitializeCommonFields(LogCacheViewModel logCacheViewModel)
+        private void InitializeCommonFields()
         {
-            AppFieldEnabled = true;
-            ApplicationName = VisualStudio;
+            ApplicationName = Constants.VisualStudio;
         }
 
-        private async Task InitializeQtFields(LogCacheViewModel logCacheViewModel)
+        private async Task LoadProjectsAndApplicationsAsync()
         {
-            AppFieldEnabled = false;
-            ApplicationToolTip = "This field cannot be changed. Only Qt logs are allowed in this tab.";
-            ApplicationName = Qt;
-            QtOnly = true;
-
-            LoadQtProjects();
-            await LoadQtOutputs();
-            await LoadQtTypes();
-
-            AnnotateCommand = new AnnotateCommand(CacheContext.Qt, _navigationService, this, _QtviewModel, _dataService);
-        }
-
-        private void LoadProjectsAndApplications()
-        {
-            var items = _dataService.SQLITE_PROJECTS;
-            var apps = _dataService.SQLITE_APPLICATIONS;
+            var items = await _dataService.InitialiseProjectsLISTAsync(Category);
+            var apps = await _dataService.InitialiseApplicationsLISTAsync(Category);
             _projects.Clear();
             _applications.Clear();
 
-            foreach (ProjectClass project in items)
+            foreach (var project in items)
             {
-                _projects.Add(project.Name);
+                _projects.Add(project);
             }
 
-            foreach (ApplicationClass app in apps)
+            foreach (var app in apps)
             {
-                _applications.Add(app.Name);
-            }
-        }
-
-        private void LoadQtProjects()
-        {
-            var items = _dataService.SQLITE_PROJECTS;
-
-            foreach (ProjectClass project in items)
-            {
-                if (project.Application.Name == Qt)
-                    _projects.Add(project.Name);
+                _applications.Add(app);
             }
         }
+
+        
 
         private async Task LoadDefaultOutputs()
         {
             Output = "C# Application (*.exe)";
 
-            foreach (var output in await _dataService.ListOutputs(Category))
+            foreach (var output in await _dataService.ListOutputsAsync(Category))
             {
-                _outputs.Add(output.Name);
+                _outputs.Add(output);
             }
 
         }
@@ -170,9 +112,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         {
             Output = "Widgets Application";
 
-            foreach (var output in await _dataService.ListQtOutputs())
+            foreach (var output in await _dataService.ListQtOutputsAsync())
             {
-                _outputs.Add(output.Name);
+                _outputs.Add(output);
             }
         }
 
@@ -180,9 +122,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         {
             Type = "Exception";
 
-            foreach (var type in await _dataService.ListTypes(Category))
+            foreach (var type in await _dataService.ListTypesAsync(Category))
             {
-                _types.Add(type.Name);
+                _types.Add(type);
             }
 
         }
@@ -191,9 +133,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         {
             Type = "Build";
 
-            foreach (var type in await _dataService.ListQtTypes())
+            foreach (var type in await _dataService.ListQtTypesAsync())
             {
-                _types.Add(type.Name);
+                _types.Add(type);
             }
         }
 
@@ -229,19 +171,13 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
         #region Member Functions
 
-        public virtual async Task UpdateLogCount()
+        public override async Task UpdateLogCount()
         {
-            if (QtOnly && _QtviewModel is not null)
+            if (_codingViewModel != null)
             {
-                var count = await _dataService.QtLogCount();
-                LogCount = $"{_QtviewModel.CacheItems.Count} Logs Cached";
-                _QtviewModel.LogCount = $"{_QtviewModel.CacheItems.Count} qt logs cached | {count} total logs";
-            }
-            else if (_viewModel is not null)
-            {
-                var count = await _dataService.LogCount(Category);
-                LogCount = $"{_viewModel.CacheItems.Count} Logs Cached";
-                _viewModel.LogCount = $"{_viewModel.CacheItems.Count} coding logs cached | {count} total logs";
+                var count = await _dataService.LogCountAsync(Category);
+                LogCount = $"{_codingViewModel.CacheItems.Count} Logs Cached";
+                _codingViewModel.LogCount = $"{_codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
             }
         }
 

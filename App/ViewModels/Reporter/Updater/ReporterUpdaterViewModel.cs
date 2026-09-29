@@ -1,25 +1,26 @@
-﻿using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
-using Data_Logger_1._3.Models;
+﻿using Core.Models;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
+using FileSys.Interfaces;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 {
     public abstract class ReporterUpdaterViewModel : ViewModelBase
     {
-        protected readonly IDataService _dataService;
-        protected readonly NavigationService _navigationService;
-        protected readonly ReportDeskViewModel _reportDesk;
+        protected readonly IDataService? _dataService;
+        protected readonly NavigationService? _navigationService;
+        protected readonly ReportDeskViewModel? _reportDesk;
 
         public abstract LOG.CATEGORY Category { get; }
-        public abstract CacheContext Context { get; }
+        public abstract LogContext Context { get; }
         public abstract string LogType { get; }
 
         protected ReporterUpdaterViewModel(NavigationService navigationService, ReportDeskViewModel reportDeskViewModel, IDataService dataService, LOG log)

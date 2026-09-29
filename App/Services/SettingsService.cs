@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Models;
+using FileSys.Interfaces;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO;
@@ -8,8 +9,17 @@ namespace Data_Logger_1._3.Services
 {
     public class SettingsService
     {
+#if DEBUG
+        public static readonly string BasePath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
+#else
         public static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger");
+#endif
+        private readonly ICacheService _cacheService;
 
+        public SettingsService(ICacheService cacheService)
+        {
+            _cacheService = cacheService;
+        }
 
         public string GetUserFilePath(int userId)
         {
@@ -48,9 +58,9 @@ namespace Data_Logger_1._3.Services
         {
             try
             {
-                if (!CacheMaster.CreateSettingsFile(userId))
+                if (Load(userId) == null)
                 {
-                    return null;
+                    throw new InvalidOperationException("No settings!");
                 }
 
                 var path = GetUserFilePath(userId);
@@ -74,9 +84,9 @@ namespace Data_Logger_1._3.Services
         {
             try
             {
-                if (!CacheMaster.CreateSettingsFile(userId))
+                if (Load(userId) == null)
                 {
-                    return null;
+                    throw new InvalidOperationException("No settings!");
                 }
 
                 var path = GetUserFilePath(userId);

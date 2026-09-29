@@ -1,30 +1,28 @@
 ﻿using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Models;
+using Core.Models;
 using Data_Logger_1._3.Services;
-using static Data_Logger_1._3.Services.CacheMaster;
+using Core.Enums;
+using Core.DTOs.Identity;
+using Core.DTOs.Viewer;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
-    public class codeViewerViewModel : LoggerViewViewModel
+    internal class codeViewerViewModel : ViewViewModel
     {
         public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
-        public override CacheContext Context => CacheContext.Coding;
+        public override LogContext Context => LogContext.Coding;
 
-        public codeViewerViewModel(NavigationService navigationService) : base(navigationService)
+        public codeViewerViewModel(NavigationService navigationService, UserDTO userDTO, CodingViewDTO codingViewDTO) :
+            base(navigationService, userDTO, codingViewDTO)
         {
             OKCommand = new ViewerOKCommand(navigationService, Context);
+
+            BugsFound = codingViewDTO.Bugs;
+            ApplicationOpened = codingViewDTO.ApplicationOpened;
         }
 
-        public codeViewerViewModel(NavigationService navigationService, string application) : base(navigationService)
-        {
-            if (application == "Qt")
-                OKCommand = new ViewerOKCommand(navigationService, CacheContext.Qt);
-            else
-                OKCommand = new ViewerOKCommand(navigationService, Context);
-        }
 
-        public string BugsFound { get; set; } = "0 Bugs Found";
-
-        public string ApplicationOpened { get; set; } = "Unsuccessful Launch";
+        public string BugsFound { get; init; } = "0 Bugs Found";
+        public string ApplicationOpened { get; init; } = "Unsuccessful Launch";
     }
 }

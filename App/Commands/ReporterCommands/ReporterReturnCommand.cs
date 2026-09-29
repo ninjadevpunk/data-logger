@@ -1,7 +1,7 @@
 ﻿using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -12,13 +12,13 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
     public class ReporterReturnCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        public CacheContext Context { get; set; } = CacheContext.Coding;
-        public ReporterReturnCommand(NavigationService navigationService, CacheContext cacheContext)
+        public LogContext Context { get; set; } = LogContext.Coding;
+        public ReporterReturnCommand(NavigationService navigationService, LogContext logContext)
         {
             try
             {
                 _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                Context = cacheContext;
+                Context = logContext;
             }
             catch (ArgumentNullException nullex)
             {

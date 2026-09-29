@@ -1,8 +1,6 @@
 ﻿using Data.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using System.Text;
-using System.Security.Cryptography;
 
 namespace Migration
 {
@@ -17,7 +15,7 @@ namespace Migration
 
         public async Task MigrateAsync(string oldDbPath, string newDbPath)
         {
-            string key = RetrieveEncryptionKey();
+            string key = Data.DataDependencies.RetrieveEncryptionKey();
 
             if (string.IsNullOrWhiteSpace(key))
                 throw new InvalidOperationException("The SQLCipher key is missing.");
@@ -138,31 +136,5 @@ namespace Migration
             await alpha6Db.SaveChangesAsync();
         }
 
-        private string RetrieveEncryptionKey()
-        {
-            string keyFilePath = Path.Combine(_programDataPath, "secret.bin");
-
-            try
-            {
-                if (!File.Exists(keyFilePath))
-                {
-                    var newKey = Guid.NewGuid().ToString("N");
-#pragma warning disable CA1416 // Validate platform compatibility
-                    var encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(newKey), null, DataProtectionScope.LocalMachine);
-
-                    File.WriteAllBytes(keyFilePath, encrypted);
-                    return newKey;
-                }
-
-                var protectedData = File.ReadAllBytes(keyFilePath);
-                var decryptedBytes = ProtectedData.Unprotect(protectedData, null, DataProtectionScope.LocalMachine);
-#pragma warning restore CA1416 // Validate platform compatibility
-                return Encoding.UTF8.GetString(decryptedBytes);
-            }
-            catch
-            {
-                throw;
-            }
-        }
     }
 }

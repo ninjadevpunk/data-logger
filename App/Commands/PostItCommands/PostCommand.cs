@@ -1,86 +1,48 @@
 ﻿using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
 {
-    public class PostCommand : AsyncCommandBase
+    internal class PostCommand : AsyncCommandBase
     {
         public enum ActionType { Create, Edit }
         public enum PostItContext { POSTIT, EDITPOSTIT }
 
         private readonly NavigationService _navigationService;
-        private readonly LoggerCreateViewModel _loggerCreateViewModel;
+        private readonly LoggerViewModel _loggerCreateViewModel;
         private readonly PostItViewModel _createPostItViewModel;
         private readonly EditPostItViewModel _editPostItViewModel;
         private readonly ActionType _actionType = ActionType.Create;
         private readonly PostItContext _postItContext = PostItContext.POSTIT;
 
-        public PostCommand(NavigationService navigationService, LoggerCreateViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
+        public PostCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
         {
-            try
-            {
-
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-                _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
+            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
         }
 
-        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerCreateViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
+        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
         {
-            try
-            {
-
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-                _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-                _actionType = actionType;
-                _postItContext = postItContext;
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
+            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
+            _actionType = actionType;
+            _postItContext = postItContext;
         }
 
-        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerCreateViewModel loggerCreateViewModel, EditPostItViewModel editPostItViewModel, PostItViewModel createPostItViewModel)
+        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, EditPostItViewModel editPostItViewModel, PostItViewModel createPostItViewModel)
         {
-            try
-            {
-
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-                _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-                _editPostItViewModel = editPostItViewModel ?? throw new ArgumentNullException(nameof(editPostItViewModel));
-                _actionType = actionType;
-                _postItContext = postItContext;
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception: {e.Message}");
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
+            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
+            _editPostItViewModel = editPostItViewModel ?? throw new ArgumentNullException(nameof(editPostItViewModel));
+            _actionType = actionType;
+            _postItContext = postItContext;
         }
 
         protected override async Task ExecuteAsync(object parameter)

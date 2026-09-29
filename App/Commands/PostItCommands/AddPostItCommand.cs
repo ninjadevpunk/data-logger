@@ -1,5 +1,5 @@
 ﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
@@ -7,9 +7,9 @@ namespace Data_Logger_1._3.Commands.PostItCommands
     public class AddPostItCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly LoggerCreateViewModel _loggerCreateViewModel;
+        private readonly LoggerViewModel _loggerCreateViewModel;
 
-        public AddPostItCommand(NavigationService navigationService, LoggerCreateViewModel loggerCreateViewModel)
+        public AddPostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel)
         {
 
 

@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Models;
 using MVVMEssentials.ViewModels;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels

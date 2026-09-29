@@ -15,15 +15,15 @@ namespace Core.Models.App_Models
 
 
         public int accountID { get; set; }
-        public virtual ACCOUNT User { get; set; }
+        public virtual ACCOUNT? User { get; set; }
 
 
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
 
-        public bool IsDefault { get; set; } = false;
+        public bool IsDefault { get; set; }
 
 
         public ApplicationClass()

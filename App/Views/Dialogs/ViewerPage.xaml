@@ -1,0 +1,256 @@
+﻿<Page x:Class="Data_Logger_1._3.Views.Dialogs.ViewerPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Data_Logger_1._3.Views.Dialogs" xmlns:components="clr-namespace:Data_Logger_1._3.Components"
+      mc:Ignorable="d"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      d:Background="{DynamicResource WHITE}"
+      d:Width="1145"
+      Title="View Log" >
+
+    <Border Style="{DynamicResource image_viewer_background}" >
+
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- #region LOG FIELDS SIDE -->
+
+
+            <Grid Margin="20 10 0 10" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="55" />
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="505" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+
+                <!-- PROJECT -->
+                <Border
+                    Padding="20 0" >
+                    
+                    <StackPanel Orientation="Vertical" >
+                        
+                        <TextBlock x:Name="text_PROJECT" Style="{DynamicResource HEADING5}"
+                                   Text="{Binding ProjectName}" />
+
+
+                        <TextBlock x:Name="text_APPLICATION" Style="{DynamicResource text_SUB HEADING1}"
+                                   Text="{Binding ApplicationName}" />
+                    </StackPanel>
+                </Border>
+
+
+
+
+
+
+
+
+                <!--#region VIEW FIELDS -->
+
+
+                <ScrollViewer Grid.Row="2"
+                          HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto"
+                          Padding="5" >
+
+                    <StackPanel>
+
+
+                        <!-- AUTHOR -->
+                        <Border Padding="10 0"
+                                Height="40" >
+                            
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions >
+
+                                <Border x:Name="image_USER" Style="{DynamicResource image_displayPic}"
+                                        BorderThickness="0.6"
+                                        BorderBrush="{DynamicResource STROKE}"
+                                        Height="35"
+                                        Width="35"
+                                        HorizontalAlignment="Center" />
+
+                                <Path x:Name="path_DEFAULT_DP" Style="{DynamicResource path_AUTHOR}"
+                                      HorizontalAlignment="Center"
+                                      Visibility="{Binding DisplayPicVisibility}" />
+
+                                <TextBlock x:Name="text_AUTHOR" Grid.Column="1" Style="{DynamicResource text_VIEWER_Author}"
+                                           Text="{Binding Author}"
+                                           HorizontalAlignment="Left" />
+                            </Grid>
+                        </Border>
+
+
+                        
+                        <!-- DATE -->
+                        <Border Padding="20 10">
+
+                            <TextBlock x:Name="text_APP" Style="{DynamicResource text_VIEWER_Date}"
+                                       Margin="0 5"
+                                       Text="{Binding Date}" />
+                            
+                        </Border>
+
+
+
+
+
+                        <!-- OUTPUT -->
+                        <Border
+                            Padding="20 0"
+                            Height="35" >
+                            <TextBlock x:Name="text_OUTPUT" Style="{DynamicResource text_LABEL03}"
+                                       Foreground="{DynamicResource BLACK}"
+                                       Text="{Binding Output}" />
+                        </Border>
+
+                        <!-- TYPE -->
+                        <Border
+                            Padding="20 0"
+                            Height="35" >
+                            
+                            <TextBlock x:Name="text_TYPE" Style="{DynamicResource text_LABEL03}"
+                                       Foreground="{DynamicResource BLACK}"
+                                       Text="{Binding Type}" />
+                            
+                        </Border>
+
+
+
+
+
+
+
+
+
+                        <!-- LOG VARIED FIELDS -->
+                        <Frame x:Name="frame_VARIATIONS"
+                               NavigationUIVisibility="Hidden" />
+
+                        <!-- ANDROID STUDIO ONLY -->
+                        <Frame x:Name="frame_ANDROIDSTUDIO"
+                               NavigationUIVisibility="Hidden" />
+
+
+
+
+
+
+
+
+
+                    </StackPanel>
+
+
+                </ScrollViewer>
+
+                <!--#endregion-->
+
+                
+                
+                <!-- OK -->
+                <Border Grid.Row="4"
+                        Padding="10 5"
+                        HorizontalAlignment="Stretch" >
+
+                    <Button x:Name="button_OK" Style="{DynamicResource PRIMARY}"
+                            HorizontalAlignment="Right"
+                            Command="{Binding OKCommand}" >
+
+                        <TextBlock Style="{DynamicResource text_button01}"
+                                   Text="OK" />
+
+                    </Button>
+                </Border>
+
+
+
+            </Grid>
+
+
+
+
+            <!--#endregion-->
+
+
+
+            <!-- #region POST ITS SIDE -->
+
+            <Grid Grid.Column="2" Margin="0 10 20 10"
+                  HorizontalAlignment="Stretch" >
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="505" />
+                </Grid.RowDefinitions>
+
+
+
+                <!--#region LIST OF POST ITS -->
+
+                <Border Grid.Row="3"
+                    CornerRadius="3"
+                    HorizontalAlignment="Stretch"
+                    Padding="0" >
+
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+
+                        <!-- TOOLBAR -->
+                        <Rectangle Height="30" />
+
+
+                        <!-- POST ITS -->
+                        <ListView Style="{DynamicResource listView_POSTITS_View}"
+                              ItemsSource="{Binding PostIts}" />
+
+
+
+
+
+
+
+
+
+                    </Grid>
+                </Border>
+
+
+
+                <!--#endregion-->
+
+
+
+
+
+
+            </Grid>
+
+
+
+
+
+
+            <!--#endregion-->
+
+
+        </Grid>
+    </Border>
+    
+</Page>

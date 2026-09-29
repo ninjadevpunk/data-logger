@@ -1,8 +1,8 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Models;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -15,14 +15,14 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
         private readonly PDFService _pdfService;
         private readonly LOG? _log = null;
 
-        public CacheContext Context { get; set; }
+        public LogContext Context { get; set; }
 
 
         public SingleExportCommand()
         {
         }
 
-        public SingleExportCommand(CacheContext context, PDFService pdfService)
+        public SingleExportCommand(LogContext context, PDFService pdfService)
         {
             try
             {
@@ -35,7 +35,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
             }
         }
 
-        public SingleExportCommand(LOG log, CacheContext context, PDFService pdfService)
+        public SingleExportCommand(LOG log, LogContext context, PDFService pdfService)
         {
             try
             {
@@ -58,27 +58,27 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                 {
                     switch (Context)
                     {
-                        case CacheContext.Qt:
+                        case LogContext.Qt:
                             await _pdfService.ExportQtLogToPDF(_log);
 
                             break;
-                        case CacheContext.AndroidStudio:
+                        case LogContext.AndroidStudio:
                             await _pdfService.ExportASLogToPDF(_log);
 
                             break;
-                        case CacheContext.Coding:
+                        case LogContext.Coding:
                             await _pdfService.ExportCodingLogToPDF(_log);
 
                             break;
-                        case CacheContext.Graphics:
+                        case LogContext.Graphics:
                             await _pdfService.ExportGraphicsLogToPDF(_log);
 
                             break;
-                        case CacheContext.Film:
+                        case LogContext.Film:
                             await _pdfService.ExportFilmLogToPDF(_log);
 
                             break;
-                        case CacheContext.Flexi:
+                        case LogContext.Flexi:
                             await _pdfService.ExportFlexiLogToPDF(_log);
 
                             break;

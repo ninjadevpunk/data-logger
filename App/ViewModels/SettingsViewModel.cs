@@ -1,11 +1,13 @@
 ﻿using Data_Logger_1._3.Commands.SettingsCommands;
-using Data_Logger_1._3.Models;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Services.CommandLogic;
 using MVVMEssentials.ViewModels;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using Data.Interfaces;
+using Core.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
@@ -30,7 +32,7 @@ namespace Data_Logger_1._3.ViewModels
         public ICommand SaveSettingsCommand { get; set; }
         public ICommand ReturnToDashboardCommand { get; set; }
 
-        public SettingsViewModel(NavigationService navigationService, AuthService authService, IDataService dataService, SettingsService settingsService,
+        public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, SettingsService settingsService,
             MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService)
         {
             var id = dataService.GetUser().accountID;
@@ -86,7 +88,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string displayPicPath;
+        private string displayPicPath = string.Empty;
         public string DisplayPicPath
         {
             get
@@ -102,7 +104,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private Visibility defaultPicVisibility;
+        private Visibility defaultPicVisibility = Visibility.Hidden;
         public Visibility DefaultPicVisibility
         {
             get
@@ -116,7 +118,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string name;
+        private string name = string.Empty;
         public string Name
         {
             get
@@ -131,7 +133,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string surname;
+        private string surname = string.Empty;
         public string Surname
         {
             get
@@ -146,7 +148,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string email;
+        private string email = string.Empty;
         public string Email
         {
             get
@@ -234,7 +236,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string newPassword;
+        private string newPassword = string.Empty;
         public string NewPassword
         {
             get
@@ -248,7 +250,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string confirmPassword;
+        private string confirmPassword = string.Empty;
         public string ConfirmPassword
         {
             get
@@ -308,7 +310,7 @@ namespace Data_Logger_1._3.ViewModels
 
         // THEME
 
-        private string theme;
+        private string theme = string.Empty;
         public string Theme
         {
             get

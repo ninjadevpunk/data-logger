@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Commands.NotesCommands;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using MVVMEssentials.ViewModels;
@@ -9,9 +10,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 {
     public class CreateCheckListViewModel : ViewModelBase
     {
-        private readonly IDataService _dataService;
-        private readonly NavigationService _navigationService;
-        private readonly ViewModelFactory _viewModelFactory;
+        private readonly IDataService? _dataService;
+        private readonly NavigationService? _navigationService;
+        private readonly ViewModelFactory? _viewModelFactory;
 
         public CreateCheckListViewModel(NavigationService navigationService, IDataService dataService, NOTESViewModel notesViewModel, ViewModelFactory viewModelFactory)
         {
@@ -34,7 +35,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             SaveChecklistCommand = new SaveChecklistCommand(_navigationService, _dataService, this, notesViewModel);
         }
 
-        private string noteSubject;
+        private string noteSubject = string.Empty;
         public string NoteSubject
         {
             get
@@ -49,9 +50,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        public string CreationDate { get; set; }
+        public string CreationDate { get; set; } = string.Empty;
 
-        private string modifiedDate;
+        private string modifiedDate = string.Empty;
         public string ModifiedDate
         {
             get
@@ -65,7 +66,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        private string date;
+        private string date = string.Empty;
         public string Date
         {
             get
@@ -79,7 +80,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        private ObservableCollection<CreateChecklistItemViewModel> checklistItems;
+        private ObservableCollection<CreateChecklistItemViewModel> checklistItems = [];
         public ObservableCollection<CreateChecklistItemViewModel> ChecklistItems
         {
             get
@@ -94,9 +95,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        public ICommand AddChecklistItem { get; set; }
+        public ICommand? AddChecklistItem { get; set; }
 
-        public ICommand SaveChecklistCommand { get; set; }
+        public ICommand? SaveChecklistCommand { get; set; }
 
 
 

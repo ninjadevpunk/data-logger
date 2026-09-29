@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 using System.IO;
@@ -10,14 +11,14 @@ namespace Data_Logger_1._3.Commands
     {
 
         private readonly SignUpViewModel _signUpViewModel;
-        private readonly AuthService? _authService;
+        private readonly IAuthService? _authService;
 
         public DisplayPicCommand(SignUpViewModel signUpViewModel)
         {
             _signUpViewModel = signUpViewModel;
         }
 
-        public DisplayPicCommand(SignUpViewModel signUpViewModel, AuthService authService)
+        public DisplayPicCommand(SignUpViewModel signUpViewModel, IAuthService authService)
         {
             _signUpViewModel = signUpViewModel;
             _authService = authService;
@@ -66,7 +67,7 @@ namespace Data_Logger_1._3.Commands
                 _signUpViewModel.ShowDefault = Visibility.Visible;
 
                 
-                _signUpViewModel.SignUpImage = BitmapService.LoadImage("/Assets/login/user.png");
+                _signUpViewModel.SignUpImage = BitmapService.LoadImage(Constants.Avatar);
 
                 if (_authService?.Account != null)
                     _authService.Account.ProfilePic = "";

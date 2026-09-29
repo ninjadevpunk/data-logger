@@ -1,13 +1,20 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
+﻿using Core.DTOs.Cache;
+using Core.DTOs.Data;
+using Core.DTOs.Viewer;
+using Core.Enums;
+using Core.Interfaces;
+using Core.Utilities;
+using Data.Interfaces;
+using Data.Services;
 using Data_Logger_1._3.Commands.PostItCommands;
 using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Components.Subcontrols;
 using Data_Logger_1._3.Components.Subcontrols_View;
-using Data_Logger_1._3.Models;
 using Data_Logger_1._3.ViewModels;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
@@ -16,16 +23,17 @@ using Data_Logger_1._3.Views;
 using Data_Logger_1._3.Views.Account;
 using Data_Logger_1._3.Views.Dialogs;
 using Data_Logger_1._3.Views.LogPages;
+using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using MVVMEssentials.ViewModels;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Markup;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Services
 {
-    public class NavigationService
+    internal class NavigationService
     {
         public void CloseApp() => Application.Current.Shutdown(1);
 
@@ -48,20 +56,20 @@ namespace Data_Logger_1._3.Services
         private Login? _login;
 
         // MAIN WINDOW
-        private MainWindow _mainWindow;
+        private MainWindow? _mainWindow;
 
         // MAIN FRAME
-        private Frame _mainwindowFrame;
+        private Frame? _mainWindowFrame;
 
         // LOGGER CREATOR SUBCLASS FRAME
-        private Frame _loggerFrame;
+        private Frame? _loggerFrame;
 
         // LOGGER CREATOR ANDROID STUDIO FRAME
         private Frame? _AndroidStudioFrame;
 
 
         public NavContext NavigationContext { get; set; } = NavContext.DASHBOARD;
-        public CacheContext CacheContext { get; set; } = CacheContext.Qt;
+        public LogContext LogContext { get; set; } = LogContext.Qt;
 
 
 
@@ -80,10 +88,10 @@ namespace Data_Logger_1._3.Services
 
 
         /// <summary>
-        /// Set the MainWindow's frame to _mainwindowFrame.
+        /// Set the MainWindow's frame to _mainWindowFrame.
         /// </summary>
         /// <param name="frame">The frame inside MainWindow window.</param>
-        public void SetMainFrame(Frame frame) => _mainwindowFrame = frame;
+        public void SetMainFrame(Frame frame) => _mainWindowFrame = frame;
 
         /// <summary>
         /// Navigate back in the main frame's history, if possible.
@@ -93,7 +101,7 @@ namespace Data_Logger_1._3.Services
         {
             var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
 
-            if (_mainwindowFrame != null && _mainwindowFrame.CanGoBack)
+            if (_mainWindowFrame != null && _mainWindowFrame.CanGoBack)
             {
                 if (!isPost)
                 {
@@ -121,7 +129,7 @@ namespace Data_Logger_1._3.Services
                     else if (NavigationContext == NavContext.LOGGER || NavigationContext == NavContext.EDITOR)
                     {
                         var result = MessageBox.Show(
-                            "Your log will not be saved. Are you sure you would like to go back to the dashboard?",
+                            "Your logCacheDTO will not be saved. Are you sure you would like to go back to the dashboard?",
                             "You Sure?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
                         if (result == MessageBoxResult.No)
@@ -129,7 +137,7 @@ namespace Data_Logger_1._3.Services
                     }
                 }
 
-                _mainwindowFrame.GoBack();
+                _mainWindowFrame.GoBack();
             }
 
             NavigationContext = NavigationContext switch
@@ -154,13 +162,13 @@ namespace Data_Logger_1._3.Services
         public void CheckBackNavigationButton(MainWindowViewModel window)
         {
 
-            if (window != null && _mainwindowFrame != null)
+            if (window != null && _mainWindowFrame != null)
             {
-                window.BackEnabled = _mainwindowFrame.CanGoBack;
+                window.BackEnabled = _mainWindowFrame.CanGoBack;
             }
 
-            if (NavigationContext == NavContext.DASHBOARD || NavigationContext == NavContext.NOTES ||
-                NavigationContext == NavContext.REPORTER_DASHBOARD)
+            if ((NavigationContext == NavContext.DASHBOARD || NavigationContext == NavContext.NOTES ||
+                NavigationContext == NavContext.REPORTER_DASHBOARD) && window != null)
                 window.BackEnabled = false;
 
             //CheckForwardNavigationButton(window);
@@ -171,11 +179,11 @@ namespace Data_Logger_1._3.Services
         /// </summary>
         public void GoForward()
         {
-            if (_mainwindowFrame != null && _mainwindowFrame.CanGoForward)
+            if (_mainWindowFrame != null && _mainWindowFrame.CanGoForward)
             {
                 if (NavigationContext == NavContext.LOGGER)
                 {
-                    _mainwindowFrame.GoForward();
+                    _mainWindowFrame.GoForward();
                 }
             }
         }
@@ -183,13 +191,13 @@ namespace Data_Logger_1._3.Services
         public void CheckForwardNavigationButton(MainWindowViewModel window)
         {
 
-            if (window != null && _mainwindowFrame != null)
+            if (window != null && _mainWindowFrame != null)
             {
-                window.ForwardEnabled = _mainwindowFrame.CanGoForward;
+                window.ForwardEnabled = _mainWindowFrame.CanGoForward;
             }
 
-            if (NavigationContext == NavContext.DASHBOARD || NavigationContext == NavContext.NOTES ||
-                NavigationContext == NavContext.REPORTER_DASHBOARD)
+            if ((NavigationContext == NavContext.DASHBOARD || NavigationContext == NavContext.NOTES ||
+                NavigationContext == NavContext.REPORTER_DASHBOARD) && window != null)
                 window.ForwardEnabled = false;
         }
 
@@ -226,24 +234,34 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToLogin(bool isSignOut = false)
         {
-            var loginWindow = _serviceProvider.GetRequiredService<Login>();
-            _login = loginWindow;
-
-            var page01 = _serviceProvider.GetRequiredService<loginPage01>();
-
-            if (isSignOut)
+            try
             {
-                var dataService = _serviceProvider.GetRequiredService<IDataService>();
-                await dataService.SignOutUser();
-                ClearSessionState();
+                var loginWindow = _serviceProvider.GetRequiredService<Login>();
+                _login = loginWindow;
+
+                var page01 = _serviceProvider.GetRequiredService<loginPage01>();
+
+                if (isSignOut)
+                {
+                    var dataService = _serviceProvider.GetRequiredService<IDataService>();
+                    await dataService.SignOutUserAsync();
+                    await ClearSessionState();
+                }
+
+                _login.frame_LOGIN.Navigate(page01);
+                _login.Show();
+
+                if (isSignOut)
+                {
+                    if (_mainWindow == null)
+                        throw new InvalidOperationException("Mainwindow is null!");
+
+                    _mainWindow.Close();
+                }
             }
-
-            _login.frame_LOGIN.Navigate(page01);
-            _login.Show();
-
-            if (isSignOut)
+            catch (Exception ex)
             {
-                _mainWindow.Close();
+                Debug.WriteLine($"Exception occurred in NavigateToLogin: {ex.Message}");
             }
         }
 
@@ -255,90 +273,102 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToMainWindow()
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+                var authService = scope.ServiceProvider.GetRequiredService<IAuthService>();
 
-                if(_login != null)
+                try
                 {
-                    _login.Close();
-                    _login = null;
-                }
+                    var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 
-                // Store the main frame reference
-                SetMainFrame(mainWindow.frame_MAINWINDOW);
-
-
-                await dataService.SignInUser();
-
-                await _serviceProvider.GetRequiredService<InitialService>().Initialise(dataService.GetUser().accountID);
-
-                bool? isUpdating = null;
-#if RELEASE
-                var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
-                var settings = settingsService.Load(dataService.GetUser().accountID) ?? new Settings();
-
-                var velopackService = _serviceProvider.GetRequiredService<VelopackService>();
-                var updateInfo = await velopackService.CheckForUpdatesAsync();
-
-
-                if (settings.ShowUpdatePopup)
-                {
-                    if (updateInfo != null)
+                    if (_login != null)
                     {
-                        // Show Updater window
-                        var updaterWindow = _serviceProvider.GetRequiredService<VelopackUpdaterWindow>();
-                        updaterWindow.DataContext = ActivatorUtilities.CreateInstance<UpdaterViewModel>(_serviceProvider, updateInfo);
-                        isUpdating = updaterWindow.ShowDialog();
+                        _login.Close();
+                        _login = null;
                     }
-                }
-#endif
 
-                if (isUpdating != true)
-                {
-                    // User clicked Cancel or no update found
-                    var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    // Store the main frame reference
+                    SetMainFrame(mainWindow.frame_MAINWINDOW);
 
-                    mainWindow.DataContext = mainWindowViewModel;
-                    mainWindowViewModel.CodingChecked = true;
-                    mainWindowViewModel.CodingQtChecked = true;
+
+                    await dataService.SignInUserAsync();
+
+                    var user = authService.GetUser() ?? throw new InvalidOperationException("User cannot be null!");
+                    var userId = user.UserId;
+                    await _serviceProvider.GetRequiredService<StartUpService>().Initialise(userId);
+                    var cachemaster = _serviceProvider.GetRequiredService<ICacheService>();
+                    cachemaster.CreateSettingsFile(userId);
+
+                    bool? isUpdating = null;
 #if RELEASE
-                    if(updateInfo != null)
-                        mainWindowViewModel.UpdaterButtonVisible = Visibility.Visible;
+                    var settingsService = _serviceProvider.GetRequiredService<SettingsService>();
+                    var settings = settingsService.Load(user.accountID) ?? throw new InvalidOperationException("No settings!");
+
+                    var velopackService = _serviceProvider.GetRequiredService<IVelopackService>();
+                    var updateInfo = await velopackService.CheckForUpdatesAsync();
+
+
+                    if (settings.ShowUpdatePopup)
+                    {
+                        if (updateInfo != null)
+                        {
+                            // Show Updater window
+                            var updaterWindow = _serviceProvider.GetRequiredService<VelopackUpdaterWindow>();
+                            updaterWindow.DataContext = ActivatorUtilities.CreateInstance<UpdaterViewModel>(_serviceProvider, updateInfo);
+                            isUpdating = updaterWindow.ShowDialog();
+                        }
+                    }
 #endif
 
-                    mainWindow.Show();
-                    mainWindow.Activate();
-                    mainWindow.Focus();
+                    if (isUpdating != true)
+                    {
+                        // User clicked Cancel or no update found
+                        var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
 
-                    await NavigateToLogCachePage(CacheContext.Qt);
+                        mainWindow.DataContext = mainWindowViewModel;
+                        mainWindowViewModel.CodingChecked = true;
+                        mainWindowViewModel.CodingQtChecked = true;
+#if RELEASE
+                        if (updateInfo != null)
+                            mainWindowViewModel.UpdaterButtonVisible = Visibility.Visible;
+#endif
 
-                    _mainWindow = mainWindow;
+                        mainWindow.Show();
+                        mainWindow.Activate();
+                        mainWindow.Focus();
 
-                    CheckBackNavigationButton(mainWindowViewModel);
+                        await NavigateToLogCachePage(LogContext.Qt);
 
-                    MessageBox.Show($"Click on \"Generic\" option in the menu panel please. In this alpha you will only be able to create coding logs.",
-                        "Data Logger Alpha Version", MessageBoxButton.OK, MessageBoxImage.Information);
+                        _mainWindow = mainWindow;
 
-                    SetDashboardContext();
+                        CheckBackNavigationButton(mainWindowViewModel);
+
+                        MessageBox.Show($"Click on \"Generic\" option in the menu panel please. In this alpha you will only be able to create coding logs.",
+                            "Data Logger Alpha Version", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        SetDashboardContext();
+                    }
+
+
                 }
+                catch (InvalidOperationException invex)
+                {
+                    await dataService.HandleExceptionAsync(invex);
 
+                    CloseApp();
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
 
-            }
-            catch (InvalidOperationException invex)
-            {
-                await dataService.HandleExceptionAsync(invex, "NavigateToMainWindow()", "InvalidOperationException");
-
-                CloseApp();
+                    CloseApp();
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToMainWindow()");
-
-                CloseApp();
+                Debug.WriteLine($"Exception occurred in NavigateToMainWindow: {ex.Message}");
             }
         }
 
@@ -346,32 +376,40 @@ namespace Data_Logger_1._3.Services
         public async Task<bool> NavigateToUpdaterWindowAsync(bool startUpdatingImmediately = false)
         {
 #if RELEASE
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                var velopackService = _serviceProvider.GetRequiredService<VelopackService>();
-                var updateInfo = await velopackService.CheckForUpdatesAsync();
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                if (updateInfo == null)
+                try
                 {
-                    MessageBox.Show("Unable to check for updates. Please try again later.", "Update Check Failed", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return false;
+                    var velopackService = _serviceProvider.GetRequiredService<IVelopackService>();
+                    var updateInfo = await velopackService.CheckForUpdatesAsync();
+
+                    if (updateInfo == null)
+                    {
+                        MessageBox.Show("Unable to check for updates. Please try again later.", "Update Check Failed", MessageBoxButton.OK,
+                            MessageBoxImage.Error);
+                        return false;
+                    }
+
+                    var updaterWindow = ActivatorUtilities.CreateInstance<VelopackUpdaterWindow>(_serviceProvider, startUpdatingImmediately);
+
+                    updaterWindow.DataContext = ActivatorUtilities.CreateInstance<UpdaterViewModel>(_serviceProvider, updateInfo);
+
+                    var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    mainWindowViewModel.UpdaterButtonVisible = Visibility.Collapsed;
+
+                    return updaterWindow.ShowDialog() == true;
                 }
-
-                var updaterWindow = ActivatorUtilities.CreateInstance<VelopackUpdaterWindow>(_serviceProvider, startUpdatingImmediately);
-
-                updaterWindow.DataContext = ActivatorUtilities.CreateInstance<UpdaterViewModel>(_serviceProvider, updateInfo);
-
-                var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                mainWindowViewModel.UpdaterButtonVisible = Visibility.Collapsed;
-
-                return updaterWindow.ShowDialog() == true;
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToUpdaterWindowAsync()");
+                Debug.WriteLine($"Exception occurred in NavigateToUpdaterWindowAsync: {ex.Message}");
             }
 #endif
             return false;
@@ -391,7 +429,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-        public async Task NavigateToPage<TViewModel>(Page page, UserControl subPage = null)
+        public async Task NavigateToPage<TViewModel>(Page page, UserControl? subPage = null)
             where TViewModel : ViewModelBase
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -400,7 +438,7 @@ namespace Data_Logger_1._3.Services
 
             try
             {
-                if (_mainwindowFrame is null)
+                if (_mainWindowFrame is null)
                     throw new InvalidOperationException("Main frame not set!");
 
                 if (NavigationContext == NavContext.LOGGER)
@@ -408,7 +446,7 @@ namespace Data_Logger_1._3.Services
                     if (_loggerFrame is null)
                         throw new InvalidOperationException("Logger frame not set!");
 
-                    if (CacheContext == CacheContext.AndroidStudio && _AndroidStudioFrame is null)
+                    if (LogContext == LogContext.AndroidStudio && _AndroidStudioFrame is null)
                         throw new InvalidOperationException("Android Studio frame not set!");
                 }
 
@@ -416,8 +454,9 @@ namespace Data_Logger_1._3.Services
 
 
 
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
+                var auth = _serviceProvider.GetRequiredService<IAuthService>();
+                var user = auth.GetUser();
+                string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
 
                 async Task ApplyAsync(dynamic vm, bool autoStart = true)
@@ -437,18 +476,6 @@ namespace Data_Logger_1._3.Services
                         await ApplyAsync(vm);
                         break;
 
-                    case graphicCreateViewModel vm:
-                        await ApplyAsync(vm);
-                        break;
-
-                    case filmCreateViewModel vm:
-                        await ApplyAsync(vm);
-                        break;
-
-                    case flexiCreateViewModel vm:
-                        await ApplyAsync(vm, autoStart: false);
-                        break;
-
                     default:
                         page.DataContext = viewModel;
                         break;
@@ -457,27 +484,30 @@ namespace Data_Logger_1._3.Services
                 if (subPage != null)
                 {
                     subPage.DataContext = viewModel;
+
+                    if (_loggerFrame == null)
+                        throw new InvalidOperationException("Logger frame is null!");
                     _loggerFrame.Navigate(subPage);
                 }
 
-                _mainwindowFrame.Navigate(page);
+                _mainWindowFrame.Navigate(page);
 
                 var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
                 CheckBackNavigationButton(window);
             }
             catch (InvalidOperationException invex)
             {
-                await dataService.HandleExceptionAsync(invex, "NavigateToPage<TViewModel>(page)", "InvalidOperationException");
+                await dataService.HandleExceptionAsync(invex);
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToPage<TViewModel>(page)");
+                await dataService.HandleExceptionAsync(ex);
             }
         }
 
 
 
-        public async Task NavigateToPage(Page page, ViewModelBase viewModel, UserControl subPage = null)
+        public async Task NavigateToPage(Page page, ViewModelBase viewModel, UserControl? subPage = null)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -486,7 +516,7 @@ namespace Data_Logger_1._3.Services
 
             try
             {
-                if (_mainwindowFrame is null)
+                if (_mainWindowFrame is null)
                     throw new InvalidOperationException("Main frame not set!");
 
                 if (NavigationContext == NavContext.LOGGER || NavigationContext == NavContext.EDITOR)
@@ -494,7 +524,7 @@ namespace Data_Logger_1._3.Services
                     if (_loggerFrame is null)
                         throw new InvalidOperationException("Logger frame not set!");
 
-                    if (CacheContext == CacheContext.AndroidStudio && _AndroidStudioFrame is null)
+                    if (LogContext == LogContext.AndroidStudio && _AndroidStudioFrame is null)
                         throw new InvalidOperationException("Android Studio frame not set!");
                 }
 
@@ -503,17 +533,21 @@ namespace Data_Logger_1._3.Services
                 if (subPage != null)
                 {
                     subPage.DataContext = viewModel;
+
+                    if (_loggerFrame == null)
+                        throw new InvalidOperationException("Logger frame is null!");
+
                     _loggerFrame.Navigate(subPage);
                 }
-                _mainwindowFrame.Navigate(page);
+                _mainWindowFrame.Navigate(page);
             }
             catch (InvalidOperationException invex)
             {
-                await dataService.HandleExceptionAsync(invex, "NavigateToPage(page, viewModel)", "InvalidOperationException");
+                await dataService.HandleExceptionAsync(invex);
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToPage(page, viewModel)");
+                await dataService.HandleExceptionAsync(ex);
             }
         }
 
@@ -528,45 +562,44 @@ namespace Data_Logger_1._3.Services
 
             try
             {
-                if (_mainwindowFrame is null)
+                if (_mainWindowFrame is null)
                     throw new InvalidOperationException("Main frame not set!");
 
                 var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
                 var page = uiFactory.CreatePage<TPage>();
                 page.DataContext = _serviceProvider.GetRequiredService<TViewModel>();
 
-                _mainwindowFrame.Navigate(page);
+                _mainWindowFrame.Navigate(page);
             }
             catch (InvalidOperationException invex)
             {
-                await dataService.HandleExceptionAsync(invex, "NavigateToPage(page, viewModel)", "InvalidOperationException");
+                await dataService.HandleExceptionAsync(invex);
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToPage(page, viewModel)");
+                await dataService.HandleExceptionAsync(ex);
             }
         }
 
         public async Task NavigateToPage(Page page)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
             var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
             try
             {
-                if (_mainwindowFrame is null)
+                if (_mainWindowFrame is null)
                     throw new InvalidOperationException("Main frame not set!");
 
-                _mainwindowFrame.Navigate(page);
+                _mainWindowFrame.Navigate(page);
             }
             catch (InvalidOperationException invex)
             {
-                await dataService.HandleExceptionAsync(invex, "NavigateToPage<TPage>()", "InvalidOperationException");
+                await dataService.HandleExceptionAsync(invex);
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToPage<TPage>()");
+                await dataService.HandleExceptionAsync(ex);
             }
         }
 
@@ -594,90 +627,96 @@ namespace Data_Logger_1._3.Services
                 logCachePage.DataContext = _serviceProvider.GetRequiredService<CodingQtViewModel>();
 
 
-                if (_mainwindowFrame != null)
-                    _mainwindowFrame.Navigate(logCachePage);
+                if (_mainWindowFrame != null)
+                    _mainWindowFrame.Navigate(logCachePage);
 
                 SetDashboardContext();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 CloseApp();
             }
         }
 
-        public async Task NavigateToLogCachePage(CacheContext cacheContext)
+        public async Task NavigateToLogCachePage(LogContext logContext)
         {
-            _mainwindowFrame.RemoveBackEntry();
-
-            SetDashboardContext();
-            CacheContext = cacheContext;
-
-            var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-
-            var logCachePage = uiFactory.CreatePage<LogCachePage>();
-
-            switch (cacheContext)
+            try
             {
-                case CacheContext.Qt:
-                    {
-                        await NavigateToPage<CodingQtViewModel>(logCachePage);
-                        await _serviceProvider.GetRequiredService<CodingQtViewModel>().AutoStartAsync();
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                        break;
-                    }
-                case CacheContext.AndroidStudio:
-                    {
-                        await NavigateToPage<CodingAndroidViewModel>(logCachePage);
-                        await _serviceProvider.GetRequiredService<CodingAndroidViewModel>().AutoStartAsync();
+                try
+                {
+                    if (_mainWindowFrame is null)
+                        throw new InvalidOperationException("Main frame not set!");
 
-                        break;
-                    }
-                case CacheContext.Graphics:
-                    {
-                        await NavigateToPage<GraphicsViewModel>(logCachePage);
-                        _serviceProvider.GetRequiredService<GraphicsViewModel>().UpdateLogCount();
+                    _mainWindowFrame.RemoveBackEntry();
 
-                        break;
-                    }
-                case CacheContext.Film:
-                    {
-                        await NavigateToPage<FilmViewModel>(logCachePage);
-                        _serviceProvider.GetRequiredService<FilmViewModel>().UpdateLogCount();
+                    SetDashboardContext();
+                    LogContext = logContext;
 
-                        break;
-                    }
-                case CacheContext.Flexi:
-                    {
-                        await NavigateToPage<FlexiViewModel>(logCachePage);
-                        _serviceProvider.GetRequiredService<FlexiViewModel>().UpdateLogCount();
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
 
-                        break;
-                    }
-                default:
-                    {
-                        await NavigateToPage<CodingViewModel>(logCachePage);
-                        await _serviceProvider.GetRequiredService<CodingViewModel>().AutoStartAsync();
-                        _serviceProvider.GetRequiredService<CodingViewModel>().CreateLogButtonEnabled = true;
-                        _serviceProvider.GetRequiredService<CodingViewModel>().ReportButtonEnabled = true;
+                    var logCachePage = uiFactory.CreatePage<LogCachePage>();
 
-                        break;
+                    switch (logContext)
+                    {
+                        case LogContext.Qt:
+                            {
+                                await NavigateToPage<CodingQtViewModel>(logCachePage);
+                                await _serviceProvider.GetRequiredService<CodingQtViewModel>().AutoStartAsync();
+
+                                break;
+                            }
+                        case LogContext.AndroidStudio:
+                            {
+                                await NavigateToPage<CodingAndroidViewModel>(logCachePage);
+                                await _serviceProvider.GetRequiredService<CodingAndroidViewModel>().AutoStartAsync();
+
+                                break;
+                            }
+                        default:
+                            {
+                                await NavigateToPage<CodingViewModel>(logCachePage);
+                                await _serviceProvider.GetRequiredService<CodingViewModel>().AutoStartAsync();
+                                _serviceProvider.GetRequiredService<CodingViewModel>().CreateLogButtonEnabled = true;
+                                _serviceProvider.GetRequiredService<CodingViewModel>().ReportButtonEnabled = true;
+
+                                break;
+                            }
                     }
+
+                    var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    CheckBackNavigationButton(mainWindowViewModel);
+
+                    _mainWindowFrame.RemoveBackEntry();
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
-
-            var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-            CheckBackNavigationButton(mainWindowViewModel);
-
-            _mainwindowFrame.RemoveBackEntry();
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception occurred in NavigateToLogCachePage: {ex.Message}");
+            }
         }
 
-        public async Task NavigateToLogCachePage<TViewModel>(CacheContext cacheContext) where TViewModel : LogCacheViewModel
+        public async Task NavigateToLogCachePage<TViewModel>(LogContext logContext) where TViewModel : LogCacheViewModel
         {
-            await NavigateToPage<LogCachePage, TViewModel>();
+            try
+            {
+                await NavigateToPage<LogCachePage, TViewModel>();
 
-            SetDashboardContext();
+                SetDashboardContext();
 
-            var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-            CheckBackNavigationButton(mainWindowViewModel);
+                var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                CheckBackNavigationButton(mainWindowViewModel);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception occurred in NavigateToLogCachePage: {ex.Message}");
+            }
         }
 
 
@@ -695,15 +734,32 @@ namespace Data_Logger_1._3.Services
         /// </summary>
         /// <param name="viewModel">The viewmodel housing the visibility property.</param>
         /// <param name="path">The profile picture path</param>
-        private void DisplayPicVisibilityHandler(dynamic viewModel, string path = "")
+        private async Task DisplayPicVisibilityHandler(dynamic viewModel, string path = "")
         {
-            if (path.Contains("/Assets/"))
+            try
             {
-                viewModel.SignUpImage = null;
-                viewModel.DisplayPicVisibility = Visibility.Visible;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
+
+                try
+                {
+                    if (path.Contains("/Assets/"))
+                    {
+                        viewModel.SignUpImage = null;
+                        viewModel.DisplayPicVisibility = Visibility.Visible;
+                    }
+                    else
+                        viewModel.SignUpImage = BitmapService.LoadImage(path);
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
-            else
-                viewModel.SignUpImage = BitmapService.LoadImage(path);
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception occurred in DisplayPicVisibilityHandler: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -711,480 +767,420 @@ namespace Data_Logger_1._3.Services
         /// </summary>
         /// <param name="viewModel">The viewmodel housing the visibility property.</param>
         /// <param name="path">The profile picture path</param>
-        private void ShowDefaultHandler(dynamic viewModel, string path = "")
+        private async Task ShowDefaultHandler(dynamic viewModel, string path = "")
         {
-            if (path.Contains("/Assets/"))
+            try
             {
-                viewModel.SignUpImage = null;
-                viewModel.ShowDefault = Visibility.Visible;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
+
+                try
+                {
+                    if (path.Contains("/Assets/"))
+                    {
+                        viewModel.SignUpImage = null;
+                        viewModel.ShowDefault = Visibility.Visible;
+                    }
+                    else
+                        viewModel.SignUpImage = BitmapService.LoadImage(path);
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
-            else
-                viewModel.SignUpImage = BitmapService.LoadImage(path);
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception occurred in ShowDefaultHandler: {ex.Message}");
+            }
         }
 
 
         public async Task NavigateToLoggerCreator()
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                NavigationContext = NavContext.LOGGER;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-                var loggerCreatePage = uiFactory.CreatePage<LoggerCreatePage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-
-                SetLoggerFrame(loggerCreatePage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerCreatePage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
+                try
                 {
-                    case CacheContext.Qt:
-                        {
-                            var qtLogger = viewModelFactory.CreateQtCodeCreateViewModel();
-                            await qtLogger.AutoStartAsync(true);
+                    NavigationContext = NavContext.LOGGER;
 
-                            DisplayPicVisibilityHandler(qtLogger, path);
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                    var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+                    var loggerCreatePage = uiFactory.CreatePage<LoggerCreatePage>();
+                    var auth = _serviceProvider.GetRequiredService<IAuthService>();
+                    var user = auth.GetUser();
+                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
-                            await NavigateToPage(loggerCreatePage, qtLogger, new coding_UserControl());
 
-                            break;
-                        }
-                    case CacheContext.AndroidStudio:
-                        {
-                            await NavigateToPage<AScodeCreateViewModel>(loggerCreatePage, new coding_UserControl());
+                    SetLoggerFrame(loggerCreatePage.frame_VARIATIONS);
 
-                            var androidPage = new androidStudio_UserControl();
-                            androidPage.DataContext = _serviceProvider.GetRequiredService<AScodeCreateViewModel>();
-                            _AndroidStudioFrame?.Navigate(androidPage);
+                    if (LogContext == LogContext.AndroidStudio)
+                        SetAndroidStudioFrame(loggerCreatePage.frame_ANDROIDSTUDIO);
+                    else
+                        SetAndroidStudioFrame(null);
 
-                            break;
-                        }
-                    case CacheContext.Graphics:
-                        {
-                            await NavigateToPage<graphicCreateViewModel>(loggerCreatePage, new graphics_UserControl());
+                    switch (LogContext)
+                    {
+                        case LogContext.Qt:
+                            {
+                                var qtLogger = viewModelFactory.CreateQtCodeCreateViewModel();
+                                await qtLogger.AutoStartAsync(true);
 
-                            break;
-                        }
-                    case CacheContext.Film:
-                        {
-                            await NavigateToPage<filmCreateViewModel>(loggerCreatePage, new film_UserControl());
+                                await DisplayPicVisibilityHandler(qtLogger, path);
 
-                            break;
-                        }
-                    case CacheContext.Flexi:
-                        {
-                            await NavigateToPage<flexiCreateViewModel>(loggerCreatePage, new flexi_UserControl());
+                                await NavigateToPage(loggerCreatePage, qtLogger, new coding_UserControl());
 
-                            break;
-                        }
-                    default:
-                        {
-                            var codingLogger = viewModelFactory.CreateCodeCreateViewModel();
-                            await codingLogger.AutoStartAsync();
+                                break;
+                            }
+                        case LogContext.AndroidStudio:
+                            {
+                                await NavigateToPage<AScodeCreateViewModel>(loggerCreatePage, new coding_UserControl());
 
-                            DisplayPicVisibilityHandler(codingLogger, path);
+                                var androidPage = new androidStudio_UserControl();
+                                androidPage.DataContext = _serviceProvider.GetRequiredService<AScodeCreateViewModel>();
+                                _AndroidStudioFrame?.Navigate(androidPage);
 
-                            await NavigateToPage(loggerCreatePage, codingLogger, new coding_UserControl());
+                                break;
+                            }
+                        default:
+                            {
+                                var codingLogger = viewModelFactory.CreateCodeCreateViewModel();
+                                await codingLogger.AutoStartAsync();
 
-                            break;
-                        }
+                                await DisplayPicVisibilityHandler(codingLogger, path);
+
+                                await NavigateToPage(loggerCreatePage, codingLogger, new coding_UserControl());
+
+                                break;
+                            }
+                    }
+
+                    var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    CheckBackNavigationButton(window);
                 }
-
-                var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                CheckBackNavigationButton(window);
-            }
-            catch (XamlParseException xamlx)
-            {
-                await dataService.HandleExceptionAsync(xamlx, "NavigateToLoggerCreator()", "XamlParseException");
+                catch (XamlParseException xamlx)
+                {
+                    await dataService.HandleExceptionAsync(xamlx);
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToLoggerCreator()");
+                Debug.WriteLine($"Exception occurred in NavigateToLoggerCreator: {ex.Message}");
             }
 
         }
 
-        public async Task NavigateToLoggerEditor(ViewModelBase viewModelBase)
+        public async Task NavigateToLoggerEditor(ViewModelBase viewModelBase, LogCacheDTO logCacheDTO)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                NavigationContext = NavContext.EDITOR;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-                var loggerEditPage = uiFactory.CreatePage<LoggerEditPage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-                SetLoggerFrame(loggerEditPage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerEditPage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
+                try
                 {
-                    default:
-                        {
-                            var codingLOGViewModel = viewModelBase as CodeLOGViewModel;
+                    NavigationContext = NavContext.EDITOR;
 
-                            var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingLOGViewModel);
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                    var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+                    var loggerEditPage = uiFactory.CreatePage<LoggerEditPage>();
+                    var auth = _serviceProvider.GetRequiredService<IAuthService>();
+                    var user = auth.GetUser();
+                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
-                            await codingEditor.AutoStartAsync();
+                    SetLoggerFrame(loggerEditPage.frame_VARIATIONS);
 
-                            DisplayPicVisibilityHandler(codingEditor, path);
+                    if (LogContext == LogContext.AndroidStudio)
+                        SetAndroidStudioFrame(loggerEditPage.frame_ANDROIDSTUDIO);
+                    else
+                        SetAndroidStudioFrame(null);
 
-                            var log = codingLOGViewModel._CodeLOG;
-
-                            codingEditor.ProjectName = log.Project.Name;
-                            codingEditor.ApplicationName = log.Application.Name;
-
-                            codingEditor.StartDate = log.Start;
-                            codingEditor.StartHours = log.Start.Hour;
-                            codingEditor.StartMinutes = log.Start.Minute;
-                            codingEditor.StartSeconds = log.Start.Second;
-                            codingEditor.StartMilliseconds = log.Start.Millisecond;
-
-                            codingEditor.EndDate = log.End;
-                            codingEditor.EndHours = log.End.Hour;
-                            codingEditor.EndMinutes = log.End.Minute;
-                            codingEditor.EndSeconds = log.End.Second;
-                            codingEditor.EndMilliseconds = log.End.Millisecond;
-
-                            codingEditor.Output = log.Output.Name;
-                            codingEditor.Type = log.Type.Name;
-
-
-                            foreach (var postIt in log.PostItList)
+                    switch (LogContext)
+                    {
+                        default:
                             {
-                                var project = postIt.Subject.Project;
+                                var codingLOGViewModel = viewModelBase as CodeLOGViewModel;
 
-                                var editPostIt = new EditPostItViewModel(this, dataService, codingEditor, log.Project,
-                                    new(this, dataService, codingEditor, project,
-                                        postIt.Subject.Subject, postIt.Error, postIt.ERCaptureTime, postIt.Solution,
-                                        postIt.SOCaptureTime, postIt.Suggestion, postIt.Comment));
-                                await editPostIt.AutoStartAsync(project);
+                                var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingLOGViewModel ?? 
+                                    throw new ArgumentNullException("codingLOGViewModel is null!"));
 
-                                codingEditor.PostIts.Add(editPostIt);
+                                await codingEditor.AutoStartAsync();
+
+                                await DisplayPicVisibilityHandler(codingEditor, path);
+
+                                var codingCacheDTO = (CodingCacheDTO)logCacheDTO;
+
+                                codingEditor.ProjectName = codingCacheDTO.ProjectName;
+                                codingEditor.ApplicationName = codingCacheDTO.ApplicationName;
+
+                                codingEditor.StartDate = codingCacheDTO.Start;
+                                codingEditor.StartHours = codingCacheDTO.Start.Hour;
+                                codingEditor.StartMinutes = codingCacheDTO.Start.Minute;
+                                codingEditor.StartSeconds = codingCacheDTO.Start.Second;
+                                codingEditor.StartMilliseconds = codingCacheDTO.Start.Millisecond;
+
+                                codingEditor.EndDate = codingCacheDTO.End;
+                                codingEditor.EndHours = codingCacheDTO.End.Hour;
+                                codingEditor.EndMinutes = codingCacheDTO.End.Minute;
+                                codingEditor.EndSeconds = codingCacheDTO.End.Second;
+                                codingEditor.EndMilliseconds = codingCacheDTO.End.Millisecond;
+
+                                codingEditor.Output = codingCacheDTO.OutputName;
+                                codingEditor.Type = codingCacheDTO.TypeName;
+
+
+                                
+
+                                codingEditor.BugsFound = codingCacheDTO.Bugs;
+                                codingEditor.ApplicationOpened = codingCacheDTO.Success;
+
+
+                                await NavigateToPage(loggerEditPage, codingEditor, new coding_UserControl());
+
+                                break;
                             }
+                    }
 
-                            codingEditor.BugsFound = log.Bugs;
-                            codingEditor.ApplicationOpened = log.Success;
-
-
-                            await NavigateToPage(loggerEditPage, codingEditor, new coding_UserControl());
-
-                            break;
-                        }
+                    var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    CheckBackNavigationButton(window);
                 }
-
-                var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                CheckBackNavigationButton(window);
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToLoggerEditor()");
+                Debug.WriteLine($"Exception occurred in NavigateToLoggerCreator: {ex.Message}");
             }
         }
 
-        public async Task NavigateToViewer(ViewModelBase viewModelBase)
-        {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
+        
 
+        public async Task NavigateCacheToViewer(LogCacheDTO logCacheDTO)
+        {
             try
             {
-                NavigationContext = NavContext.DASHBOARD;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var loggerViewPage = uiFactory.CreatePage<LoggerViewPage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-                SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerViewPage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
+                try
                 {
-                    default:
-                        {
-                            var codingLOGViewModel = viewModelBase as CodeLOGViewModel;
+                    NavigationContext = NavContext.DASHBOARD;
 
-                            var codeViewerViewModel = _serviceProvider.GetRequiredService<codeViewerViewModel>();
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                    var loggerViewPage = uiFactory.CreatePage<ViewerPage>();
+                    var auth = _serviceProvider.GetRequiredService<AuthService>();
+                    var user = auth.GetUser();
+                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
-                            DisplayPicVisibilityHandler(codeViewerViewModel, path);
+                    SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
 
-                            var log = codingLOGViewModel?._CodeLOG;
+                    if (LogContext == LogContext.AndroidStudio)
+                        SetAndroidStudioFrame(loggerViewPage.frame_ANDROIDSTUDIO);
+                    else
+                        SetAndroidStudioFrame(null);
 
-                            if (log == null)
-                                throw new ArgumentNullException("Log cannot be null");
-
-                            codeViewerViewModel.ProjectName = log.Project.Name;
-                            codeViewerViewModel.ApplicationName = log.Application.Name;
-                            codeViewerViewModel.Date = log.Start.ToString("d MMMM yyyy HH:ss");
-
-                            codeViewerViewModel.Output = log.Output.Name;
-                            codeViewerViewModel.Type = log.Type.Name;
-
-                            foreach (var postIt in log.PostItList)
+                    switch (LogContext)
+                    {
+                        default:
                             {
-                                codeViewerViewModel.AddPostIt(new PostItViewModel(this,
-                                        postIt.Subject.Project, postIt.Subject.Subject, postIt.Error,
-                                        postIt.Solution, postIt.Suggestion, postIt.Comment));
+                                var codingCacheDTO = (CodingCacheDTO)logCacheDTO;
+
+                                var viewViewModelFactory = _serviceProvider.GetRequiredService<ViewViewModelFactory>();
+                                var codeViewerViewModel = viewViewModelFactory.Create(user, new CodingViewDTO
+                                {
+                                    ProjectName = codingCacheDTO.ProjectName,
+                                    ApplicationName = codingCacheDTO.ApplicationName,
+                                    Date = codingCacheDTO.Start.ToString("d MMMM yyyy HH:mm"),
+                                    OutputName = codingCacheDTO.OutputName,
+                                    TypeName = codingCacheDTO.TypeName,
+                                    PostIts = codingCacheDTO.PostIts,
+                                    Bugs = codingCacheDTO.Bugs.ToString(),
+                                    ApplicationOpened = codingCacheDTO.Success ? "Launch Successful" : "Unsuccessful Launch"
+                                });
+
+                                await DisplayPicVisibilityHandler(codeViewerViewModel, path);
+                                await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
+
+                                break;
                             }
+                    }
 
-                            codeViewerViewModel.BugsFound = log.Bugs == 1 ? $"{log.Bugs.ToString()} Bug Found" : $"{log.Bugs.ToString()} Bugs Found";
-                            codeViewerViewModel.ApplicationOpened = log.Success ? "Launch Successful" : "Unsuccessful Launch";
-
-
-                            await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
-
-                            break;
-                        }
                 }
-
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToLoggerEditor()");
+                Debug.WriteLine($"Exception occurred in NavigateToViewer: {ex.Message}");
             }
         }
 
-        public async Task NavigateToViewer(LOG log)
+        public async Task NavigateDataToViewer(LogDataDTO logDataDTO)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                NavigationContext = NavContext.DASHBOARD;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = _serviceProvider.GetRequiredService<IDataService>();
 
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var loggerViewPage = uiFactory.CreatePage<LoggerViewPage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-                SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerViewPage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
+                try
                 {
-                    default:
-                        {
+                    NavigationContext = NavContext.VIEWER;
 
-                            var codeViewerViewModel = _serviceProvider.GetRequiredService<codeViewerViewModel>();
-                            codeViewerViewModel.OKCommand = new ViewerOKCommand(this, ViewType.Log);
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                    var loggerViewPage = uiFactory.CreatePage<ViewerPage>();
+                    var auth = _serviceProvider.GetRequiredService<AuthService>();
+                    var user = auth.GetUser();
+                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
-                            DisplayPicVisibilityHandler(codeViewerViewModel, path);
+                    SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
 
-                            var codingLOG = (CodingLOG)log;
+                    if (LogContext == LogContext.AndroidStudio)
+                        SetAndroidStudioFrame(loggerViewPage.frame_ANDROIDSTUDIO);
+                    else
+                        SetAndroidStudioFrame(null);
 
-                            codeViewerViewModel.ProjectName = codingLOG.Project.Name;
-                            codeViewerViewModel.ApplicationName = codingLOG.Application.Name;
-                            codeViewerViewModel.Date = codingLOG.Start.ToString("d MMMM yyyy HH:mm");
-
-                            codeViewerViewModel.Output = codingLOG.Output.Name;
-                            codeViewerViewModel.Type = codingLOG.Type.Name;
-
-                            foreach (var postIt in codingLOG.PostItList)
+                    switch (LogContext)
+                    {
+                        default:
                             {
-                                codeViewerViewModel.AddPostIt(new PostItViewModel(this,
-                                        postIt.Subject.Project, postIt.Subject.Subject, postIt.Error,
-                                        postIt.Solution, postIt.Suggestion, postIt.Comment));
+                                var codingDataDTO = (CodingDataDTO)logDataDTO;
+
+                                var viewViewModelFactory = _serviceProvider.GetRequiredService<ViewViewModelFactory>();
+                                var codeViewerViewModel = viewViewModelFactory.Create(user, new CodingViewDTO
+                                {
+                                    ProjectName = codingDataDTO.ProjectName,
+                                    ApplicationName = codingDataDTO.ApplicationName,
+                                    Date = codingDataDTO.Start.ToString("d MMMM yyyy HH:mm"),
+                                    OutputName = codingDataDTO.OutputName,
+                                    TypeName = codingDataDTO.TypeName,
+                                    PostIts = codingDataDTO.PostIts,
+                                    Bugs = codingDataDTO.Bugs.ToString(),
+                                    ApplicationOpened = codingDataDTO.Success ? "Launch Successful" : "Unsuccessful Launch"
+                                });
+
+                                await DisplayPicVisibilityHandler(codeViewerViewModel, path);
+                                await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
+
+                                break;
                             }
-
-                            codeViewerViewModel.BugsFound = codingLOG.Bugs == 1 ? $"{codingLOG.Bugs.ToString()} Bug Found" : $"{codingLOG.Bugs.ToString()} Bugs Found";
-                            codeViewerViewModel.ApplicationOpened = codingLOG.Success ? "Launch Successful" : "Unsuccessful Launch";
-
-
-                            await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
-
-                            break;
-                        }
+                    }
                 }
-
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
+                }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToLoggerEditor()");
+                Debug.WriteLine($"Exception occurred in NavigateToLogViewer: {ex.Message}");
             }
         }
 
-        public async Task NavigateToLogViewer(LOG log)
+        public async Task NavigateToUpdater(LogDataDTO logDataDTO, ReportDeskViewModel reportDeskViewModel)
         {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
             try
             {
-                NavigationContext = NavContext.EDITOR;
+                await using var scope = _serviceProvider.CreateAsyncScope();
+                var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var loggerViewPage = uiFactory.CreatePage<LoggerViewPage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-                SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerViewPage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
+                try
                 {
-                    default:
-                        {
-                            var codingLOG = (CodingLOG)log;
+                    NavigationContext = NavContext.EDITOR;
 
-                            var codeViewerViewModel = _serviceProvider.GetRequiredService<codeViewerViewModel>();
+                    var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                    var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+                    var loggerEditPage = uiFactory.CreatePage<LoggerEditPage>();
+                    var auth = _serviceProvider.GetRequiredService<AuthService>();
+                    var user = auth.GetUser();
+                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
-                            DisplayPicVisibilityHandler(codeViewerViewModel, path);
+                    SetLoggerFrame(loggerEditPage.frame_VARIATIONS);
 
+                    if (LogContext == LogContext.AndroidStudio)
+                        SetAndroidStudioFrame(loggerEditPage.frame_ANDROIDSTUDIO);
+                    else
+                        SetAndroidStudioFrame(null);
 
-                            codeViewerViewModel.ProjectName = codingLOG.Project.Name;
-                            codeViewerViewModel.ApplicationName = codingLOG.Application.Name;
-                            codeViewerViewModel.Date = codingLOG.Start.ToString("d MMMM yyyy HH:mm");
-
-                            codeViewerViewModel.Output = codingLOG.Output.Name;
-                            codeViewerViewModel.Type = codingLOG.Type.Name;
-
-                            foreach (var postIt in codingLOG.PostItList)
+                    switch (LogContext)
+                    {
+                        default:
                             {
-                                codeViewerViewModel.AddPostIt(new PostItViewModel(this,
-                                        postIt.Subject.Project, postIt.Subject.Subject, postIt.Error,
-                                        postIt.Solution, postIt.Suggestion, postIt.Comment));
+
+                                var codingUpdater = viewModelFactory.CreateCodeUpdateViewModel(
+                                    (CodeReportDeskViewModel)reportDeskViewModel, logDataDTO);
+
+                                await codingUpdater.AutoStartAsync();
+                                await DisplayPicVisibilityHandler(codingUpdater, path);
+
+                                var codingDataDTO = (CodingDataDTO)logDataDTO;
+
+
+                                codingUpdater.ProjectName = codingDataDTO.ProjectName;
+                                codingUpdater.ApplicationName = codingDataDTO.ApplicationName;
+
+                                codingUpdater.StartDate = codingDataDTO.Start;
+                                codingUpdater.StartHours = codingDataDTO.Start.Hour;
+                                codingUpdater.StartMinutes = codingDataDTO.Start.Minute;
+                                codingUpdater.StartSeconds = codingDataDTO.Start.Second;
+                                codingUpdater.StartMilliseconds = codingDataDTO.Start.Millisecond;
+
+                                codingUpdater.EndDate = codingDataDTO.End;
+                                codingUpdater.EndHours = codingDataDTO.End.Hour;
+                                codingUpdater.EndMinutes = codingDataDTO.End.Minute;
+                                codingUpdater.EndSeconds = codingDataDTO.End.Second;
+                                codingUpdater.EndMilliseconds = codingDataDTO.End.Millisecond;
+
+                                codingUpdater.Output = codingDataDTO.OutputName;
+                                codingUpdater.Type = codingDataDTO.TypeName;
+
+                                //foreach (var postIt in codingDataDTO.PostItList)
+                                //{
+                                //    var project = log.Project;
+                                //    var editPostIt = new EF_EditPostItViewModel(postIt.postItID, this, dataService, codingUpdater,
+                                //        project,
+                                //        new(postIt.postItID, this, dataService, codingUpdater, project,
+                                //            postIt.Subject.Subject, postIt.Error, postIt.ERCaptureTime, postIt.Solution,
+                                //            postIt.SOCaptureTime, postIt.Suggestion, postIt.Comment));
+                                //    await editPostIt.AutoStartAsync(project);
+
+                                //    codingUpdater.PostIts.Add(editPostIt);
+                                //}
+
+                                codingUpdater.BugsFound = codingDataDTO.Bugs;
+                                codingUpdater.ApplicationOpened = codingDataDTO.Success;
+
+
+                                await NavigateToPage(loggerEditPage, codingUpdater, new coding_UserControl());
+
+                                break;
                             }
+                    }
 
-                            codeViewerViewModel.BugsFound = codingLOG.Bugs == 1 ? $"{codingLOG.Bugs.ToString()} Bug Found" : $"{codingLOG.Bugs.ToString()} Bugs Found";
-                            codeViewerViewModel.ApplicationOpened = codingLOG.Success ? "Launch Successful" : "Unsuccessful Launch";
+                    var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+                    CheckBackNavigationButton(window);
 
-
-                            await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
-
-                            break;
-                        }
+                }
+                catch (Exception ex)
+                {
+                    await dataService.HandleExceptionAsync(ex);
                 }
             }
             catch (Exception ex)
             {
-                await dataService.HandleExceptionAsync(ex, "NavigateToLoggerEditor()");
-            }
-        }
-
-        public async Task NavigateToUpdater(LOG log, ReportDeskViewModel reportDeskViewModel)
-        {
-            await using var scope = _serviceProvider.CreateAsyncScope();
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-
-            try
-            {
-                NavigationContext = NavContext.EDITOR;
-
-                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-                var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-                var loggerEditPage = uiFactory.CreatePage<LoggerEditPage>();
-                var auth = _serviceProvider.GetRequiredService<AuthService>();
-                string path = string.IsNullOrWhiteSpace(auth.Account?.ProfilePic) ? "/Assets/login/user.png" : auth.Account.ProfilePic;
-
-                SetLoggerFrame(loggerEditPage.frame_VARIATIONS);
-
-                if (CacheContext == CacheContext.AndroidStudio)
-                    SetAndroidStudioFrame(loggerEditPage.frame_ANDROIDSTUDIO);
-                else
-                    SetAndroidStudioFrame(null);
-
-                switch (CacheContext)
-                {
-                    default:
-                        {
-
-                            var codingUpdater = viewModelFactory.CreateCodeUpdateViewModel(
-                                (CodeReportDeskViewModel)reportDeskViewModel,
-                                log);
-
-                            await codingUpdater.AutoStartAsync();
-                            DisplayPicVisibilityHandler(codingUpdater, path);
-
-
-                            codingUpdater.ProjectName = log.Project.Name;
-                            codingUpdater.ApplicationName = log.Application.Name;
-
-                            codingUpdater.StartDate = log.Start;
-                            codingUpdater.StartHours = log.Start.Hour;
-                            codingUpdater.StartMinutes = log.Start.Minute;
-                            codingUpdater.StartSeconds = log.Start.Second;
-                            codingUpdater.StartMilliseconds = log.Start.Millisecond;
-
-                            codingUpdater.EndDate = log.End;
-                            codingUpdater.EndHours = log.End.Hour;
-                            codingUpdater.EndMinutes = log.End.Minute;
-                            codingUpdater.EndSeconds = log.End.Second;
-                            codingUpdater.EndMilliseconds = log.End.Millisecond;
-
-                            codingUpdater.Output = log.Output.Name;
-                            codingUpdater.Type = log.Type.Name;
-
-                            var dataService = _serviceProvider.GetRequiredService<IDataService>();
-
-                            foreach (var postIt in log.PostItList)
-                            {
-                                var project = log.Project;
-                                var editPostIt = new EF_EditPostItViewModel(postIt.postItID, this, dataService, codingUpdater,
-                                    project,
-                                    new(postIt.postItID, this, dataService, codingUpdater, project,
-                                        postIt.Subject.Subject, postIt.Error, postIt.ERCaptureTime, postIt.Solution,
-                                        postIt.SOCaptureTime, postIt.Suggestion, postIt.Comment));
-                                await editPostIt.AutoStartAsync(project);
-
-                                codingUpdater.PostIts.Add(editPostIt);
-                            }
-
-                            var codingLog = (CodingLOG)log;
-                            codingUpdater.BugsFound = codingLog.Bugs;
-                            codingUpdater.ApplicationOpened = codingLog.Success;
-
-
-                            await NavigateToPage(loggerEditPage, codingUpdater, new coding_UserControl());
-
-                            break;
-                        }
-                }
-
-                var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
-                CheckBackNavigationButton(window);
-
-            }
-            catch (Exception ex)
-            {
-
+                Debug.WriteLine($"Exception occurred in NavigateToUpdater: {ex.Message}");
             }
         }
 
@@ -1194,12 +1190,12 @@ namespace Data_Logger_1._3.Services
             if (seconds < 60)
             {
                 string unit = seconds == 1 ? "second" : "seconds";
-                return $"This log will be stored in {seconds} {unit}.";
+                return $"This logCacheDTO will be stored in {seconds} {unit}.";
             }
 
             int minutes = (int)Math.Round(seconds / 60.0);
             string unitMin = minutes == 1 ? "minute" : "minutes";
-            return $"This log will be stored in {minutes} {unitMin}.";
+            return $"This logCacheDTO will be stored in {minutes} {unitMin}.";
         }
 
 
@@ -1214,7 +1210,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-        public async Task NavigateToPostItCreator(LoggerCreateViewModel logger)
+        public async Task NavigateToPostItCreator(LoggerViewModel logger)
         {
             if (NavigationContext == NavContext.EDITOR)
                 NavigationContext = NavContext.EDITOR_POSTIT;
@@ -1249,9 +1245,9 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToPostItCreator(ViewModelBase createViewModel, ViewModelBase stickyNotesViewModel)
         {
-            if (createViewModel is LoggerCreateViewModel)
+            if (createViewModel is LoggerViewModel)
             {
-                var logger = createViewModel as LoggerCreateViewModel;
+                var logger = createViewModel as LoggerViewModel;
                 var postItViewModel = stickyNotesViewModel as PostItViewModel;
 
 
@@ -1331,7 +1327,8 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToReporter()
         {
-            _mainwindowFrame.RemoveBackEntry();
+            if(_mainWindowFrame != null)
+                _mainWindowFrame.RemoveBackEntry();
 
             SetReporterContext();
 
@@ -1339,7 +1336,7 @@ namespace Data_Logger_1._3.Services
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
 
 
-            switch (CacheContext)
+            switch (LogContext)
             {
                 default:
                     {
@@ -1396,7 +1393,7 @@ namespace Data_Logger_1._3.Services
         public async Task NavigateToCreateNotesPage()
         {
             NavigationContext = NavContext.CREATENOTE;
-            CacheContext = CacheContext.NOTES;
+            LogContext = LogContext.NOTES;
 
             await NavigateToPage<CreateNotePage, CreateNoteViewModel>();
 
@@ -1441,13 +1438,20 @@ namespace Data_Logger_1._3.Services
         }
 
         /// <summary>
-        /// Clears singleton states for log out.
+        /// Clears singleton states for logCacheDTO out.
         /// </summary>
-        public void ClearSessionState()
+        public async Task ClearSessionState()
         {
-            _serviceProvider.GetRequiredService<CodingViewModel>().OnLogOut();
-            _serviceProvider.GetRequiredService<NOTESViewModel>().OnLogOut();
-            _serviceProvider.GetRequiredService<AuthService>().SignOut();
+            try
+            {
+                _serviceProvider.GetRequiredService<CodingViewModel>().OnLogOut();
+                _serviceProvider.GetRequiredService<NOTESViewModel>().OnLogOut();
+                await _serviceProvider.GetRequiredService<AuthService>().SignOutAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Exception occurred in ClearSessionState: {ex.Message}");
+            }
         }
     }
 

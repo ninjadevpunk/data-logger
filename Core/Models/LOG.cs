@@ -45,7 +45,7 @@ namespace Core.Models
         /// The creator of a log.
         /// </summary>
         [ForeignKey("accountID")]
-        public ACCOUNT Author { get; set; }
+        public ACCOUNT Author { get; set; } = null!;
 
         public int accountID { get; set; }
 
@@ -54,7 +54,7 @@ namespace Core.Models
         /// </summary>
 
         [ForeignKey("projectID")]
-        public ProjectClass Project { get; set; }
+        public ProjectClass Project { get; set; } = null!;
 
         public int projectID { get; set; }
 
@@ -62,7 +62,7 @@ namespace Core.Models
         /// The application in which the project was created in.
         /// </summary>
         [ForeignKey("appID")]
-        public ApplicationClass Application { get; set; }
+        public ApplicationClass Application { get; set; } = null!;
 
         public int appID { get; set; }
 
@@ -84,7 +84,7 @@ namespace Core.Models
         /// The deliverable for the project.
         /// </summary>
         [ForeignKey("outputID")]
-        public OutputClass Output { get; set; }
+        public OutputClass Output { get; set; } = null!;
 
         public int outputID { get; set; }
 
@@ -92,7 +92,7 @@ namespace Core.Models
         /// What type of build is created in this project.
         /// </summary>
         [ForeignKey("typeID")]
-        public TypeClass Type { get; set; }
+        public TypeClass Type { get; set; } = null!;
 
         public int typeID { get; set; }
 

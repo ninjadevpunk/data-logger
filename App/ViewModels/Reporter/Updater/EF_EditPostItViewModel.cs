@@ -1,6 +1,7 @@
 ﻿using System.Windows;
+using Core.Models.App_Models;
+using Data.Interfaces;
 using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
-using Data_Logger_1._3.Models.App_Models;
 using Data_Logger_1._3.Services;
 namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 {
@@ -32,7 +33,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 
             Option1Check = true;
 
-            PostCommand = new EF_PostCommand(_navigationService, _reporterUpdaterViewModel, this);
+            PostCommand = new EF_PostCommand(navigationService, reporterUpdaterViewModel, this);
         }
 
 
@@ -47,8 +48,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
         /// <param name="project">The project instance needed for the subjects list retrieval</param>
         /// <param name="postItViewModel">A PostIt viewmodel to populate fields</param>
         public EF_EditPostItViewModel(int id, NavigationService navigationService, IDataService dataService, 
-            ReporterUpdaterViewModel ReporterUpdaterViewModel, ProjectClass project, EF_PostItViewModel postItViewModel) :
-            base(navigationService, dataService, ReporterUpdaterViewModel, project)
+            ReporterUpdaterViewModel reporterUpdaterViewModel, ProjectClass project, EF_PostItViewModel postItViewModel) :
+            base(navigationService, dataService, reporterUpdaterViewModel, project)
         {
             ID = id;
             Subject = postItViewModel.Subject;
@@ -66,8 +67,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
             Display_Suggestion = postItViewModel.Display_Suggestion;
             Display_Comment = postItViewModel.Display_Comment;
 
-            EditCommand = new EF_EditPostItCommand(_navigationService, _reporterUpdaterViewModel);
-            PostCommand = new EF_PostCommand(EF_PostCommand.ActionType.Edit, _navigationService, _reporterUpdaterViewModel, this, postItViewModel);
+            EditCommand = new EF_EditPostItCommand(navigationService, reporterUpdaterViewModel);
+            PostCommand = new EF_PostCommand(EF_PostCommand.ActionType.Edit, navigationService, reporterUpdaterViewModel, this, postItViewModel);
         }
     }
 }

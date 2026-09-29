@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Models.DTOs;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.DTOs;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.Text;
@@ -19,7 +20,7 @@ namespace Data_Logger_1._3.Services.CommandLogic
             try
             {
                 // Check local DB first.
-                if (await _dataService.EmailExists(email))
+                if (await _dataService.EmailExistsAsync(email))
                 {
                     using var client = new HttpClient();
 
@@ -76,7 +77,7 @@ namespace Data_Logger_1._3.Services.CommandLogic
                     // Deserialize the response to check if the verification was successful
                     var responseBody = await response.Content.ReadAsStringAsync();
 
-                    var result = JsonConvert.DeserializeObject<VerificationResponseDTO>(responseBody);
+                    var result = JsonConvert.DeserializeObject<VerificationResponse>(responseBody);
 
                     return result?.Verified ?? false;
                 }

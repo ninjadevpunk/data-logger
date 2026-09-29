@@ -1,15 +1,15 @@
 ﻿using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Models;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using System.Windows;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
     public class AScodeViewerViewModel : codeViewerViewModel
     {
         public override LOG.CATEGORY Category { get => LOG.CATEGORY.CODING; }
-        public override CacheContext Context { get => CacheContext.AndroidStudio; }
+        public override LogContext Context { get => LogContext.AndroidStudio; }
 
         public AScodeViewerViewModel(NavigationService navigationService, bool isSimple) : base(navigationService)
         {

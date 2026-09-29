@@ -1,8 +1,8 @@
 ﻿
+using Core.Interfaces;
 using Data_Logger_1._3.Commands;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -13,7 +13,7 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
         private readonly UIFactory _factory;
 
@@ -21,7 +21,7 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        public LoginViewModel(AuthService authService, NavigationService navigationService, UIFactory uiFactory)
+        public LoginViewModel(IAuthService authService, NavigationService navigationService, UIFactory uiFactory)
         {
 
             _authService = authService;
@@ -50,7 +50,7 @@ namespace Data_Logger_1._3.ViewModels
 
         /* Member Variables */
 
-        private string username;
+        private string username = string.Empty;
         public string Username
         {
             get
@@ -65,7 +65,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string password;
+        private string password = string.Empty;
         public string Password
         {
             get
@@ -79,7 +79,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string statusMessage;
+        private string statusMessage = string.Empty;
         public string StatusMessage
         {
             get
@@ -93,8 +93,8 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private Brush statusMessageColour;
-        public Brush StatusMessageColour
+        private Brush? statusMessageColour = null;
+        public Brush? StatusMessageColour
         {
             get
             {

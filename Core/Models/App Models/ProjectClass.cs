@@ -16,14 +16,14 @@ namespace Core.Models.App_Models
         public int projectID { get; set; }
 
         public int accountID { get; set; }
-        public ACCOUNT User { get; set; }
+        public ACCOUNT User { get; set; } = null!;
 
 
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
 
         public int appID { get; set; }
-        public virtual ApplicationClass Application { get; set; }
+        public virtual ApplicationClass Application { get; set; } = null!;
 
 
 

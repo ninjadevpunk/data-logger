@@ -1,4 +1,8 @@
-﻿using Core.Services;
+﻿using Core;
+using Core.Services;
+using Data;
+using Data.Interfaces;
+using Data.Services;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Services.CommandLogic;
 using Data_Logger_1._3.ViewModels;
@@ -13,18 +17,18 @@ using Data_Logger_1._3.Views.Account;
 using Data_Logger_1._3.Views.Dialogs;
 using Data_Logger_1._3.Views.LogPages;
 using Data_Logger_1._3.Views.ReportPages;
+using FileSys;
+using FileSys.Interfaces;
+
 #if DEBUG
 using DotNetEnv;
 #endif
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 #if RELEASE
 using System.Security.Cryptography;
 using System.Text;
@@ -32,6 +36,8 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 
 namespace Data_Logger_1._3
 {
@@ -62,48 +68,16 @@ namespace Data_Logger_1._3
                 })
                 .ConfigureServices((context, service) =>
                 {
-                    service.AddSingleton<UIFactory>(services => new UIFactory(services));
-                    service.AddTransient((services) => new InitialService(services));
+                    service.AddSingleton<UIFactory>();
+                    service.AddTransient<StartUpService>();
                     service.AddTransient<PDFService>();
-                    service.AddTransient<ViewModelFactory>(services => new ViewModelFactory(services));
+                    service.AddTransient<ViewModelFactory>();
 
 
-                    string key = string.Empty;
-#if DEBUG
-                    key = Environment.GetEnvironmentVariable("DevMode_SQLCipher_Key")!;
-#else
-                    key = RetrieveEncryptionKey();
-#endif
+                    service.AddFileSysDependencies();
+                    service.AddCoreDependencies();
+                    service.AddDataDependencies(context.Configuration);
 
-                    if (string.IsNullOrWhiteSpace(key))
-                        throw new Exception("SQLCipher key is missing!");
-
-
-                    var connectionString = new SqliteConnectionStringBuilder
-                    {
-                        DataSource = context.Configuration.GetConnectionString("DefaultConnection"),
-                        Mode = SqliteOpenMode.ReadWriteCreate,
-                        Password = key
-                    }.ToString();
-
-                    service.AddDbContext<EntityMaster>(options =>
-                    {
-                        options.UseSqlite(connectionString)
-                        .LogTo(Console.WriteLine, LogLevel.Information);
-#if DEBUG
-                        options.EnableSensitiveDataLogging();
-#endif
-                    });
-
-                    service.AddSingleton<CacheMaster>();
-                    service.AddScoped((services) => new EntityReader(services));
-                    service.AddScoped((services) => new EntityWriter(services));
-                    service.AddScoped((services) => new EntityHandler(services));
-
-                    service.AddSingleton((services) => new AuthService(services));
-
-                    service.AddSingleton<IDataService>(services => new DataService(services.GetRequiredService<CacheMaster>(),
-                        services.GetRequiredService<AuthService>(), services));
                     service.AddTransient<BitmapService>();
                     service.AddTransient(services => new AppSettingsService(services.GetRequiredService<IConfiguration>()));
                     service.AddTransient<SettingsService>();
@@ -111,7 +85,7 @@ namespace Data_Logger_1._3
                     service.AddTransient<VelopackService>();
 
 
-                    service.AddSingleton((services) => new NavigationService(services));
+                    service.AddSingleton<NavigationService>();
 
 
                     service.AddTransient<Splashscreen>();
@@ -122,41 +96,27 @@ namespace Data_Logger_1._3
                     service.AddTransient<CreateNotePage>();
                     service.AddTransient<CreateCheckListPage>();
                     service.AddTransient<LoggerEditPage>();
-                    service.AddTransient<LoggerViewPage>();
+                    service.AddTransient<ViewerPage>();
                     service.AddTransient<SettingsPage>();
                     service.AddTransient<VelopackUpdaterWindow>();
 
 
                     service.AddTransient<ReporterEditPage>();
 
-                    service.AddTransient((services) => new LoginViewModel(services.GetRequiredService<AuthService>(), services.GetRequiredService<NavigationService>(),
-                        services.GetRequiredService<UIFactory>()));
-                    service.AddTransient((services) => new ForgotPasswordViewModel(services.GetRequiredService<AuthService>(), services.GetRequiredService<NavigationService>()));
-                    service.AddTransient((services) => new SignUpViewModel(services.GetRequiredService<AuthService>(), services.GetRequiredService<NavigationService>(),
-                        services.GetRequiredService<UIFactory>()));
-                    service.AddSingleton((services) => new MainWindowViewModel(services.GetRequiredService<NavigationService>(),
-                        services.GetRequiredService<IDataService>()));
+                    service.AddTransient<LoginViewModel>();
+                    service.AddTransient<ForgotPasswordViewModel>();
+                    service.AddTransient<SignUpViewModel>();
+                    service.AddSingleton<MainWindowViewModel>();
 
-                    service.AddSingleton((services) => new CodingQtViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new CodingAndroidViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new CodingViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new GraphicsViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new FilmViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new FlexiViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>()));
-                    service.AddSingleton((services) => new NOTESViewModel(services.GetRequiredService<NavigationService>()));
+                    service.AddTransient<LOGViewModelFactory>();
+                    service.AddSingleton<CodingQtViewModel>();
+                    service.AddSingleton<CodingAndroidViewModel>();
+                    service.AddSingleton<CodingViewModel>();
+                    service.AddSingleton<NOTESViewModel>();
 
-                    service.AddSingleton((services) => new QtReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
-                    service.AddSingleton((services) => new ASReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
-                    service.AddSingleton((services) => new CodeReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
-                    service.AddSingleton((services) => new GraphicsReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
-                    service.AddSingleton((services) => new FilmReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
-                    service.AddSingleton((services) => new FlexiReportDeskViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<PDFService>()));
+                    service.AddSingleton<QtReportDeskViewModel>();
+                    service.AddSingleton<ASReportDeskViewModel>();
+                    service.AddSingleton<CodeReportDeskViewModel>();
 
                     // Register a factory that returns ReporterDashboard given a key
                     service.AddTransient<Func<string, ReporterDashboard>>(sp => key =>
@@ -166,9 +126,6 @@ namespace Data_Logger_1._3
                             "Code" => sp.GetRequiredService<CodeReportDeskViewModel>(),
                             "Android" => sp.GetRequiredService<ASReportDeskViewModel>(),
                             "Qt" => sp.GetRequiredService<QtReportDeskViewModel>(),
-                            "Graphics" => sp.GetRequiredService<GraphicsReportDeskViewModel>(),
-                            "Film" => sp.GetRequiredService<FilmReportDeskViewModel>(),
-                            "Flexi" => sp.GetRequiredService<FlexiReportDeskViewModel>(),
                             _ => throw new ArgumentException($"Unknown report type '{key}'")
                         };
 
@@ -180,40 +137,31 @@ namespace Data_Logger_1._3
 
 
                     service.AddTransient<codeCreateViewModel>();
-                    service.AddTransient((services) => new AScodeCreateViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<CodingAndroidViewModel>(),
-                        services.GetRequiredService<IDataService>()));
-                    service.AddTransient((services) => new graphicCreateViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<GraphicsViewModel>(),
-                        services.GetRequiredService<IDataService>()));
-                    service.AddTransient((services) => new filmCreateViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<FilmViewModel>(),
-                        services.GetRequiredService<IDataService>()));
-                    service.AddTransient((services) => new flexiCreateViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<FlexiViewModel>(),
-                        services.GetRequiredService<IDataService>()));
+                    service.AddTransient<AScodeCreateViewModel>();
 
                     service.AddTransient<codeEditViewModel>();
-                    service.AddTransient((services) => new codeViewerViewModel(services.GetRequiredService<NavigationService>()));
+                    service.AddTransient<ViewViewModelFactory>();
 
 
                     // REPORTER
 
 
                     service.AddTransient<PostItViewModel>();
-                    service.AddTransient((services) => new CreateNoteViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<NOTESViewModel>()));
-                    service.AddTransient((services) => new CreateCheckListViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<IDataService>(),
-                        services.GetRequiredService<NOTESViewModel>(), services.GetRequiredService<ViewModelFactory>()));
+                    service.AddTransient<CacheStickyPostItViewModel>();
+                    service.AddTransient<DataStickyPostItViewModel>();
+                    service.AddTransient<CreateNoteViewModel>();
+                    service.AddTransient<CreateCheckListViewModel>();
                     service.AddSingleton<CreateChecklistItemViewModel>();
 
                     service.AddTransient<Login>();
-                    service.AddTransient((services) => new loginPage01(services.GetRequiredService<LoginViewModel>()));
+                    service.AddTransient<loginPage01>();
                     service.AddTransient<loginPage02>();
-                    service.AddTransient((services) => new SignUp(services.GetRequiredService<NavigationService>(), services.GetRequiredService<SignUpViewModel>()));
-                    service.AddTransient((services) => new MainWindow(services.GetRequiredService<MainWindowViewModel>(), services.GetRequiredService<NavigationService>()));
+                    service.AddTransient<SignUp>();
+                    service.AddTransient<MainWindow>();
 
 
                     // Account
-                    service.AddTransient((services) => new SettingsViewModel(services.GetRequiredService<NavigationService>(), services.GetRequiredService<AuthService>(),
-                        services.GetRequiredService<IDataService>(), services.GetRequiredService<SettingsService>(), services.GetRequiredService<MainWindowViewModel>(),
-                        services.GetRequiredService<PasswordResetService>()));
+                    service.AddTransient<SettingsViewModel>();
                     service.AddTransient<UpdaterViewModel>();
 
                 })
@@ -226,7 +174,7 @@ namespace Data_Logger_1._3
         {
             Configuration = _serviceProvider.GetRequiredService<IConfiguration>();
 
-            var cachemaster = _serviceProvider.GetRequiredService<CacheMaster>();
+            var cachemaster = _serviceProvider.GetRequiredService<ICacheService>();
 
 
 
@@ -303,41 +251,6 @@ namespace Data_Logger_1._3
 
 
 
-#if RELEASE
-        private string RetrieveEncryptionKey()
-        {
-            string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
-            string keyFilePath = Path.Combine(folder, "secret.bin");
-
-            try
-            {
-                if (!File.Exists(keyFilePath))
-                {
-                    var newKey = Guid.NewGuid().ToString("N");
-
-                    var encrypted = ProtectedData.Protect(Encoding.UTF8.GetBytes(newKey), null, DataProtectionScope.LocalMachine);
-
-                    File.WriteAllBytes(keyFilePath, encrypted);
-                    return newKey;
-                }
-
-                var protectedData = File.ReadAllBytes(keyFilePath);
-                var decryptedBytes = ProtectedData.Unprotect(protectedData, null, DataProtectionScope.LocalMachine);
-
-                return Encoding.UTF8.GetString(decryptedBytes);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"An unexpected error occurred. We apologize for the inconvenience and cannot run the application at this time.", "Fatal Startup Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-
-                throw;
-            }
-        }
-#endif
-
-
-
         private async Task AnimateProgressBar(ProgressBar progressBar, double targetValue, TextBlock textBlock)
         {
             var duration = TimeSpan.FromSeconds(1);
@@ -364,16 +277,6 @@ namespace Data_Logger_1._3
 
 
 
-
-
-
-
-        public static void LogException(Exception ex, [CallerMemberName] string methodName = "")
-        {
-            Debug.WriteLine($"Exception occurred in {methodName}(): {ex.Message}");
-        }
-
-
         protected override async void OnExit(ExitEventArgs e)
         {
             try
@@ -381,11 +284,11 @@ namespace Data_Logger_1._3
                 await using var scope = _serviceProvider.CreateAsyncScope();
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                await dataService.SignOutUser();
+                await dataService.SignOutUserAsync();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex, "Exception occurred in OnExit");
+                Debug.WriteLine(ex, $"Exception occurred in OnExit: {ex.Message}");
             }
 
             base.OnExit(e);

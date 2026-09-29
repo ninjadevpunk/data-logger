@@ -21,13 +21,13 @@ namespace Core.Models
 
         public int logID { get; set; }
 
-        public virtual CheckList Checklist { get; set; }
+        public virtual CheckList? Checklist { get; set; }
 
 
 
 
         [ForeignKey("accountID")]
-        public ACCOUNT Author { get; set; }
+        public ACCOUNT? Author { get; set; }
 
         public int accountID { get; set; }
 
@@ -36,7 +36,7 @@ namespace Core.Models
 
         public bool IsChecked { get; set; } = false;
 
-        public string Item { get; set; } = "";
+        public string Item { get; set; } = string.Empty;
 
 
 

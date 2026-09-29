@@ -6,8 +6,9 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 using static Data_Logger_1._3.Services.NavigationService;
+using Data.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
@@ -222,7 +223,7 @@ namespace Data_Logger_1._3.ViewModels
 
                     if (graphicsChecked)
                     {
-                        _navigationService.NavigateToLogCachePage(CacheContext.Graphics);
+                        _navigationService.NavigateToLogCachePage(LogContext.Graphics);
                         UncheckButtons();
 
                     }
@@ -247,7 +248,7 @@ namespace Data_Logger_1._3.ViewModels
 
                     if (filmChecked)
                     {
-                        _navigationService.NavigateToLogCachePage(CacheContext.Film);
+                        _navigationService.NavigateToLogCachePage(LogContext.Film);
                         UncheckButtons();
 
                     }
@@ -332,7 +333,7 @@ namespace Data_Logger_1._3.ViewModels
 
                     if (flexiChecked)
                     {
-                        //_ = _navigationService.NavigateToLogCachePage(CacheContext.Flexi);
+                        //_ = _navigationService.NavigateToLogCachePage(LogContext.Flexi);
                     }
                 }
             }

@@ -1,57 +1,36 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Enums;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
     public class ViewerOKCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly CacheContext _cacheContext = CacheContext.Coding;
+        private readonly LogContext _cacheContext = LogContext.Coding;
         private ViewType _viewType = ViewType.Cache;
 
 
 
 
-        public ViewerOKCommand(NavigationService navigationService, CacheContext cacheContext)
+        public ViewerOKCommand(NavigationService navigationService, LogContext logContext)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _cacheContext = cacheContext;
-            }
-            catch (Exception)
-            {
-                // TODO
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _cacheContext = logContext;
         }
 
 
         public ViewerOKCommand(NavigationService navigationService, ViewType viewType)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _viewType = viewType;
-            }
-            catch (Exception)
-            {
-                // TODO
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _viewType = viewType;
         }
 
-        public ViewerOKCommand(NavigationService navigationService, CacheContext cacheContext, ViewType viewType)
+        public ViewerOKCommand(NavigationService navigationService, LogContext logContext, ViewType viewType)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _cacheContext = cacheContext;
-                _viewType = viewType;
-            }
-            catch (Exception)
-            {
-                // TODO
-            }
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            _cacheContext = logContext;
+            _viewType = viewType;
         }
 
         protected override async Task ExecuteAsync(object parameter)

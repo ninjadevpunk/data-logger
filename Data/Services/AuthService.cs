@@ -1,9 +1,11 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs.Identity;
+using Core.Interfaces;
 using Core.Models;
 using Data.Interfaces;
 using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace Data.Services
 {
@@ -11,7 +13,7 @@ namespace Data.Services
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public ACCOUNT? Account { get; set; }
+        private UserDTO Account { get; set; } = null!;
 
 
         public AuthService(IServiceProvider serviceProvider)
@@ -19,6 +21,46 @@ namespace Data.Services
             _serviceProvider = serviceProvider;
         }
 
+        /// <summary>
+        /// Retrieve the logged in user.
+        /// </summary>
+        /// <returns>A UserDTO</returns>
+        public UserDTO GetUser() => Account;
+
+        /// <summary>
+        /// Validates a user's email before processing
+        /// </summary>
+        /// <param name="email">User's raw email input</param>
+        /// <returns></returns>
+        private static bool IsValidEmail(string emailInput)
+        {
+            // Regular expression pattern for email validation
+            string pattern = @"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$";
+
+            // Check if the email matches the pattern
+            return Regex.IsMatch(emailInput, pattern);
+        }
+
+        /// <summary>
+        /// Signs up a user. Throws a <see cref="FormatException"/> if the user enter's an invalid email and an
+        /// <see cref="InvalidOperationException"/> if the user isn't logged in successfully.
+        /// </summary>
+        /// <param name="dp">User's profile picture</param>
+        /// <param name="email">User's email</param>
+        /// <param name="password">User's password</param>
+        /// <param name="displayName">User's name</param>
+        /// <param name="surname">User's surname</param>
+        /// <param name="isEmployee">User's employment status</param>
+        /// <param name="companyName">Company the user/employee works for</param>
+        /// <param name="companyAddress">Employee's company address</param>
+        /// <param name="companyLogo">Employee's company logo</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown if the user cannot be successfully logged in.
+        /// </exception>
+        /// <exception cref="FormatException">
+        /// Thrown if the provided email address is invalid.
+        /// </exception>
         public async Task<Result> SignUpAsync(string dp, string email, string password, string displayName, string surname, bool isEmployee,
     string companyName, string companyAddress, string companyLogo)
         {
@@ -48,6 +90,9 @@ namespace Data.Services
 
             try
             {
+                if (!IsValidEmail(email))
+                    throw new FormatException("Email is invalid");
+
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
                 currentProfilePicPath = dp.Contains("/Assets") ? string.Empty : cacheMaster.SaveProfilePicture(dp);
                 cacheMaster.DeleteTempProfilePics();
@@ -66,12 +111,18 @@ namespace Data.Services
                     IsOnline = true,
                 };
 
-                bool userIsActive = await dataService.AddAccount(account);
+                (bool userIsActive, int userId) = await dataService.AddAccountAsync(account);
 
                 if (userIsActive)
                 {
-                    Account = account;
-                    bool currentUserSet = await dataService.SetCurrentUser(account);
+                    Account = new UserDTO
+                    {
+                        UserId = userId,
+                        Name = displayName,
+                        Surname = surname,
+                        Email = email
+                    };
+                    bool currentUserSet = await dataService.SetCurrentUserAsync(userId);
 
                     if (string.IsNullOrEmpty(currentProfilePicPath) && !dp.Contains("/Assets"))
                     {
@@ -88,6 +139,40 @@ namespace Data.Services
                 }
 
                 throw new InvalidOperationException("User is not active");
+            }
+            catch (FormatException formx)
+            {
+                try
+                {
+                    var dataService = _serviceProvider.GetRequiredService<IDataService>();
+
+                    if (!string.IsNullOrEmpty(currentProfilePicPath) && File.Exists(currentProfilePicPath))
+                    {
+                        try
+                        {
+                            File.Delete(currentProfilePicPath);
+                        }
+                        catch (Exception delex)
+                        {
+                            await dataService.HandleExceptionAsync(delex);
+                        }
+                    }
+
+                    cacheMaster.DeleteTempProfilePics();
+
+                    await dataService.HandleExceptionAsync(formx);
+                }
+                catch (Exception catchEx)
+                {
+                    Debug.WriteLine($"An error occurred in the catch block of SignUpAsync: {catchEx.Message}. This exception hasn't been logged to " +
+                        $"the database.");
+                }
+
+                return new Result
+                {
+                    PublicMessage = "Please enter a valid email address.",
+                    PublicMessageType = Result.MessageType.Error
+                };
             }
             catch (Exception ex)
             {
@@ -126,6 +211,13 @@ namespace Data.Services
             };
         }
 
+        /// <summary>
+        /// Signs in a user. Throws an <see cref="ArgumentNullException"/> if user is not logged in.
+        /// </summary>
+        /// <param name="email">User's email</param>
+        /// <param name="password">User's password</param>
+        /// <returns>A result containing whether operation succeeded or not</returns>
+        /// <exception cref="ArgumentNullException">Thrown when user's account isn't logged in</exception>
         public async Task<Result> SignInAsync(string email, string password)
         {
             try
@@ -134,10 +226,13 @@ namespace Data.Services
 
                 try
                 {
-                    var (userFound, temporaryAccount) = await dataService.SignInUser(email, password);
+                    var (userFound, temporaryAccount) = await dataService.SignInUserAsync(email, password);
 
                     if (!userFound)
                         return new Result();
+
+                    if (temporaryAccount == null)
+                        throw new ArgumentNullException("Account is null!");
 
 
                     Account = temporaryAccount;
@@ -165,6 +260,12 @@ namespace Data.Services
 
         }
 
+        // TODO
+        /// <summary>
+        /// Sends verification code to user's email.
+        /// </summary>
+        /// <param name="email">The user's email regardless of if it exists in the database or not</param>
+        /// <returns>A result on whether the request succeeded or not.</returns>
         public async Task<Result> ForgotPasswordRequestAsync(string email)
         {
             // Validate email
@@ -186,6 +287,12 @@ namespace Data.Services
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Changes user's password.
+        /// </summary>
+        /// <param name="newPassword">User's new password</param>
+        /// <param name="email">User email</param>
+        /// <returns>A result on whether it changed the password successfully or not.</returns>
         public async Task<Result> ChangePasswordAsync(string newPassword, string email)
         {
             try
@@ -228,6 +335,11 @@ namespace Data.Services
 
         }
 
+
+        /// <summary>
+        /// Delete's a user's account permanently.
+        /// </summary>
+        /// <returns>A result on whether or not the account was deleted successfully or not.</returns>
         public async Task<Result> DeleteAccountAsync()
         {
             try
@@ -240,10 +352,10 @@ namespace Data.Services
                 {
                     try
                     {
-                        accountDeleted = await dataService.DeleteAccountByID(Account.accountID);
+                        accountDeleted = await dataService.DeleteAccountByIDAsync(Account.UserId);
 
                         if (accountDeleted)
-                            Account = null;
+                            Account = new();
                     }
                     catch (Exception ex)
                     {
@@ -261,7 +373,7 @@ namespace Data.Services
 
                 return new Result
                 {
-                    Success = accountDeleted && Account == null,
+                    Success = accountDeleted,
                     PublicMessage = "Account deleted",
                     PublicMessageType = Result.MessageType.Info
                 };
@@ -279,6 +391,10 @@ namespace Data.Services
             };
         }
 
+        /// <summary>
+        /// Signs out a user.
+        /// </summary>
+        /// <returns>A result on whether or not the user was successfully signed out.</returns>
         public async Task<Result> SignOutAsync()
         {
             try
@@ -288,14 +404,14 @@ namespace Data.Services
 
                 try
                 {
-                    var signedOut = await dataService.SignOutUser();
+                    var signedOut = await dataService.SignOutUserAsync();
 
                     if (signedOut)
-                        Account = null;
+                        Account = new();
 
                     return new Result
                     {
-                        Success = Account == null && signedOut
+                        Success = signedOut
                     };
                 }
                 catch (Exception ex)

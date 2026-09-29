@@ -1,23 +1,29 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
+﻿using Core.Enums;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.ViewModels;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dashboard
 {
-    public class LogCacheViewModel : ViewModelBase
+    internal abstract class LogCacheViewModel : ViewModelBase
     {
         protected readonly IDataService _dataService;
-        public NavigationService _navigationService;
+        protected readonly NavigationService _navigationService;
+        public abstract LogContext Context { get; } 
+
+        public abstract ICommand CreateLogCommand { get; }
+        public abstract ICommand ReportLogCommand { get; }
 
         public LogCacheViewModel(NavigationService navigationService, IDataService dataService)
         {
             _navigationService = navigationService;
             _dataService = dataService;
 
-            CreateLogCommand = new CreateLogCommand(_navigationService);
-            ReportLogCommand = new ReportCommand(_navigationService);
         }
 
         private string logCount = "0 logs cached | 0 total logs";
@@ -36,7 +42,7 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
 
 
         private Visibility noLogsMessageVisibility;
-        public Visibility NoLogsMessageVisibility
+        private Visibility NoLogsMessageVisibility
         {
             get
             {
@@ -49,13 +55,30 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
             }
         }
 
+        private ObservableCollection<LOGViewModel> cacheItems = [];
+        public ObservableCollection<LOGViewModel> CacheItems
+        {
+            get
+            {
+                return cacheItems;
+            }
+            set
+            {
+                cacheItems = value;
+                NoLogsMessageVisibility = CacheItems.Count == 0 ? Visibility.Visible : Visibility.Hidden;
+                OnPropertyChanged(nameof(CacheItems));
+            }
+        }
+
 
         public bool CreateLogButtonEnabled { get; set; } = false;
         public bool ReportButtonEnabled { get; set; } = false;
 
-        public ICommand CreateLogCommand { get; set; }
-        public ICommand ReportLogCommand { get; set; }
 
+
+
+
+        public abstract Task UpdateLogCount();
 
 
     }

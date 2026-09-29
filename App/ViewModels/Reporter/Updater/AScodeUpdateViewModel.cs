@@ -1,8 +1,9 @@
 ﻿using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
-using Data_Logger_1._3.Models;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
+using Data.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 {
@@ -26,7 +27,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
             InitializeOutputTypes();
             InitializeLogTypes();
 
-            //UpdateCommand = new UpdateCommand(Context, this, _ASviewModel, _navigationService, _dataService, reportViewModel, pdfService);
+            //UpdateCommand = new UpdateCommand(Context, this, _asCodingViewModel, _navigationService, _dataService, reportViewModel, pdfService);
             ClearLoggerCommand = new EF_ResetLoggerCommand();
         }
 
@@ -136,7 +137,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
         {
             if (ASOnly && _ASviewModel is not null)
             {
-                var count = await _dataService.ASLogCount();
+                var count = await _dataService.ASLogCountAsync();
                 LogCount = $"{_ASviewModel.Logs.Count} Logs Cached";
             }
         }

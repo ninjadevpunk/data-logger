@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.ViewModels;
@@ -9,7 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 using Path = System.Windows.Shapes.Path;
 
 namespace Data_Logger_1._3.ViewModels.Reporter
@@ -22,7 +22,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter
         protected readonly LOG _LOG;
         protected readonly ReportDeskViewModel _reportDesk;
         protected readonly NavigationService _navigationService;
-        public abstract CacheContext SearchResultContext { get; }
+        public abstract LogContext SearchResultContext { get; }
 
         public SearchResultViewModel(LOG log, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService)
         {

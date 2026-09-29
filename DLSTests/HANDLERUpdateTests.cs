@@ -1,10 +1,11 @@
-﻿using Data_Logger_1._3;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
-using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Core.Models;
+using Core.Models.App_Models;
+using Core.Utilities;
+using Data.Interfaces;
+using Data.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Principal;
 
 namespace DLSTests
 {
@@ -20,7 +21,7 @@ namespace DLSTests
                 LastName = "Dev",
                 Email = "ninja@test.com",
                 Password = "test123",
-                ProfilePic = "/Assets/login/user.png"
+                ProfilePic = Constants.Avatar
             };
 
             // Nav Data
@@ -313,11 +314,11 @@ namespace DLSTests
             // In memory database
             services.AddDbContext<EntityMaster>(options => options.UseInMemoryDatabase(GetTestDbName()));
 
-            // Writer
-            services.AddScoped((services) => new EntityWriter(services));
+            // AuthService
+            services.AddSingleton<IAuthService>((services) => new AuthService(services));
 
-            // Handler
-            services.AddScoped((services) => new EntityHandler(services));
+            // DataService
+            services.AddSingleton<IDataService>(services => new DataService(services.GetRequiredService<IAuthService>(), services));
 
             var serviceProvider = services.BuildServiceProvider();
 
@@ -384,11 +385,10 @@ namespace DLSTests
                     editorProjectText, incomingLog.accountID);
 
 
-                // Retrieve Dependency
-                var handler = serviceProvider.GetRequiredService<EntityHandler>();
+                var dataService = serviceProvider.GetRequiredService<IDataService>();
 
                 // Update Log
-                await handler.UpdateLogAsync(incomingLog);
+                await dataService.UpdateLogAsync(incomingLog);
             }
 
 
@@ -1184,7 +1184,7 @@ namespace DLSTests
                 LastName = "Dev",
                 Email = "ninja@test.com",
                 Password = "test123",
-                ProfilePic = "/Assets/login/user.png"
+                ProfilePic = Constants.Avatar
             };
 
             // ---------- ADD ----------

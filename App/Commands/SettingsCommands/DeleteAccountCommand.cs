@@ -1,4 +1,6 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data.Interfaces;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.IO;
 using System.Windows;
@@ -7,12 +9,12 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 {
     public class DeleteAccountCommand : AsyncCommandBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly IDataService _dataService;
         private readonly SettingsService _settingsService;
 
 
-        public DeleteAccountCommand(AuthService authService, IDataService dataService, SettingsService settingsService)
+        public DeleteAccountCommand(IAuthService authService, IDataService dataService, SettingsService settingsService)
         {
             _authService = authService;
             _dataService = dataService;
@@ -38,7 +40,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                     var accountDeleted = await _authService.DeleteAccountAsync();
 
-                    if(accountDeleted)
+                    if(accountDeleted.Success)
                     {
                         Application.Current.Shutdown();
                         return;

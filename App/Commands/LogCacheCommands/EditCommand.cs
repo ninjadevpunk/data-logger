@@ -1,36 +1,25 @@
-﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Dashboard;
+﻿using Core.DTOs.Cache;
+using Core.Enums;
+using Core.Models;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.LogViewModels;
+using FileSys.DTOs;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
-    public class EditCommand : AsyncCommandBase
+    internal class EditCommand : AsyncCommandBase
     {
+        private readonly LogCacheDTO _logCacheDTO;
         private readonly NavigationService _navigationService;
-        private readonly LogCacheViewModel _dashboard;
-        private readonly CacheContext _cacheContext;
+        private readonly LogContext _cacheContext;
 
-        public EditCommand(CacheContext cacheContext, NavigationService navigationService, LogCacheViewModel logCacheViewModel)
+        public EditCommand(LogContext logContext, NavigationService navigationService, LogCacheDTO logCacheDTO)
         {
-            try
-            {
-                _cacheContext = cacheContext;
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _dashboard = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel));
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Exception found: {e.Message}");
-
-                // TODO
-            }
+            _logCacheDTO = logCacheDTO ?? throw new ArgumentNullException(nameof(logCacheDTO));
+            _cacheContext = logContext;
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         }
 
         protected override async Task ExecuteAsync(object parameter)
@@ -39,51 +28,39 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
             {
                 switch (_cacheContext)
                 {
-                    case CacheContext.Qt:
+                    case LogContext.Qt:
                         {
-                            var log = parameter as QtLOGViewModel;
                             
 
                             break;
                         }
-                    case CacheContext.AndroidStudio:
+                    case LogContext.AndroidStudio:
                         {
-                            var log = parameter as AndroidLOGViewModel;
 
                             break;
                         }
-                    case CacheContext.Coding:
+                    case LogContext.Coding:
                         {
-                            var log = parameter as CodeLOGViewModel;
+                            var codeLogViewModel = parameter as CodeLOGViewModel;
 
-                            await _navigationService.NavigateToLoggerEditor(log);
+                            if (LogIsNull(codeLogViewModel))
+                                throw new InvalidOperationException("Log is null!");
 
-                            break;
-                        }
-                    case CacheContext.Graphics:
-                        {
-                            var log = parameter as GraphicsLOGViewModel;
-
-                            break;
-                        }
-                    case CacheContext.Film:
-                        {
-                            var log = parameter as FilmLOGViewModel;
-
-                            break;
-                        }
-                    case CacheContext.Flexi:
-                        {
-                            var log = parameter as FlexiLOGViewModel;
+                            await _navigationService.NavigateToLoggerEditor(codeLogViewModel!, _logCacheDTO);
 
                             break;
                         }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO
+                Debug.WriteLine($"Exception occurred in EditCommand.ExecuteAsync: {ex.Message}");
             }
+        }
+
+        private bool LogIsNull(LOGViewModel? log)
+        {
+            return log == null;
         }
     }
 }

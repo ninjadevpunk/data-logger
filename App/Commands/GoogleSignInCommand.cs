@@ -1,6 +1,8 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
+using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands
 {
@@ -8,14 +10,14 @@ namespace Data_Logger_1._3.Commands
     {
 
         private readonly SignUpViewModel _signUpViewModel;
-        private readonly AuthService _authService;
+        private readonly IAuthService? _authService;
 
         public GoogleSignInCommand(SignUpViewModel signUpViewModel)
         {
             _signUpViewModel = signUpViewModel;
         }
 
-        public GoogleSignInCommand(SignUpViewModel signUpViewModel, AuthService authService)
+        public GoogleSignInCommand(SignUpViewModel signUpViewModel, IAuthService authService)
         {
             _signUpViewModel = signUpViewModel;
             _authService = authService;
@@ -25,11 +27,11 @@ namespace Data_Logger_1._3.Commands
         {
             try
             {
-                //_authService.GoogleSignIn().Wait();
+                //await _authService.GoogleSignInAsync();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                //
+                Debug.WriteLine($"Exception occurred in GoogleSignInCommand.ExecuteAsync: {ex.Message}");
             }
         }
 

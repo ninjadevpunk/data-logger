@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs.Create;
+﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
@@ -6,9 +6,9 @@ namespace Data_Logger_1._3.Commands.PostItCommands
 {
     public class ClearPostItListCommand : CommandBase
     {
-        private readonly LoggerCreateViewModel _viewModel;
+        private readonly LoggerViewModel _viewModel;
 
-        public ClearPostItListCommand(LoggerCreateViewModel viewModel)
+        public ClearPostItListCommand(LoggerViewModel viewModel)
         {
             try
             {

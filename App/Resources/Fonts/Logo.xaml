@@ -1,9 +1,0 @@
-﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    
-    
-    <FontFamily x:Key="Zekton">pack://application:,,,/Fonts/#Zekton</FontFamily>
-    <FontFamily x:Key="ZektonItalics">pack://application:,,,/Fonts/#Zekton Italic</FontFamily>
-    <FontFamily x:Key="ZektonRg">pack://application:,,,/Fonts/#Zekton</FontFamily>
-    <FontFamily x:Key="ZektonBold">pack://application:,,,/Fonts/#Zekton Bold</FontFamily>
-</ResourceDictionary>

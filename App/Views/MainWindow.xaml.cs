@@ -1,6 +1,8 @@
 ﻿using Data_Logger_1._3.Components;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
+using FileSys.Interfaces;
+using FileSys.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -153,19 +155,19 @@ namespace Data_Logger_1._3
         private async void on_Qt_checked(object sender, RoutedEventArgs e)
         {
             if (_mainWindowViewModel.CodingQtChecked)
-                await _navigationService.NavigateToLogCachePage(CacheMaster.CacheContext.Qt);
+                await _navigationService.NavigateToLogCachePage(LogContext.Qt);
         }
 
         private async void on_AndroidStudio_checked(object sender, RoutedEventArgs e)
         {
             if (_mainWindowViewModel.CodingAndroidChecked)
-                await _navigationService.NavigateToLogCachePage(CacheMaster.CacheContext.AndroidStudio);
+                await _navigationService.NavigateToLogCachePage(LogContext.AndroidStudio);
         }
 
         private async void on_GenericCoding_checked(object sender, RoutedEventArgs e)
         {
             if (_mainWindowViewModel.CodingGenericChecked)
-                await _navigationService.NavigateToLogCachePage(CacheMaster.CacheContext.Coding);
+                await _navigationService.NavigateToLogCachePage(LogContext.Coding);
         }
 
         private async void on_NOTES_checked(object sender, RoutedEventArgs e)

@@ -1,24 +1,27 @@
-﻿using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Interfaces;
+using Core.Models;
+using Core.Models.App_Models;
+using Core.Utilities;
+using Data.Exceptions;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 using System.IO;
 using System.Windows;
-using static Data_Logger_1._3.Services.EntityReader;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
     public class SaveSettingsCommand : AsyncCommandBase
     {
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly IDataService _dataService;
         private readonly SettingsService _settingsService;
         private readonly Settings _settings;
         private readonly MainWindowViewModel _mainWindowViewModel;
         private readonly SettingsViewModel _settingsViewModel;
 
-        public SaveSettingsCommand(AuthService authService, IDataService dataService, SettingsService settingsService, Settings settings, MainWindowViewModel mainWindowViewModel,
+        public SaveSettingsCommand(IAuthService authService, IDataService dataService, SettingsService settingsService, Settings settings, MainWindowViewModel mainWindowViewModel,
             SettingsViewModel settingsViewModel)
         {
             _authService = authService;
@@ -53,7 +56,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                 if (!string.Equals(oldUserSettings.Email, currentUserSettings.Email, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (await _dataService.EmailExists(currentUserSettings.Email))
+                    if (await _dataService.EmailExistsAsync(currentUserSettings.Email))
                         throw new EmailConflictException("An account with this email already exists.");
                 }
 
@@ -90,8 +93,10 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                     currentUserSettings.ProfilePic = newProfilePicPath;
 
-                    if (_authService?.Account != null)
-                        _authService.Account.ProfilePic = newProfilePicPath;
+                    var user = _authService.GetUser();
+
+                    if (user != null)
+                        user.ProfilePic = newProfilePicPath;
 
                     // Update MainWindow profile picture
                     _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(newProfilePicPath);
@@ -119,7 +124,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                         }
                         catch (Exception ex)
                         {
-                            await _dataService.HandleExceptionAsync(ex, $"Exception occurred while deleting old profile picture: {ex.Message}");
+                            await _dataService.HandleExceptionAsync(ex);
                         }
                     }
                 }
@@ -131,7 +136,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (EmailConflictException mailex)
             {
-                await _dataService.HandleExceptionAsync(mailex, $"Email conflict exception occurred in SaveSettingsCommand.ExecuteAsync(): {mailex.Message}");
+                await _dataService.HandleExceptionAsync(mailex);
                 MessageBox.Show("This email has been taken.", "Email Already Exists", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
@@ -153,7 +158,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                         }
                         catch (Exception delex)
                         {
-                            await _dataService.HandleExceptionAsync(delex, $"Exception occurred while deleting new profile picture: {ex.Message}");
+                            await _dataService.HandleExceptionAsync(delex);
                         }
                     }
                 }
@@ -164,8 +169,10 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                     _settings.User.ProfilePic = oldProfilePicPath;
 
-                    if (_authService?.Account != null && _authService.Account.ProfilePic != oldProfilePicPath)
-                        _authService.Account.ProfilePic = oldProfilePicPath;
+                    var user = _authService.GetUser();
+
+                    if (user != null && user.ProfilePic != oldProfilePicPath)
+                        user.ProfilePic = oldProfilePicPath;
 
                     _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
                     _settingsViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
@@ -173,7 +180,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 }
                 else
                 {
-                    oldProfilePicPath = "/Assets/login/user.png";
+                    oldProfilePicPath = Constants.Avatar;
 
                     await _dataService.UpdateProfilePicAsync(_settings.User.Id, oldProfilePicPath);
                     _settings.User.ProfilePic = oldProfilePicPath;

@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Models.App_Models;
 using Microsoft.Extensions.Configuration;
 
 namespace Data_Logger_1._3.Services

@@ -25,14 +25,14 @@ namespace Core.Models
 
 
         [ForeignKey("logID")]
-        public virtual LOG Log { get; set; }
+        public virtual LOG? Log { get; set; }
 
         public int logID { get; set; }
 
 
 
         [ForeignKey("accountID")]
-        public ACCOUNT Author { get; set; }
+        public ACCOUNT? Author { get; set; }
 
         public int accountID { get; set; }
 
@@ -41,7 +41,7 @@ namespace Core.Models
         /// The PostIt's subject. Gives context to the PostIt's content.
         /// </summary>
         [ForeignKey("subjectID")]
-        public SubjectClass Subject { get; set; }
+        public SubjectClass? Subject { get; set; }
         public int subjectID { get; set; }
 
         /// <summary>

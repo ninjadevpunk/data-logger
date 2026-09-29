@@ -1,51 +1,25 @@
-﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.LogViewModels;
-using System.Collections.ObjectModel;
-using System.Windows;
+﻿using Core.Enums;
+using Data.Interfaces;
+using Data_Logger_1._3.Services;
 
 namespace Data_Logger_1._3.ViewModels.Dashboard
 {
-    public class CodingQtViewModel : LogCacheViewModel
+    internal class CodingQtViewModel : CodingViewModel
     {
-
+        public override LogContext Context => LogContext.Qt;
 
         public CodingQtViewModel(NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
         {
-            CacheItems = new ObservableCollection<QtLOGViewModel>();
+            CacheItems = [];
         }
 
-        public CodingQtViewModel(string logCount, NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
+        
+        public override async Task UpdateLogCount()
         {
-            CacheItems = new ObservableCollection<QtLOGViewModel>();
-            LogCount = logCount;
-        }
+            var count = await _dataService.QtLogCountAsync();
 
+            // TODO: Handle count failure
 
-        private ObservableCollection<QtLOGViewModel> cacheItems;
-        public ObservableCollection<QtLOGViewModel> CacheItems
-        {
-            get
-            {
-                return cacheItems;
-            }
-            set
-            {
-                cacheItems = value;
-
-                NoLogsMessageVisibility = CacheItems.Count == 0 ? Visibility.Visible : Visibility.Hidden;
-
-                OnPropertyChanged(nameof(CacheItems));
-            }
-        }
-
-        public async Task AutoStartAsync()
-        {
-            await UpdateLogCount();
-        }
-
-        public async Task UpdateLogCount()
-        {
-            var count = await _dataService.QtLogCount();
             LogCount = $"{CacheItems.Count} qt logs cached | {count} total logs";
         }
 

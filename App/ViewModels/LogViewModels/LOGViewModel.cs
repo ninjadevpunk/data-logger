@@ -1,38 +1,44 @@
-﻿using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Models;
+﻿using Core.DTOs.Cache;
+using Core.Enums;
+using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.Dialogs;
+using FileSys.Interfaces;
 using MVVMEssentials.ViewModels;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using static Data_Logger_1._3.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    public abstract class LOGViewModel : ViewModelBase
+    /// <summary>
+    /// Represents a log DTO in the UI.
+    /// </summary>
+    internal abstract class LOGViewModel : ViewModelBase
     {
-        protected readonly LOG _LOG;
-        protected readonly LogCacheViewModel _vm;
-        protected readonly CacheMaster _cacheMaster;
-        public abstract CacheContext LOGViewModelContext { get; }
+        protected readonly LogCacheDTO _logCacheDTO;
+        protected readonly LogCacheViewModel _logCacheViewModel;
+        protected readonly NavigationService _navigationService;
+        protected readonly IDataService _dataService;
+        protected readonly ICacheService _cacheMaster;
+        protected LogContext LOGViewModelContext => _logCacheDTO.Context;
+        protected readonly bool _isCacheSave;
 
 
 
         public bool IsDisposed { get; set; } = false;
 
-        public Timer _timer;
+        public Timer? _timer;
 
-        public ICommand EditCommand { get; set; }
+        public ICommand EditCommand { get; set; } = null!;
 
-        public ICommand ViewCommand { get; set; }
+        public ICommand ViewCommand { get; set; } = null!;
 
-        public ICommand DeleteCacheItemCommand { get; set; }
+        public ICommand DeleteCacheItemCommand { get; set; } = null!;
 
-        public ICommand QuickDeleteCacheItemCommand { get; set; }
+        public ICommand QuickDeleteCacheItemCommand { get; set; } = null!;
 
 
 
@@ -42,43 +48,50 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-        public LOGViewModel(LOG log, LogCacheViewModel logCacheViewModel, ObservableCollection<PostItViewModel> createPostItViewModels, IDataService dataService)
+        public LOGViewModel(NavigationService navigationService, LogCacheDTO logCacheDTO, LogCacheViewModel logCacheViewModel, 
+            IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
         {
-            _vm = logCacheViewModel;
+            _isCacheSave = isCacheSave;
+            _logCacheViewModel = logCacheViewModel;
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "LOGViewModel");
+            _dataService = dataService;
 
-            _LOG = log;
-            NotaryContent = PostItContent(createPostItViewModels);
-            _LOG.Content = NotaryContent;
+            _logCacheDTO = logCacheDTO;
+
             TimeRemaining = 1200;
+
+
+            if (isCacheSave)
+            {
+                // TODO: Do not store content on model - UI concern only. See if Core.Utilities Rtf converter can do this for UI directly
+                // and use DTO to obtain UI PostIt content.
+                //NotaryContent = PostItContent(createPostItViewModels);
+                //_logCacheDTO.Content = NotaryContent;
+
+                _cacheMaster = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "LOGViewModel");
+                _cacheMaster.IdentifiersChecked(_logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"));
+            }
+            else
+            { 
+                // TODO: Same as above
+                //NotaryContent = _logCacheDTO.Content;
+                TimeRemaining /= 2;
+
+                _cacheMaster = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "LOGViewModel");
+            }
+
             StartCountdown();
 
-            
-            Setup(dataService);
 
-            _cacheMaster = dataService.GetCachemaster();
-            _cacheMaster.IdentifiersChecked(_LOG.Start.ToString("yyyyMMdd_HHmmss"));
+            Setup(dataService, cacheService, logCacheDTO);
 
         }
 
-        public LOGViewModel(LOG log, LogCacheViewModel logCacheViewModel, IDataService dataService)
+
+        private void Setup(IDataService dataService, ICacheService cacheService, LogCacheDTO logCacheDTO)
         {
-            _vm = logCacheViewModel;
-
-            _LOG = log;
-            NotaryContent = _LOG.Content;
-            TimeRemaining = 600;
-            StartCountdown();
-
-
-            Setup(dataService);
-
-            _cacheMaster = dataService.GetCachemaster();
-        }
-
-        private void Setup(IDataService dataService)
-        {
-            DeleteCacheItemCommand = new DeleteCacheItemCommand(_vm, dataService, true);
-            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_vm, dataService, false);
+            DeleteCacheItemCommand = new DeleteCacheItemCommand<LOGViewModel>(_logCacheViewModel, dataService, cacheService, logCacheDTO, true, _timer);
+            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand<LOGViewModel>(_logCacheViewModel, dataService, cacheService, logCacheDTO, false, _timer);
         }
 
 
@@ -100,26 +113,73 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-        public int ViewModelID => _LOG.ID;
+        /// <summary>
+        /// The project name of the log
+        /// </summary>
+        public string ProjectName => $"{_logCacheDTO.ProjectName} ({_logCacheDTO.ApplicationName})";
 
-        public string ProjectName => $"{_LOG.Project.Name} ({_LOG.Application.Name})";
+        /// <summary>
+        /// ID for log cache item
+        /// </summary>
+        public string StartAsCacheID => _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss");
 
-        public string StartAsID => _LOG.Start.ToString("yyyyMMdd_HHmmss");
+        /// <summary>
+        /// How many errors are in the log
+        /// </summary>
+        public int ErrorCount => _logCacheDTO.PostIts.Count(p => RtfConverter.HasContent(p.Error));
+        /// <summary>
+        /// How many solutions are in the log.
+        /// </summary>
+        public int SolutionCount => _logCacheDTO.PostIts.Count(p => RtfConverter.HasContent(p.Solution));
+        /// <summary>
+        /// How many suggestions are in the log.
+        /// </summary>
+        public int SuggestionCount => _logCacheDTO.PostIts.Count(p => RtfConverter.HasContent(p.Suggestion));
+        /// <summary>
+        /// How many comments are in the log.
+        /// </summary>
+        public int CommentCount => _logCacheDTO.PostIts.Count(p => RtfConverter.HasContent(p.Comment));
 
-        public string ErrorCount => _LOG.ErrorCount().ToString();
+        /// <summary>
+        /// Formatted start and end date.
+        /// </summary>
+        public string StartEndDate => $"{_logCacheDTO.Start.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")} - " +
+            $"{_logCacheDTO.End.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")}";
 
-        public string SolutionCount => _LOG.SolutionCount().ToString();
+        /// <summary>
+        /// Store the first occurence of a note with acceptable input only.
+        /// </summary>
+        public string NotaryContent
+        {
+            get
+            {
+                foreach (var postIt in _logCacheDTO.PostIts)
+                {
+                    var rtfFields = new[] { postIt.Error, postIt.Solution, postIt.Suggestion, postIt.Comment };
 
-        public string SuggestionCount => _LOG.SuggestionCount().ToString();
+                    foreach (var rtf in rtfFields)
+                    {
+                        var (text, exception) = RtfConverter.ToPlainText(rtf);
 
-        public string CommentCount => _LOG.CommentCount().ToString();
+                        if (exception != null)
+                        {
+                            _dataService.HandleExceptionAsync(exception);
+                            Debug.WriteLine($"Exception occurred in LOGViewModel NotaryContent getter: {exception.Message}");
+                            continue;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(text))
+                        {
+                            return text;
+                        }
+                    }
+                }
+
+                return "No Notes";
+            }
+        }
 
 
-        public string StartEndDate => $"{_LOG.Start.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")} - " +
-            $"{_LOG.End.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")}";
-
-        /** Store the first occurence of a note with acceptable input only. **/
-        public string NotaryContent { get; set; }
 
 
         private double timeRemaining;
@@ -180,7 +240,8 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                             if (TimeRemaining == 0)
                             {
                                 DeleteCacheItem();
-                                _timer.Dispose();
+                                if(_timer != null)
+                                    _timer.Dispose();
                                 IsDisposed = true;
                             }
                             else
@@ -189,51 +250,29 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                     });
                 }
             }
-            catch(TaskCanceledException tex)
+            catch (TaskCanceledException tex)
             {
-                _timer.Dispose();
+                if(_timer != null)
+                    _timer.Dispose();
+
+                _dataService.HandleExceptionAsync(tex);
             }
             catch (Exception ex)
             {
+                _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"Exception found near TimerCallback(): {ex.Message}");
-
-                // TODO
-
 
             }
         }
+
 
         protected abstract void DeleteCacheItem();
 
-        public void DeleteCacheFile(string id, CacheContext cacheContext)
+        public void DeleteCacheFile(string id, LogContext logContext)
         {
-            _cacheMaster.DeleteViewModel(id, cacheContext);
+            _cacheMaster.DeleteLogCache(_logCacheDTO.UserId, id, logContext);
         }
 
-
-
-
-
-
-        public static string PostItContent(ObservableCollection<PostItViewModel> createPostItViewModel)
-        {
-            string pattern = @"\S";
-            Regex regex = new Regex(pattern);
-
-            foreach (PostItViewModel postItViewModel in createPostItViewModel)
-            {
-                if (!string.IsNullOrWhiteSpace(postItViewModel.Display_Error) && regex.IsMatch(postItViewModel.Display_Error))
-                    return postItViewModel.Display_Error;
-                else if (!string.IsNullOrWhiteSpace(postItViewModel.Display_Solution) && regex.IsMatch(postItViewModel.Display_Solution))
-                    return postItViewModel.Display_Solution;
-                else if (!string.IsNullOrWhiteSpace(postItViewModel.Display_Suggestion) && regex.IsMatch(postItViewModel.Display_Suggestion))
-                    return postItViewModel.Display_Suggestion;
-                else if (!string.IsNullOrWhiteSpace(postItViewModel.Display_Comment) && regex.IsMatch(postItViewModel.Display_Comment))
-                    return postItViewModel.Display_Comment;
-            }
-
-            return "No Notes";
-        }
 
 
 

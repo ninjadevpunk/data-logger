@@ -1,5 +1,6 @@
-﻿using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
+﻿using Core.Models;
+using Core.Models.App_Models;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
@@ -8,7 +9,7 @@ using MVVMEssentials.Commands;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
-using static Data_Logger_1._3.Services.CacheMaster;
+using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
@@ -17,7 +18,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
     /// </summary>
     public class UpdateCommand : AsyncCommandBase
     {
-        private readonly CacheContext? _cacheContext = CacheContext.Coding;
+        private readonly LogContext? _cacheContext = LogContext.Coding;
         private readonly ReporterUpdaterViewModel? _editor;
         private readonly ReportDeskViewModel? _desk;
         private readonly LOG? _log;
@@ -30,7 +31,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 
         }
 
-        public UpdateCommand(CacheContext context, ReporterUpdaterViewModel reporterEditorViewModel, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService, IDataService dataService, LOG log)
+        public UpdateCommand(LogContext context, ReporterUpdaterViewModel reporterEditorViewModel, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService, IDataService dataService, LOG log)
         {
             try
             {
@@ -51,9 +52,12 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
         {
             try
             {
-                if (_navigationService == null || _dataService == null || _editor == null || _log == null || _desk == null)
+                if (_navigationService == null || _dataService == null || _editor == null || _log == null || _desk == null || _log == null)
                     throw new ArgumentNullException("Important properties cannot be null.");
                 var account = _dataService.GetUser();
+                if(account == null)
+                    throw new ArgumentNullException("Account is null!");
+
                 var userID = account.accountID;
 
 
@@ -68,10 +72,10 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                     _log.appID = 3;
                     _log.Application = null;
                 }
-                else if (_log.Application.Name != _editor.ApplicationName)
+                else if (_log.Application?.Name != _editor.ApplicationName)
                 {
                     // App may be the same or changed. Changed app may be new or existing
-                    var app = await _dataService.FindApplication(userID, _editor.ApplicationName);
+                    var app = await _dataService.FindApplicationAsync(userID, _editor.ApplicationName);
 
                     if (app == null)
                     {
@@ -106,7 +110,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                     }
                     else if (_log.Project.Name != _editor.ProjectName || !projectBelongsToNewApp)
                     {
-                        var project = await _dataService.FindProject(account.accountID, _editor.ProjectName, _log.appID);
+                        var project = await _dataService.FindProjectAsync(account.accountID, _editor.ProjectName, _log.appID);
 
                         if (project == null)
                         {
@@ -145,20 +149,20 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                 _log.Start = _editor.StartDate;
                 _log.End = _editor.EndDate;
 
-                if (_log.Output.Name != _editor.Output)
+                if (_log.Output?.Name != _editor.Output)
                 {
-                    _log.Output = await _dataService.FindOutput(_editor.Output) ?? new(41, "EXE (*.exe)");
+                    _log.Output = await _dataService.FindOutputAsync(_editor.Output) ?? new(41, "EXE (*.exe)");
                 }
 
-                if (_log.Type.Name != _editor.Type)
+                if (_log.Type?.Name != _editor.Type)
                 {
-                    _log.Type = await _dataService.FindType(_editor.Type) ?? new(39, "Note");
+                    _log.Type = await _dataService.FindTypeAsync(_editor.Type) ?? new(39, "Note");
                 }
 
                 foreach (var editorPostIt in _editor.PostIts)
                 {
                     var subjectIsNew = false;
-                    var subject = await _dataService.FindSubject(editorPostIt.Subject, _log.Category, _log.appID, _log.projectID);
+                    var subject = await _dataService.FindSubjectAsync(editorPostIt.Subject, _log.Category, _log.appID, _log.projectID);
 
                     if (subject == null || appIsNew || projectIsNew)
                     {
@@ -249,7 +253,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 
                 switch (_cacheContext)
                 {
-                    case CacheContext.Qt:
+                    case LogContext.Qt:
                         {
 
 
@@ -285,12 +289,12 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
             catch (InvalidCastException castx)
             {
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(castx, "ExecuteAsync(parameter)", "InvalidCastException");
+                    await _dataService.HandleExceptionAsync(castx);
             }
             catch (TaskCanceledException taskx)
             {
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(taskx, "ExecuteAsync(parameter)", "TaskCanceledException");
+                    await _dataService.HandleExceptionAsync(taskx);
             }
             catch (ArgumentNullException nullx)
             {
@@ -298,7 +302,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(nullx, "ExecuteAsync(parameter)", "ArgumentNullException");
+                    await _dataService.HandleExceptionAsync(nullx);
 
             }
             catch (IndexOutOfRangeException index)
@@ -307,7 +311,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(index, "ExecuteAsync(parameter)", "IndexOutOfRangeException");
+                    await _dataService.HandleExceptionAsync(index);
 
             }
             catch (FormatException formx)
@@ -323,7 +327,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                 }
 
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(formx, "ExecuteAsync(parameter)", "FormatException");
+                    await _dataService.HandleExceptionAsync(formx);
 
             }
             catch (Exception ex)
@@ -332,7 +336,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
                 if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(ex, "ExecuteAsync(parameter)");
+                    await _dataService.HandleExceptionAsync(ex);
 
             }
         }

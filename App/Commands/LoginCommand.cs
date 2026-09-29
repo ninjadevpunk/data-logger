@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 
@@ -8,11 +9,11 @@ namespace Data_Logger_1._3.Commands
     {
 
         private readonly LoginViewModel _login;
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
 
 
-        public LoginCommand(LoginViewModel loginViewModel, AuthService authService, NavigationService navigationService)
+        public LoginCommand(LoginViewModel loginViewModel, IAuthService authService, NavigationService navigationService)
         {
             _login = loginViewModel;
             _authService = authService;
@@ -24,7 +25,8 @@ namespace Data_Logger_1._3.Commands
 
             try
             {
-                bool signInSuccessful = await _authService.SignIn(_login.Username, _login.Password);
+                var result = await _authService.SignInAsync(_login.Username, _login.Password);
+                bool signInSuccessful = result.Success;
 
                 if (signInSuccessful)
                 {

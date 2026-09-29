@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.Commands;
@@ -9,8 +9,8 @@ namespace Data_Logger_1._3.Commands.NotesCommands
 {
     public class DeleteNoteItemCommand : AsyncCommandBase
     {
-        private readonly NOTESViewModel _notesViewModel;
-        private readonly IDataService _dataService;
+        private readonly NOTESViewModel? _notesViewModel;
+        private readonly IDataService? _dataService;
 
         public DeleteNoteItemCommand(NOTESViewModel notesViewModel, IDataService dataService)
         {
@@ -32,7 +32,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                 if (parameter is NoteLOGViewModel noteToDelete)
                 {
                     // Delete from database first
-                    var noteDeleted = await _dataService.DeleteNote(noteToDelete.ViewModelID);
+                    var noteDeleted = await _dataService.DeleteNoteAsync(noteToDelete.ViewModelID);
 
                     // Remove the note from the ObservableCollection
                     if(noteDeleted)
@@ -48,7 +48,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                 MessageBox.Show("A problem occurred on our end. We apologise for any inconvenience caused. Feedback will automatically be sent to us.",
                    "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
-                await _dataService.HandleExceptionAsync(ex, "DeleteNoteItemCommand.Execute()");
+                await _dataService.HandleExceptionAsync(ex);
             }
         }
     }

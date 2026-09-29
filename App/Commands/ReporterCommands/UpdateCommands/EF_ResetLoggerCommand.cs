@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.Models;
+﻿using Core.Models;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
@@ -9,7 +9,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
     {
         private readonly ReporterUpdaterViewModel _viewModel;
         private const string Qt = "Qt Creator";
-        private const string Android = "Android Studio Meerkat 2024.3.1";
+        private const string Android = "Android Studio Quail 4 — 2026.1.4";
         private const string VisualStudio = "Visual Studio Community 2022";
 
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
@@ -111,57 +111,12 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
                             }
                             break;
                         }
-                    case LOG.CATEGORY.GRAPHICS:
-                        {
-                            var graphicsViewModel = (graphicsUpdateViewModel)_viewModel;
-                            graphicsViewModel.Output = "Portable Network Graphics (*.PNG)";
-                            graphicsViewModel.Type = "NONE";
-                            graphicsViewModel.Medium = "Pencil";
-                            graphicsViewModel.Format = "Paper";
-                            graphicsViewModel.Brush = string.Empty;
-                            graphicsViewModel.Height = string.Empty;
-                            graphicsViewModel.Width = string.Empty;
-                            graphicsViewModel.MeasuringUnit = "cm";
-                            graphicsViewModel.Size = "A4 (29,7 cm x 21 cm)";
-                            graphicsViewModel.DPI = string.Empty;
-                            graphicsViewModel.ColourDepth = string.Empty;
-                            graphicsViewModel.IsCompleted = false;
-                            graphicsViewModel.Source = string.Empty;
-
-                            break;
-                        }
-                    case LOG.CATEGORY.FILM:
-                        {
-                            var filmViewModel = (filmUpdateViewModel)_viewModel;
-                            filmViewModel.Height = string.Empty;
-                            filmViewModel.Width = string.Empty;
-                            filmViewModel.Resolution = string.Empty;
-                            filmViewModel.Length = string.Empty;
-                            filmViewModel.IsCompleted = false;
-                            filmViewModel.Source = string.Empty;
-
-                            break;
-                        }
-                    case LOG.CATEGORY.NOTES:
-                        {
-                            var flexiViewModel = (flexiUpdateViewModel)_viewModel;
-                            flexiViewModel.FlexibleLogCategory = string.Empty;
-                            flexiViewModel.Medium = "Song";
-                            flexiViewModel.Format = "CD";
-                            flexiViewModel.Bitrate = string.Empty;
-                            flexiViewModel.Duration = string.Empty;
-                            flexiViewModel.IsCompleted = false;
-                            flexiViewModel.Source = string.Empty;
-
-                            break;
-                        }
                 }
 
             }
             catch (Exception e)
             {
                 Debug.WriteLine($"Exception found near EF_ResetLoggerCommand: {e.Message}");
-                // TODO
             }
         }
 

@@ -1,67 +1,68 @@
-﻿using Data_Logger_1._3.Commands.LoggerCommands;
+﻿using Core.DTOs.Cache;
+using Core.Enums;
+using Core.Interfaces;
+using Core.Models;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.Dialogs.Create;
 using Data_Logger_1._3.ViewModels.LogViewModels;
-using MVVMEssentials.ViewModels;
-using static Data_Logger_1._3.Services.CacheMaster;
+using FileSys.Interfaces;
+using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 {
-    public class codeEditViewModel : codeCreateViewModel
+    internal class codeEditViewModel : LoggerEditViewModel
     {
-        private readonly QtLOGViewModel _qtLOGViewModel;
-        private readonly CodeLOGViewModel _codeLOGViewModel;
+        public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
+        public override LogContext Context => LogContext.Coding;
+        public override string LogType => "CODING LOG";
+        public override ICommand SaveCommand => new SaveCommand(this, _authService, _dataService, _cacheService);
 
-        public codeEditViewModel()
+        protected readonly CodingViewModel _codingViewModel;
+
+        public codeEditViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IDataService dataService,
+            CodingCacheDTO codingCacheDTO, CodeLOGViewModel codeLogViewModel, IAuthService authService, ICacheService cacheService)
+            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
         {
+            _codingViewModel = (CodingViewModel)logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel),
+                    "codeCreateViewModel");
+            ProjectName = codingCacheDTO.ProjectName;
+            ApplicationName = codingCacheDTO.ApplicationName;
+
+            StartDate = codingCacheDTO.Start;
+            StartHours = codingCacheDTO.Start.Hour;
+            StartMinutes = codingCacheDTO.Start.Minute;
+            StartSeconds = codingCacheDTO.Start.Second;
+            StartMilliseconds = codingCacheDTO.Start.Millisecond;
+
+            EndDate = codingCacheDTO.End;
+            EndHours = codingCacheDTO.End.Hour;
+            EndMinutes = codingCacheDTO.End.Minute;
+            EndSeconds = codingCacheDTO.End.Second;
+            EndMilliseconds = codingCacheDTO.End.Millisecond;
+
+
+            //EditCommand = new EditAnnotateCommand(abstract, codeLogViewModel);
 
         }
 
-        public codeEditViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IDataService dataService, 
-            ViewModelBase viewModelBase)
-            : base(navigationService, logCacheViewModel, dataService)
+
+
+        #region Member Functions
+
+        public override async Task UpdateLogCount()
         {
-
-            _codeLOGViewModel = (CodeLOGViewModel)viewModelBase;
-
-            StartDate = _codeLOGViewModel._CodeLOG.Start;
-            StartHours = _codeLOGViewModel._CodeLOG.Start.Hour;
-            StartMinutes = _codeLOGViewModel._CodeLOG.Start.Minute;
-            StartSeconds = _codeLOGViewModel._CodeLOG.Start.Second;
-            StartMilliseconds = _codeLOGViewModel._CodeLOG.Start.Millisecond;
-
-            EndDate = _codeLOGViewModel._CodeLOG.End;
-            EndHours = _codeLOGViewModel._CodeLOG.End.Hour;
-            EndMinutes = _codeLOGViewModel._CodeLOG.End.Minute;
-            EndSeconds = _codeLOGViewModel._CodeLOG.End.Second;
-            EndMilliseconds = _codeLOGViewModel._CodeLOG.End.Millisecond;
-
-
-            AnnotateCommand = null;
-            EditCommand = new AnnotateCommand(ActionType.Edit, Context, _navigationService, this, _logCacheViewModel, _dataService, 
-                _codeLOGViewModel);
-
-        }
-
-        public codeEditViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, string app, IDataService dataService, 
-            ViewModelBase viewModelBase)
-            : base(navigationService, logCacheViewModel, app, dataService)
-        {
-            if (app == "Qt")
+            if (_codingViewModel != null)
             {
-                _qtLOGViewModel = (QtLOGViewModel)viewModelBase;
-                EditCommand = new AnnotateCommand(ActionType.Edit, CacheContext.Qt, _navigationService, this, _logCacheViewModel, 
-                    _dataService, _qtLOGViewModel);
+                var count = await _dataService.LogCountAsync(Category);
+                LogCount = $"{_codingViewModel.CacheItems.Count} Logs Cached";
+                _codingViewModel.LogCount = $"{_codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
             }
-            else
-            {
-                AnnotateCommand = null;
-                EditCommand = new AnnotateCommand(ActionType.Edit, Context, _navigationService, this, _logCacheViewModel, _dataService, 
-                    _codeLOGViewModel);
-            }
-
         }
+
+        #endregion
+
 
 
     }

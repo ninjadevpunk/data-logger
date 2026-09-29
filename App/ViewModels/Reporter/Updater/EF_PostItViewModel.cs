@@ -1,7 +1,8 @@
-﻿using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
+﻿using Core.Models;
+using Core.Models.App_Models;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands.ToolCommands;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Models.App_Models;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
@@ -19,9 +20,9 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
     {
         public enum PostItField { Error, Solution, Suggestion, Comment }
 
-        protected readonly NavigationService _navigationService;
-        protected readonly IDataService _dataService;
-        protected readonly ReporterUpdaterViewModel _reporterUpdaterViewModel;
+        protected readonly NavigationService? _navigationService;
+        protected readonly IDataService? _dataService;
+        protected readonly ReporterUpdaterViewModel? _reporterUpdaterViewModel;
 
         public EF_PostItViewModel(NavigationService navigationService, IDataService dataService, ReporterUpdaterViewModel reporterUpdaterViewModel)
         {
@@ -145,7 +146,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
 
         public async Task AutoStartAsync(ProjectClass project)
         {
-            await _dataService.InitialiseSubjectsLIST(project);
+            await _dataService.InitialiseSubjectsLISTAsync(project);
         }
 
 
@@ -699,7 +700,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Updater
         {
             try
             {
-                await _dataService.InitialiseSubjectsLIST(category);
+                await _dataService.InitialiseSubjectsLISTAsync(category);
 
                 Subjects = new();
                 Subjects.Clear();

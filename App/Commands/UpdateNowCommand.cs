@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data.Interfaces;
 using MVVMEssentials.Commands;
 using System.Windows;
 using Velopack;
@@ -8,12 +9,12 @@ namespace Data_Logger_1._3.Commands
     public class UpdateNowCommand : AsyncCommandBase
     {
         private readonly IDataService _dataService;
-        private readonly VelopackService _velopackService;
+        private readonly IVelopackService _velopackService;
         private readonly UpdateInfo _updateInfo;
         private readonly bool _isManualDownload;
 
 
-        public UpdateNowCommand(IDataService dataService, VelopackService velopackService, UpdateInfo updateInfo, bool isManualDownload = false)
+        public UpdateNowCommand(IDataService dataService, IVelopackService velopackService, UpdateInfo updateInfo, bool isManualDownload = false)
         {
             _dataService = dataService;
             _velopackService = velopackService;
@@ -31,7 +32,7 @@ namespace Data_Logger_1._3.Commands
                     await _velopackService.DownloadUpdateAsync(_updateInfo);
                 }
 
-                await _dataService.SignOutUser();
+                await _dataService.SignOutUserAsync();
                 _velopackService.ApplyUpdateAndRestart(_updateInfo);
             }
             catch (Exception ex)

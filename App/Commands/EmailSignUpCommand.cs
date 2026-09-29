@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 using System.Windows;
@@ -10,10 +11,10 @@ namespace Data_Logger_1._3.Commands
 
 
         private readonly SignUpViewModel _signUpViewModel;
-        private readonly AuthService _authService;
+        private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
 
-        public EmailSignUpCommand(SignUpViewModel signUpViewModel, AuthService authService, NavigationService navigationService)
+        public EmailSignUpCommand(SignUpViewModel signUpViewModel, IAuthService authService, NavigationService navigationService)
         {
             _signUpViewModel = signUpViewModel;
             _authService = authService;
@@ -41,9 +42,9 @@ namespace Data_Logger_1._3.Commands
                 
 
                 // Call the SignUp method in AuthService to handle user registration
-                var isSignedUp = await _authService.SignUp(displayPic, email, password, displayName, surname, IsHired, company, address, logo);
+                var isSignedUp = await _authService.SignUpAsync(displayPic, email, password, displayName, surname, IsHired, company, address, logo);
 
-                if (isSignedUp)
+                if (isSignedUp.Success)
                 {
                     _signUpViewModel.StatusMessage = "Sign up Successful";
                     _signUpViewModel.StatusMessageColour = _signUpViewModel.MessageGood;

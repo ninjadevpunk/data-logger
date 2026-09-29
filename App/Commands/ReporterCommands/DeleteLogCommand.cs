@@ -1,8 +1,9 @@
 ﻿using MVVMEssentials.Commands;
 using System.Diagnostics;
-using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
+using Data.Interfaces;
+using Core.Models;
+using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -15,7 +16,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
         private readonly IDataService _dataService;
         private readonly ReportDeskViewModel _reportDeskViewModel;
         private readonly LOG _log;
-        private CacheMaster.CacheContext _cacheContext;
+        private LogContext _cacheContext;
 
         public DeleteLogCommand()
         {
@@ -32,14 +33,14 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
             _dataService = dataService;
         }
 
-        public DeleteLogCommand(IDataService dataService, CacheMaster.CacheContext context, LOG log)
+        public DeleteLogCommand(IDataService dataService, LogContext context, LOG log)
         {
             _dataService = dataService;
             _cacheContext = context;
             _log = log;
         }
 
-        public DeleteLogCommand(IDataService dataService, ReportDeskViewModel reportDeskViewModel, CacheMaster.CacheContext context, LOG log)
+        public DeleteLogCommand(IDataService dataService, ReportDeskViewModel reportDeskViewModel, LogContext context, LOG log)
         {
             _dataService = dataService;
             _reportDeskViewModel = reportDeskViewModel;
@@ -51,7 +52,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
         {
             try
             {
-                if (await _dataService.DeleteLOG(_log))
+                if (await _dataService.DeleteLOGAsync(_log))
                 {
                     await _reportDeskViewModel.UpdateLogsListAsync();
                 }
