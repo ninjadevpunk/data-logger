@@ -1,8 +1,7 @@
-﻿using Data_Logger_1._3.Components;
+﻿using Core.Enums;
+using Data_Logger_1._3.Components;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
-using FileSys.Interfaces;
-using FileSys.Services;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -18,7 +17,7 @@ namespace Data_Logger_1._3
         private readonly NavigationService _navigationService;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
-        public MainWindow(MainWindowViewModel mainWindowViewModel, NavigationService navigationService)
+        internal MainWindow(MainWindowViewModel mainWindowViewModel, NavigationService navigationService)
         {
             InitializeComponent();
 
@@ -95,20 +94,6 @@ namespace Data_Logger_1._3
 
         #endregion
 
-        private void on_MainWindow_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Calculate the new left position to center the window horizontally
-            double windowWidth = this.Width;
-            double newLeft = (SystemParameters.PrimaryScreenWidth - windowWidth) / 2.0;
-
-            // Calculate the new top position to center the window vertically
-            double windowHeight = this.Height;
-            double newTop = (SystemParameters.PrimaryScreenHeight - windowHeight) / 2.0;
-
-            // Set the new left and top positions
-            this.Left = newLeft;
-            this.Top = newTop;
-        }
 
 
 

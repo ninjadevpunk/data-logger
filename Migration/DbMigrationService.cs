@@ -13,12 +13,15 @@ namespace Migration
             _programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
         }
 
+
         public async Task MigrateAsync(string oldDbPath, string newDbPath)
         {
+#if RELEASE
             string key = Data.DataDependencies.RetrieveEncryptionKey();
 
             if (string.IsNullOrWhiteSpace(key))
                 throw new InvalidOperationException("The SQLCipher key is missing.");
+#endif
 
             /* CREATE ALPHA 6 DATABASE */
 
@@ -26,7 +29,9 @@ namespace Migration
             {
                 DataSource = newDbPath,
                 Mode = SqliteOpenMode.ReadWriteCreate,
+#if RELEASE
                 Password = key
+#endif
             }.ToString();
 
             var alpha6Options = new DbContextOptionsBuilder<EntityMaster>().UseSqlite(alpha6ConnectionString).Options;
@@ -135,6 +140,8 @@ namespace Migration
 
             await alpha6Db.SaveChangesAsync();
         }
+
+
 
     }
 }

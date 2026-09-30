@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Cache;
+using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
 using Data.Exceptions;
@@ -224,59 +225,8 @@ namespace Data.Services
 
             var onlineUser = await reader.FindAccountByID(scope, master, userId) ?? throw new InvalidOperationException("No user logged in!");
 
-            // TODO: Create entity with CacheDTO
-            var app = logCacheDTO.Application;
+            // TODO: Create entity with CacheDTO and use EntityCodingService
 
-            if (app != null)
-            {
-                app.User = onlineUser;
-
-                var existingApp = await reader.FindApplication(scope, master, userId, app.Name);
-
-                var project = logCacheDTO.Project;
-                if (project != null)
-                {
-                    project.User = onlineUser;
-
-                    if (existingApp != null)
-                    {
-                        app = existingApp;
-
-                        var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
-
-                        if (existingProject != null)
-                        {
-                            project = existingProject;
-                        }
-
-                    }
-
-                    if (project.Name.Contains("Unnamed Project", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var existingProject = await reader.FindProject(scope, master, userId, project.Name, app.appID);
-
-                        if (existingProject != null)
-                        {
-                            project = existingProject;
-                        }
-                    }
-                }
-
-                logCacheDTO.Application = app;
-
-                if (project != null)
-                    project.Application = app;
-
-                logCacheDTO.Project = project;
-            }
-
-            var output = logCacheDTO.Output;
-            if (output != null)
-                logCacheDTO.Output = await reader.FindOutput(scope, master, output.Name) ?? output;
-
-            var type = logCacheDTO.Type;
-            if (type != null)
-                logCacheDTO.Type = await reader.FindType(scope, master, type.Name) ?? type;
         }
 
 
@@ -287,94 +237,58 @@ namespace Data.Services
             return regex.IsMatch(input) ? input : string.Empty;
         }
 
-        private async Task PreparePostItDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master, int id)
+        private async Task PreparePostItDetailsAsync(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master, int id)
         {
             var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 
-            var onlineUser = await reader.FindAccountByID(scope, master, id);
+            // TODO: Prepare PostIts
 
-            if (onlineUser == null)
-                onlineUser = new();
-
-            foreach (PostIt postIt in log.PostItList)
-            {
-
-                if (postIt.Subject != null && log.Application != null && log.Project != null)
-                {
-                    var appID = log.Application.appID;
-                    var projectID = log.Project.projectID;
-
-                    var existingSubject = await reader.FindSubject(scope, master, postIt.Subject.Subject, log.Category, id, appID, projectID);
-
-                    if (existingSubject != null)
-                    {
-                        postIt.Subject = existingSubject;
-                    }
-                    else
-                    {
-                        postIt.Subject.User = onlineUser;
-                        postIt.Subject.Application = log.Application;
-                        postIt.Subject.Project = log.Project;
-                    }
-
-                    postIt.Author = onlineUser;
-                }
-            }
+            //logCacheDTO.PostIts.Select(postIt =>
+            //{
+            //    //
+            //});
         }
 
-        private async Task InsertSubLogDetails(LOG log, AsyncServiceScope scope, EntityMaster master)
+        private async Task InsertSubLogDetails(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master)
         {
 
-            switch (log.Category)
+            switch (logCacheDTO.Context)
             {
-                case LOG.CATEGORY.CODING when log is CodingLOG codingLog:
-
-                    if (codingLog is AndroidCodingLOG androidCodingLog)
+                case LogContext.Coding when logCacheDTO is CodingCacheDTO codingCacheDTO:
                     {
-                        await master.AndroidCodingLogs.AddAsync(androidCodingLog);
+
+                        break;
                     }
-                    else
-                    {
-                        await master.CodingLogs.AddAsync(codingLog);
-                    }
+                    //case LogContext.NOTES when logCacheDTO is NotesLOG notesLog:
 
-                    break;
-                case LOG.CATEGORY.GRAPHICS when log is GraphicsLOG graphicsLog:
-                    await master.GraphicsLogs.AddAsync(graphicsLog);
-                    break;
-                case LOG.CATEGORY.FILM when log is FilmLOG filmLog:
-                    await master.FilmLogs.AddAsync(filmLog);
-                    break;
-                case LOG.CATEGORY.NOTES when log is NotesLOG notesLog:
+                    //    switch (notesLog.notelogtype)
+                    //    {
+                    //        case NOTELOGType.FLEXI when notesLog is FlexiNotesLOG flexiNotesLog:
+                    //            {
+                    //                await master.FlexiNotesLogs.AddAsync(flexiNotesLog);
 
-                    switch (notesLog.notelogtype)
-                    {
-                        case NOTELOGType.FLEXI when notesLog is FlexiNotesLOG flexiNotesLog:
-                            {
-                                await master.FlexiNotesLogs.AddAsync(flexiNotesLog);
-
-                                break;
-                            }
-                        default:
-                            {
-                                var genericNotesLog = (NoteItem)notesLog;
+                    //                break;
+                    //            }
+                    //        default:
+                    //            {
+                    //                var genericNotesLog = (NoteItem)notesLog;
 
 
-                                if (genericNotesLog.Checklist is not null && genericNotesLog.Checklist.Items.Count > 0)
-                                {
-                                    master.Checklists.Add(genericNotesLog.Checklist);
+                    //                if (genericNotesLog.Checklist is not null && genericNotesLog.Checklist.Items.Count > 0)
+                    //                {
+                    //                    master.Checklists.Add(genericNotesLog.Checklist);
 
-                                    foreach (var item in genericNotesLog.Checklist.Items)
-                                        await master.ChecklistItems.AddAsync(item);
-                                }
-                                else
-                                {
-                                    await master.NoteItems.AddAsync(genericNotesLog);
-                                }
-                                break;
-                            }
-                    }
-                    break;
+                    //                    foreach (var item in genericNotesLog.Checklist.Items)
+                    //                        await master.ChecklistItems.AddAsync(item);
+                    //                }
+                    //                else
+                    //                {
+                    //                    await master.NoteItems.AddAsync(genericNotesLog);
+                    //                }
+                    //                break;
+                    //            }
+                    //    }
+                    //    break;
             }
         }
 

@@ -9,7 +9,7 @@ using System.Windows.Media.Imaging;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class SignUpViewModel : ViewModelBase
+    internal class SignUpViewModel : ViewModelBase
     {
 
 
@@ -19,9 +19,9 @@ namespace Data_Logger_1._3.ViewModels
 
         public SignUpViewModel(IAuthService authService, NavigationService navigationService, UIFactory uiFactory)
         {
-            _authService = authService;
-            _navigationService = navigationService;
-            _factory = uiFactory;
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService), "SignUpViewModel");
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "SignUpViewModel");
+            _factory = uiFactory ?? throw new ArgumentNullException(nameof(uiFactory), "SignUpViewModel");
 
             SignUpImage = null;
             Name = "";

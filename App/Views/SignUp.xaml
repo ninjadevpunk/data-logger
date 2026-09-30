@@ -9,8 +9,7 @@
                  mc:Ignorable="d"
                  Title="Sign Up" Height="899" Width="1089"
                  WindowStyle="None"
-                 Loaded="Window_Loaded"
->
+                 WindowStartupLocation="CenterScreen" >
     
     <local:DLSWindow.Template>
         <ControlTemplate TargetType="Window">

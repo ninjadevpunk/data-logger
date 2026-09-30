@@ -6,13 +6,12 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static FileSys.Services.CacheMaster;
 using static Data_Logger_1._3.Services.NavigationService;
 using Data.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class MainWindowViewModel : ViewModelBase
+    internal class MainWindowViewModel : ViewModelBase
     {
         private readonly NavigationService _navigationService;
 
@@ -207,54 +206,6 @@ namespace Data_Logger_1._3.ViewModels
         }
 
 
-        private bool graphicsChecked;
-        public bool GraphicsChecked
-        {
-            get
-            {
-                return graphicsChecked;
-            }
-            set
-            {
-                if (graphicsChecked != value)
-                {
-                    graphicsChecked = value;
-                    OnPropertyChanged(nameof(GraphicsChecked));
-
-                    if (graphicsChecked)
-                    {
-                        _navigationService.NavigateToLogCachePage(LogContext.Graphics);
-                        UncheckButtons();
-
-                    }
-                }
-            }
-        }
-
-
-        private bool filmChecked;
-        public bool FilmChecked
-        {
-            get
-            {
-                return filmChecked;
-            }
-            set
-            {
-                if (filmChecked != value)
-                {
-                    filmChecked = value;
-                    OnPropertyChanged(nameof(FilmChecked));
-
-                    if (filmChecked)
-                    {
-                        _navigationService.NavigateToLogCachePage(LogContext.Film);
-                        UncheckButtons();
-
-                    }
-                }
-            }
-        }
 
 
         private bool notesChecked;
@@ -316,30 +267,6 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-
-        private bool flexiChecked;
-        public bool FlexiChecked
-        {
-            get
-            {
-                return flexiChecked;
-            }
-            set
-            {
-                if (flexiChecked != value)
-                {
-                    flexiChecked = value;
-                    OnPropertyChanged(nameof(FlexiChecked));
-
-                    if (flexiChecked)
-                    {
-                        //_ = _navigationService.NavigateToLogCachePage(LogContext.Flexi);
-                    }
-                }
-            }
-        }
-
-
         private BitmapImage? signupImage = null!;
         public BitmapImage? SignUpImage
         {
@@ -395,7 +322,6 @@ namespace Data_Logger_1._3.ViewModels
         {
             GenericNotesChecked = false;
             ChecklistNotesChecked = false;
-            FlexiChecked = false;
         }
 
         public ICommand FeedbackCommand { get; set; } = null!;

@@ -4,7 +4,7 @@ using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class OpenUpdaterCommand : AsyncCommandBase
+    internal class OpenUpdaterCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
         private readonly IDataService _dataService;

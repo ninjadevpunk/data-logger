@@ -6,7 +6,7 @@ using System.Windows;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class EmailSignUpCommand : AsyncCommandBase
+    internal class EmailSignUpCommand : AsyncCommandBase
     {
 
 
@@ -25,8 +25,6 @@ namespace Data_Logger_1._3.Commands
         {
             try
             {
-                if (_authService == null)
-                    throw new InvalidOperationException("AuthService cannot be null");
 
                 // Retrieve user input from the view model
                 var displayPic = _signUpViewModel.ProfilePicPath;

@@ -14,7 +14,7 @@ namespace Data_Logger_1._3.Views
             InitializeComponent();
         }
 
-        public SignUp(NavigationService navigationService, SignUpViewModel signUpViewModel)
+        internal SignUp(NavigationService navigationService, SignUpViewModel signUpViewModel)
         {
             InitializeComponent();
             DataContext = signUpViewModel;
@@ -23,20 +23,6 @@ namespace Data_Logger_1._3.Views
             VersionText.Text = AppVersion;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            // Calculate the new left position to center the window horizontally
-            double windowWidth = this.Width;
-            double newLeft = (SystemParameters.PrimaryScreenWidth - windowWidth) / 2.0;
-
-            // Calculate the new top position to center the window vertically
-            double windowHeight = this.Height;
-            double newTop = (SystemParameters.PrimaryScreenHeight - windowHeight) / 2.0;
-
-            // Set the new left and top positions
-            this.Left = newLeft;
-            this.Top = newTop;
-        }
 
 
 
