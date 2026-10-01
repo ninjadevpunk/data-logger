@@ -12,24 +12,26 @@ namespace Data_Logger_1._3.ViewModels
 {
     public class UpdaterViewModel : ViewModelBase
     {
+        private readonly IAuthService? _authService;
         private readonly IDataService _dataService;
         private readonly SettingsService? _settingsService;
         private readonly Settings? _settings;
         private readonly IVelopackService? _velopackService;
         private readonly UpdateInfo _updateInfo;
-        public ICommand? UpdateNowCommand { get; set; }
-        public ICommand? CancelUpdateCommand { get; set; }
-        public ICommand? ManualUpdateNowCommand { get; set; }
+        public ICommand? UpdateNowCommand { get; set; } = null;
+        public ICommand? CancelUpdateCommand { get; set; } = null;
+        public ICommand? ManualUpdateNowCommand { get; set; } = null;
 
-        public UpdaterViewModel(IDataService dataService, SettingsService settingsService, IVelopackService velopackService,
+        public UpdaterViewModel(IAuthService authService, IDataService dataService, SettingsService settingsService, IVelopackService velopackService,
             UpdateInfo updateInfo)
         {
             UpdateStatus = "Updating...";
+            _authService = authService;
             _dataService = dataService;
             _updateInfo = updateInfo;
 
             _settingsService = settingsService;
-            _settings = _settingsService.Load(UserID) ?? new Settings();
+            _settings = _settingsService.Load(UserID ?? throw new InvalidOperationException("UserID is null!")) ?? new Settings();
 
             UpdateNowCommand = new UpdateNowCommand(dataService, velopackService, updateInfo);
             CancelUpdateCommand = new CancelUpdateCommand(dataService);
@@ -55,6 +57,8 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
+        private int? UserID => _authService?.GetUser().UserId;
+
         public string UpdateVersion => $"Latest: {_updateInfo.TargetFullRelease.Version}";
 
         private bool showUpdatePopup;
@@ -78,13 +82,10 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        private string updateStatus = "";
+        private string updateStatus = string.Empty;
         public string UpdateStatus
         {
-            get
-            {
-                return updateStatus;
-            }
+            get => updateStatus;
             set
             {
                 updateStatus = value;
@@ -95,10 +96,7 @@ namespace Data_Logger_1._3.ViewModels
         private bool barVisible = true;
         public bool BarVisible
         {
-            get
-            {
-                return barVisible;
-            }
+            get => barVisible;
             set
             {
                 barVisible = value;
@@ -111,10 +109,7 @@ namespace Data_Logger_1._3.ViewModels
         private bool isDownloadComplete = false;
         public bool IsDownloadComplete
         {
-            get
-            {
-                return isDownloadComplete;
-            }
+            get => isDownloadComplete;
             set
             {
                 isDownloadComplete = value;
@@ -125,10 +120,7 @@ namespace Data_Logger_1._3.ViewModels
         private Visibility barVisibility;
         public Visibility BarVisibility
         {
-            get
-            {
-                return barVisibility;
-            }
+            get => barVisibility;
             set
             {
                 barVisibility = value;
@@ -139,16 +131,14 @@ namespace Data_Logger_1._3.ViewModels
         private Visibility installButtonVisible;
         public Visibility InstallButtonVisible
         {
-            get
-            {
-                return installButtonVisible;
-            }
+            get => installButtonVisible;
             set
             {
                 installButtonVisible = value;
                 OnPropertyChanged(nameof(InstallButtonVisible));
             }
         }
+
 
 
 
@@ -165,14 +155,13 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        private int UserID => _dataService.GetUser().accountID;
 
         private void SaveSettings()
         {
             try
             {
                 if (_settings != null)
-                    _settingsService!.Save(UserID, _settings);
+                    _settingsService!.Save(UserID ?? throw new InvalidOperationException("UserID is null!"), _settings);
             }
             catch (Exception ex)
             {
@@ -184,15 +173,15 @@ namespace Data_Logger_1._3.ViewModels
         {
             try
             {
-                if (_velopackService == null)
-                    throw new InvalidOperationException("VelopackService cannot be null");
+                if (_velopackService != null)
+                {
+                    await _velopackService.DownloadUpdateAsync(_updateInfo);
+                    IsDownloadComplete = true;
+                    BarVisible = false;
 
-                await _velopackService.DownloadUpdateAsync(_updateInfo);
-                IsDownloadComplete = true;
-                BarVisible = false;
-
-                if (IsDownloadComplete)
-                    UpdateStatus = "Update Ready";
+                    if (IsDownloadComplete)
+                        UpdateStatus = "Update Ready";
+                }
             }
             catch (Exception ex)
             {

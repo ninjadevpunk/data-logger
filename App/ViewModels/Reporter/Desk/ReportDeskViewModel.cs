@@ -1,17 +1,17 @@
-﻿using Data.Interfaces;
+﻿using Core.Enums;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
     /// <summary>
     /// The base class for all reporter dashboards.
     /// </summary>
-    public abstract class ReportDeskViewModel : ViewModelBase
+    internal abstract class ReportDeskViewModel : ViewModelBase
     {
         public NavigationService _navigationService;
         protected readonly IDataService _dataService;

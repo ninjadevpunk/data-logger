@@ -14,21 +14,19 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
         Checklist
     }
 
-    public class NOTESViewModel : ViewModelBase
+    internal class NOTESDashboardViewModel : ViewModelBase
     {
         private readonly NavigationService _navigationService;
 
 
-
-
-        public NOTESViewModel(NavigationService navigationService)
+        public NOTESDashboardViewModel(NavigationService navigationService)
         {
             _navigationService = navigationService;
 
             NoNotesMessageVisibility = Visibility.Visible;
 
             NewNoteCommand = new NewNoteCommand(_navigationService);
-            NoteItems = new();
+            NoteItems = [];
         }
 
 
@@ -48,7 +46,7 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
 
 
 
-        private ObservableCollection<NoteLOGViewModel> noteItems;
+        private ObservableCollection<NoteLOGViewModel> noteItems = [];
         public ObservableCollection<NoteLOGViewModel> NoteItems
         {
             get

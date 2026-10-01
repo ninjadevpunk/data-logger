@@ -36,8 +36,9 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 
 namespace Data_Logger_1._3
 {
@@ -89,6 +90,11 @@ namespace Data_Logger_1._3
 
 
                     service.AddTransient<Splashscreen>();
+                    service.AddTransient<Login>();
+                    service.AddTransient<loginPage01>();
+                    service.AddTransient<loginPage02>();
+                    service.AddTransient<SignUp>();
+                    service.AddTransient<MainWindow>();
                     service.AddTransient<LogCachePage>();
                     service.AddTransient<LoggerCreatePage>();
                     service.AddTransient<PostItPage>();
@@ -112,7 +118,7 @@ namespace Data_Logger_1._3
                     service.AddSingleton<CodingQtViewModel>();
                     service.AddSingleton<CodingAndroidViewModel>();
                     service.AddSingleton<CodingViewModel>();
-                    service.AddSingleton<NOTESViewModel>();
+                    service.AddSingleton<NOTESDashboardViewModel>();
 
                     service.AddSingleton<QtReportDeskViewModel>();
                     service.AddSingleton<ASReportDeskViewModel>();
@@ -151,13 +157,9 @@ namespace Data_Logger_1._3
                     service.AddTransient<DataStickyPostItViewModel>();
                     service.AddTransient<CreateNoteViewModel>();
                     service.AddTransient<CreateCheckListViewModel>();
-                    service.AddSingleton<CreateChecklistItemViewModel>();
+                    service.AddTransient<CreateChecklistItemViewModel>();
 
-                    service.AddTransient<Login>();
-                    service.AddTransient<loginPage01>();
-                    service.AddTransient<loginPage02>();
-                    service.AddTransient<SignUp>();
-                    service.AddTransient<MainWindow>();
+                    
 
 
                     // Account

@@ -34,7 +34,7 @@ namespace Core.Models
 
 
 
-        public bool IsChecked { get; set; } = false;
+        public bool IsChecked { get; set; }
 
         public string Item { get; set; } = string.Empty;
 

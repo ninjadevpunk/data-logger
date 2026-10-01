@@ -57,13 +57,13 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                             // Process save file dialog box results
                             if (result == true)
                             {
-                                var qtCreator = (QTcodeCreateViewModel)_loggerCreateViewModel;
-                                _cachemaster.SaveLOG(new QtCacheDTO
+                                var qtCreator = (qtCreateViewModel)_loggerCreateViewModel;
+                                _cachemaster.SaveLOGFile(new QtCacheDTO
                                 {
                                     UserId = user.UserId,
                                     ProjectName = qtCreator.ProjectName,
-                                    Start = qtCreator.StartDate,
-                                    End = qtCreator.EndDate,
+                                    Start = qtCreator.StartDate.ToLongDateString(),
+                                    End = qtCreator.EndDate.ToLongDateString(),
                                     OutputName = qtCreator.Output,
                                     TypeName = qtCreator.Type,
                                     PostIts = qtCreator.PostIts.Select(p => new PostItCacheDTO
@@ -82,6 +82,43 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                         }
                     case LogContext.AndroidStudio:
                         {
+                            dialog.Filter = "Android LOG file (.dls)|*.dls|JSON (.json)|*.json";
+
+                            // Show save file dialog box
+                            bool? result = dialog.ShowDialog();
+
+                            // Process save file dialog box results
+                            if (result == true)
+                            {
+                                var androidStudio = (AScodeCreateViewModel)_loggerCreateViewModel;
+                                _cachemaster.SaveLOGFile(new AndroidCacheDTO
+                                {
+                                    UserId = user.UserId,
+                                    ProjectName = androidStudio.ProjectName,
+                                    Start = androidStudio.StartDate.ToLongDateString(),
+                                    End = androidStudio.EndDate.ToLongDateString(),
+                                    OutputName = androidStudio.Output,
+                                    TypeName = androidStudio.Type,
+                                    PostIts = androidStudio.PostIts.Select(p => new PostItCacheDTO
+                                    {
+                                        Subject = p.Subject,
+                                        Error = p.Error,
+                                        Solution = p.Solution,
+                                        Suggestion = p.Suggestion,
+                                        Comment = p.Comment,
+                                    }).ToList(),
+                                    Bugs = androidStudio.BugsFound,
+                                    Success = androidStudio.ApplicationOpened,
+                                    Scope = androidStudio.IsSimple,
+                                    Sync = androidStudio.SyncTime,
+                                    StartingGradleDaemon = androidStudio.GradleDaemonTime,
+                                    RunBuild = androidStudio.RunBuildTime,
+                                    LoadBuild = androidStudio.LoadBuildTime,
+                                    ConfigureBuild = androidStudio.ConfigureBuildTime,
+                                    AllProjects = androidStudio.AllProjectsTime
+                                }, dialog.FileName);
+                            }
+
                             break;
                         }
                     case LogContext.Coding:
@@ -95,14 +132,14 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                             if (result == true)
                             {
                                 var codingCreator = (codeCreateViewModel)_loggerCreateViewModel;
-                                _cachemaster.SaveLOG(new CodingCacheDTO
+                                _cachemaster.SaveLOGFile(new CodingCacheDTO
                                 {
                                     UserId = user.UserId,
                                     ProjectName = codingCreator.ProjectName,
                                     ApplicationName = codingCreator.ApplicationName,
-                                    Start = codingCreator.StartDate,
-                                    End = codingCreator.EndDate,
-                                    OutputName= codingCreator.Output,
+                                    Start = codingCreator.StartDate.ToLongDateString(),
+                                    End = codingCreator.EndDate.ToLongDateString(),
+                                    OutputName = codingCreator.Output,
                                     TypeName = codingCreator.Type,
                                     PostIts = codingCreator.PostIts.Select(p => new PostItCacheDTO
                                     {

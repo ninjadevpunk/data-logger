@@ -1,4 +1,5 @@
-﻿using Core.Interfaces;
+﻿using Core.Enums;
+using Core.Interfaces;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
@@ -10,67 +11,43 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    internal class QTcodeCreateViewModel : codeCreateViewModel
+    internal sealed class qtCreateViewModel : CodingLoggerCreateViewModel
     {
+        public override LogContext Context => LogContext.Qt;
         private readonly CodingQtViewModel _qtviewModel;
-        protected override bool AppFieldEnabled => false;
-        public override ICommand AnnotateCommand => new AnnotateCommand(_navigationService, this, _qtviewModel, _authService, _dataService,
-            _cacheService, Context);
-        public override ICommand SaveCommand => new SaveCommand(this, _authService, _dataService, _cacheService);
+        public override bool AppFieldEnabled => false;
+        public override ICommand SaveCommand { get; }
+        public override ICommand AnnotateCommand { get; }
 
-        public QTcodeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IAuthService authService, 
+        public qtCreateViewModel(NavigationService navigationService, CodingQtViewModel codingQtViewModel, IAuthService authService, 
             IDataService dataService, ICacheService cacheService) 
-            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
+            : base(navigationService, authService, dataService, cacheService)
         {
-            if (_codingViewModel == null)
-                throw new InvalidOperationException("_codingViewModel is null in AScodeCreateViewModel constructor!");
-
-            _qtviewModel = (CodingQtViewModel)_codingViewModel;
+            _qtviewModel = codingQtViewModel;
 
             ApplicationName = Constants.Qt;
-            ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
-            QtOnly = true;
-
+            ApplicationToolTip = "This field cannot be changed. Only Qt logs are allowed in this tab.";
+            SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
+            AnnotateCommand = new AnnotateCommand(_navigationService, this, _qtviewModel, _authService, _dataService,
+            _cacheService, Context);
         }
 
 
-        public override async Task AutoStartAsync(bool qtOnly)
+        protected override async Task LoadProjects() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Qt)).ToHashSet();
+
+        protected override async Task LoadApplications() => Applications = [];
+
+        protected override async Task LoadOutputs()
         {
-            await _dataService.InitialiseProjectsLISTAsync(Category);
-            await LoadQtProjectsAndApplicationsAsync();
-            await LoadQtOutputsAndTypes();
-            await UpdateLogCount();
+            Output = "QtQuick Application";
+            Outputs = (await _dataService.ListQtOutputsAsync()).ToHashSet();
         }
 
-        private async Task LoadQtProjectsAndApplicationsAsync()
+
+        protected override async Task LoadTypes()
         {
-            _projects.Clear();
-            _applications.Clear();
-
-            var items = await _dataService.InitialiseProjectsLISTAsync(Constants.Qt);
-
-            foreach (var project in items)
-            {
-                _projects.Add(project);
-            }
-        }
-
-        private async Task LoadQtOutputsAndTypes()
-        {
-            Output = "Console Application";
             Type = "Build";
-            _outputs.Clear();
-            _types.Clear();
-
-            foreach(var output in await _dataService.ListQtOutputsAsync())
-            {
-                _outputs.Add(output);
-            }
-
-            foreach(var type in await _dataService.ListQtTypesAsync())
-            {
-                _types.Add(type);
-            }
+            Types = (await _dataService.ListQtTypesAsync()).ToHashSet();
         }
 
 

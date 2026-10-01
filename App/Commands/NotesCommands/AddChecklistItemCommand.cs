@@ -1,43 +1,34 @@
-﻿using Core.Models;
-using Data_Logger_1._3.Services;
+﻿using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands.NotesCommands
 {
-    public class AddChecklistItemCommand : CommandBase
+    internal class AddChecklistItemCommand : AsyncCommandBase
     {
-        private readonly CreateCheckListViewModel _checklist;
-        private readonly ViewModelFactory? _viewModelFactory;
+        private readonly CreateCheckListViewModel _createCheckListViewModel;
+        private readonly IDataService _dataService;
 
-        public AddChecklistItemCommand(CreateCheckListViewModel viewModel)
+        public AddChecklistItemCommand(IDataService dataService, CreateCheckListViewModel createCheckListViewModel)
         {
-            _checklist = viewModel;
+            _dataService = dataService;
+            _createCheckListViewModel = createCheckListViewModel;
         }
 
-        public AddChecklistItemCommand(CreateCheckListViewModel viewModel, ViewModelFactory? viewModelFactory)
-        {
-            _checklist = viewModel;
-            _viewModelFactory = viewModelFactory;
-        }
-
-        public override void Execute(object parameter)
+        protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                var list = _checklist.ChecklistItems;
+                var list = _createCheckListViewModel.ChecklistItems;
 
-                if (_viewModelFactory == null)
-                    throw new InvalidOperationException("Viewmodel is null!");
+                list.Add(new CreateChecklistItemViewModel(_createCheckListViewModel));
 
-                list.Add(_viewModelFactory.MakeCreateChecklistItemViewModel(new CheckListItem(false, "")));
-
-                _checklist.ChecklistItems = list;
+                _createCheckListViewModel.ChecklistItems = list;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in AddChecklistItemCommand.Execute: {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex);
             }
         }
     }

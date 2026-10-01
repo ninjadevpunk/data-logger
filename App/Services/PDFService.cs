@@ -1,5 +1,5 @@
 ﻿using Core.Models;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs;
 using SkiaSharp;
 using Svg.Skia;
 using Syncfusion.Pdf;

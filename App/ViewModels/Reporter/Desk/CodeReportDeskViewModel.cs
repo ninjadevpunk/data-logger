@@ -2,16 +2,13 @@
 using Core.Models;
 using Core.Models.App_Models;
 using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Reporter.Logs;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using static FileSys.Services.CacheMaster;
 using Data.Interfaces;
-using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
-    public class CodeReportDeskViewModel : ReportDeskViewModel
+    internal class CodeReportDeskViewModel : ReportDeskViewModel
     {
         public override LogContext Context => LogContext.Coding;
         private bool _isBusy = false;
@@ -145,7 +142,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         }
 
         /// <summary>
-        /// Updates logs in the Qt Report Desk.
+        /// Updates logs in the Report Desk.
         /// </summary>
         public override async Task UpdateLogsListAsync()
         {

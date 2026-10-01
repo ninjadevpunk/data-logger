@@ -1,49 +1,43 @@
 ﻿using Core.DTOs.Cache;
-using Core.Enums;
 using Core.Interfaces;
-using Core.Models;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.DLSFileCommands;
+using Data_Logger_1._3.Commands.EditCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 {
-    internal class codeEditViewModel : LoggerEditViewModel
+    internal sealed class codeEditViewModel : CodingLoggerEditViewModel
     {
-        public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
-        public override LogContext Context => LogContext.Coding;
-        public override string LogType => "CODING LOG";
-        public override ICommand SaveCommand => new SaveCommand(this, _authService, _dataService, _cacheService);
+        public override ICommand SaveCommand { get; }
+        public override ICommand CacheEditCommand { get; }
+        private readonly CodingViewModel _codingViewModel;
 
-        protected readonly CodingViewModel _codingViewModel;
-
-        public codeEditViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IDataService dataService,
-            CodingCacheDTO codingCacheDTO, CodeLOGViewModel codeLogViewModel, IAuthService authService, ICacheService cacheService)
-            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
+        public codeEditViewModel(NavigationService navigationService, CodingViewModel codingViewModel, IDataService dataService,
+            CodingCacheDTO codingCacheDTO, IAuthService authService, ICacheService cacheService)
+            : base(navigationService, authService, dataService, cacheService)
         {
-            _codingViewModel = (CodingViewModel)logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel),
-                    "codeCreateViewModel");
+            _codingViewModel = codingViewModel;
             ProjectName = codingCacheDTO.ProjectName;
             ApplicationName = codingCacheDTO.ApplicationName;
 
-            StartDate = codingCacheDTO.Start;
-            StartHours = codingCacheDTO.Start.Hour;
-            StartMinutes = codingCacheDTO.Start.Minute;
-            StartSeconds = codingCacheDTO.Start.Second;
-            StartMilliseconds = codingCacheDTO.Start.Millisecond;
+            StartDate = DateTime.Parse(codingCacheDTO.Start);
+            StartHours = StartDate.Hour;
+            StartMinutes = StartDate.Minute;
+            StartSeconds = StartDate.Second;
+            StartMilliseconds = StartDate.Millisecond;
 
-            EndDate = codingCacheDTO.End;
-            EndHours = codingCacheDTO.End.Hour;
-            EndMinutes = codingCacheDTO.End.Minute;
-            EndSeconds = codingCacheDTO.End.Second;
-            EndMilliseconds = codingCacheDTO.End.Millisecond;
+            EndDate = DateTime.Parse(codingCacheDTO.End);
+            EndHours = EndDate.Hour;
+            EndMinutes = EndDate.Minute;
+            EndSeconds = EndDate.Second;
+            EndMilliseconds = EndDate.Millisecond;
 
-
-            //EditCommand = new EditAnnotateCommand(abstract, codeLogViewModel);
+            SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, codingCacheDTO);
 
         }
 
@@ -51,15 +45,16 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
         #region Member Functions
 
+
+
         public override async Task UpdateLogCount()
         {
-            if (_codingViewModel != null)
-            {
-                var count = await _dataService.LogCountAsync(Category);
-                LogCount = $"{_codingViewModel.CacheItems.Count} Logs Cached";
-                _codingViewModel.LogCount = $"{_codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
-            }
+            var count = await _dataService.LogCountAsync(Category);
+            LogCount = $"{_codingViewModel.CacheItems.Count} Logs Cached";
+            _codingViewModel.LogCount = $"{_codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
         }
+
+
 
         #endregion
 

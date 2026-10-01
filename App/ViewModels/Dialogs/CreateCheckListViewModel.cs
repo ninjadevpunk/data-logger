@@ -1,4 +1,5 @@
-﻿using Data.Interfaces;
+﻿using Core.Interfaces;
+using Data.Interfaces;
 using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -8,32 +9,25 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs
 {
-    public class CreateCheckListViewModel : ViewModelBase
+    internal class CreateCheckListViewModel : ViewModelBase
     {
-        private readonly IDataService? _dataService;
-        private readonly NavigationService? _navigationService;
-        private readonly ViewModelFactory? _viewModelFactory;
+        private readonly NavigationService _navigationService;
 
-        public CreateCheckListViewModel(NavigationService navigationService, IDataService dataService, NOTESViewModel notesViewModel, ViewModelFactory viewModelFactory)
+        public CreateCheckListViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+            NOTESDashboardViewModel notesViewModel)
         {
-            _dataService = dataService;
             _navigationService = navigationService;
-            _viewModelFactory = viewModelFactory;
 
-            InitialiseCommonFields(notesViewModel);
-        }
-
-        public void InitialiseCommonFields(NOTESViewModel notesViewModel)
-        {
             ChecklistItems = new();
 
             CreationDate = DateTime.Now.ToString("dd MMMM yyyy HH:mm");
             StartandEndDate();
             NoteSubject = "No Subject";
 
-            AddChecklistItem = new AddChecklistItemCommand(this, _viewModelFactory);
-            SaveChecklistCommand = new SaveChecklistCommand(_navigationService, _dataService, this, notesViewModel);
+            AddChecklistItem = new AddChecklistItemCommand(dataService, this);
+            SaveChecklistCommand = new SaveChecklistCommand(_navigationService, authService, dataService, this, notesViewModel);
         }
+
 
         private string noteSubject = string.Empty;
         public string NoteSubject

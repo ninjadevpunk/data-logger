@@ -1,14 +1,14 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
     public class CurrentEndDateCommand : CommandBase
     {
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
 
-        public CurrentEndDateCommand(ReporterUpdaterViewModel viewModel)
+        public CurrentEndDateCommand(CodingLoggerUpdateViewModel viewModel)
         {
 
 

@@ -7,7 +7,7 @@ using System.Windows.Media.Imaging;
 using Core.Enums;
 using Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt;
 using Core.DTOs.Identity;
-using Core.DTOs;
+using Core.DTOs.Viewer;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {

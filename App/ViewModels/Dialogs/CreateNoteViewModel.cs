@@ -1,50 +1,26 @@
-﻿using Data.Interfaces;
+﻿using Core.Interfaces;
+using Data.Interfaces;
 using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.ViewModels;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs
 {
-    public class CreateNoteViewModel : ViewModelBase
+    internal class CreateNoteViewModel : ViewModelBase
     {
-        private readonly IDataService? _dataService;
-        private readonly NavigationService? _navigationService;
 
 
-
-
-        public CreateNoteViewModel(NavigationService navigationService, IDataService dataService, NOTESViewModel notesViewModel)
+        public CreateNoteViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, NOTESDashboardViewModel notesViewModel)
         {
-            _navigationService = navigationService;
-            _dataService = dataService;
-
-            InitialiseCommonFields();
-
-            SaveNoteCommand = new SaveNoteCommand(_navigationService, _dataService, this, notesViewModel);
-        }
-
-        public CreateNoteViewModel(NavigationService navigationService, IDataService dataService, NOTESViewModel notesViewModel, NoteLOGViewModel noteLOGViewModel)
-        {
-            _navigationService = navigationService;
-            _dataService = dataService;
-
-            InitialiseCommonFields();
-
-
-            SaveNoteCommand = new SaveNoteCommand(_navigationService, _dataService, this, notesViewModel);
-
-        }
-
-        public void InitialiseCommonFields()
-        {
-            CreationDate = DateTime.Now.ToString("dd MMMM yyyy HH:mm");
             StartandEndDate();
             NoteSubject = "No Subject";
-            NoteContent = "";
+            NoteContent = string.Empty;
+
+            SaveNoteCommand = new SaveNoteCommand(navigationService, authService, dataService, this, notesViewModel);
         }
+
 
         private string noteSubject = string.Empty;
         public string NoteSubject
@@ -61,7 +37,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        public string CreationDate { get; set; } = string.Empty;
+        public string CreationDate => DateTime.Now.ToString("dd MMMM yyyy HH:mm");
 
         private string modifiedDate = string.Empty;
         public string ModifiedDate

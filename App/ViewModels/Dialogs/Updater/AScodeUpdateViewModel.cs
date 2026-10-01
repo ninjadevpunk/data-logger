@@ -5,7 +5,7 @@ using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
 using Data.Interfaces;
 
-namespace Data_Logger_1._3.ViewModels.Reporter.Updater
+namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 {
     public class AScodeUpdateViewModel : codeUpdateViewModel
     {

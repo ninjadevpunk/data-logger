@@ -1,9 +1,9 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 using System.Windows.Documents;
 using System.Windows.Media;
-using static Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt.PostItViewModel;
+using static Data_Logger_1._3.ViewModels.Dialogs.PostItViewModel;
 
 namespace Data_Logger_1._3.Commands.PostItCommands.ToolCommands
 {

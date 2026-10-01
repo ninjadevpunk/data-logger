@@ -1,40 +1,29 @@
-﻿using Core.Models;
-using Core.Models.App_Models;
-using Core.Utilities;
-using Data.Interfaces;
-using Data_Logger_1._3.Commands.PostItCommands;
+﻿using Data.Interfaces;
 using Data_Logger_1._3.Commands.PostItCommands.ToolCommands;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
-using System.Diagnostics;
-using System.Windows;
 using System.Windows.Input;
 using Xceed.Wpf.Toolkit;
 
-namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
+namespace Data_Logger_1._3.ViewModels.Dialogs
 {
-    internal class PostItViewModel : ViewModelBase
+    internal abstract class PostItViewModel : ViewModelBase
     {
         public enum PostItField { Error, Solution, Suggestion, Comment }
 
         protected readonly NavigationService _navigationService = null!;
         protected readonly IDataService _dataService = null!;
-        protected readonly LoggerViewModel? _loggerCreateViewModel = null!;
+        protected readonly LoggerViewModel _loggerCreateViewModel = null!;
 
 
-        public PostItViewModel()
+
+        public PostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel)
         {
-
-        }
-
-        public PostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, LOG.CATEGORY category)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "PostItViewModel");
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "PostItViewModel");
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel), "PostItViewModel");
+            _navigationService = navigationService;
+            _dataService = dataService;
+            _loggerCreateViewModel = loggerCreateViewModel;
 
             Subject = "";
-
             Subjects = [];
 
 
@@ -46,84 +35,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
             Option1Check = true;
 
 
-            PostCommand = new PostCommand(_navigationService, _loggerCreateViewModel, this);
             EraserCommand = new EraserCommand(this);
             HighlighterCommand = new HighlighterCommand(this);
         }
-
-        public PostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, 
-            IReadOnlyList<string> subjectList)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "PostItViewModel");
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "PostItViewModel");
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel), "PostItViewModel");
-
-            Subject = "";
-
-            Subjects = [];
-            foreach (var subject in subjectList)
-            {
-                Subjects.Add(subject);
-            }
-
-
-            Error = "";
-            Solution = "";
-            Suggestion = "";
-            Comment = "";
-
-            Option1Check = true;
-
-            PostCommand = new PostCommand(_navigationService, _loggerCreateViewModel, this);
-            EraserCommand = new EraserCommand(this);
-            HighlighterCommand = new HighlighterCommand(this);
-        }
-
-        public PostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, ProjectClass project,
-            string subject, string error, DateTime dateFound, string solution, DateTime dateSolved, string suggestion, string comment)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "PostItViewModel");
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "PostItViewModel");
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel), "PostItViewModel");
-
-
-            Subject = subject;
-
-            Error = error;
-            DateFound = dateFound;
-
-            Solution = solution;
-
-            Suggestion = suggestion;
-            Comment = comment;
-
-            Option1Check = true;
-
-            PostCommand = new PostCommand(_navigationService, _loggerCreateViewModel, this);
-            EraserCommand = new EraserCommand(this);
-            HighlighterCommand = new HighlighterCommand(this);
-        }
-
-
-
-        public PostItViewModel(NavigationService navigationService, ProjectClass project, string subject, string error,
-            string solution, string suggestion, string comment)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "PostItViewModel");
-
-            Subject = subject;
-            Error = error;
-            Solution = solution;
-            Suggestion = suggestion;
-            Comment = comment;
-
-
-            Option1Check = true;
-        }
-
-
-
-
 
 
 
@@ -131,16 +45,14 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
 
         public virtual async Task AutoStartAsync(string appName, string projectName)
         {
-            if (_dataService != null)
-                Subjects = (await _dataService.InitialiseSubjectsLISTAsync(appName, string.IsNullOrEmpty(projectName) ? "Unnamed Project" : projectName))
-                    .ToHashSet<string>();
+            Subjects = (await _dataService.InitialiseSubjectsLISTAsync(appName, projectName)).ToHashSet<string>();
         }
-        public bool FoundDateCaptured { get; set; } = false;
-        public bool SolvedDateCaptured { get; set; } = false;
-
 
 
         public string PlaceholderText { get; set; } = "Subject";
+
+
+
 
         #region Toolbar Properties
 
@@ -209,12 +121,13 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
 
 
 
-
-
-
-
-
         #endregion
+
+
+
+
+
+
 
         private string subject = string.Empty;
         public string Subject
@@ -379,9 +292,15 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
         }
 
 
-        public ICommand OKCommand { get; set; } = null!;
+        /// <summary>
+        /// Command to execute when the OK button is clicked. This command should handle replacer logic.
+        /// </summary>
+        public abstract ICommand OKCommand { get; }
 
-        public ICommand PostCommand { get; set; } = null!;
+        /// <summary>
+        /// Command to execute when the Post button is clicked. This command should handle posting the data to the database.
+        /// </summary>
+        public abstract ICommand PostItCommand { get; }
 
 
         #region Toolbar
@@ -413,40 +332,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
 
 
 
-        #region Member Functions
-
-
-
-
-        public async Task LoadSubjectsAsync(LOG.CATEGORY category)
-        {
-            try
-            {
-                if (_dataService == null)
-                    throw new InvalidOperationException("DataService is null!");
-
-                await _dataService.InitialiseSubjectsLISTAsync(category);
-
-                Subjects = [];
-                Subjects.Clear();
-                foreach (var subject in await _dataService.InitialiseSubjectsLISTAsync(category))
-                {
-                    Subjects.Add(subject);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in LoadSubjectsAsync: {ex.Message}");
-            }
-        }
-
-
-
-
-
-
-
-        #endregion
 
     }
 }

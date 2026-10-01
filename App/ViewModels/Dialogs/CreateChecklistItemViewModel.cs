@@ -1,15 +1,12 @@
-﻿using Core.Models;
-using Data_Logger_1._3.Commands.NotesCommands;
+﻿using Data_Logger_1._3.Commands.NotesCommands;
 using MVVMEssentials.ViewModels;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs
 {
-    public class CreateChecklistItemViewModel : ViewModelBase
+    internal class CreateChecklistItemViewModel : ViewModelBase
     {
-        public readonly CheckListItem? _CheckListItem;
-
-        public ICommand? DeleteItem {  get; set; }
+        public ICommand DeleteItem { get; set; } = null!;
 
 
         #region Constructors
@@ -17,9 +14,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
 
 
-        public CreateChecklistItemViewModel(CreateCheckListViewModel createCheckListViewModel, CheckListItem checkListItem)
+        public CreateChecklistItemViewModel(CreateCheckListViewModel createCheckListViewModel)
         {
-            _CheckListItem = checkListItem;
             DeleteItem = new DeleteCheckListItemCommand(createCheckListViewModel, this);
 
             Item = $"Item {createCheckListViewModel.ChecklistItems.Count+1}";

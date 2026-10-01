@@ -1,14 +1,12 @@
 ﻿using Core.DTOs.Cache;
 using Core.Enums;
 using Core.Interfaces;
-using Core.Models;
-using Core.Models.App_Models;
-using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
@@ -27,20 +25,18 @@ namespace Data_Logger_1._3.Commands.CacheCommands
         private readonly LoggerViewModel _loggerCreateViewModel;
         private readonly LogCacheViewModel _dashboard;
 
-        private ApplicationClass? QtCreator;
-        private ApplicationClass? AndroidStudio;
-        private readonly LogContext _type;
+        private readonly LogContext _context;
 
         public AnnotateCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, LogCacheViewModel logCacheViewModel,
             IAuthService authService, IDataService dataService, ICacheService cacheService, LogContext type = LogContext.Coding)
         {
-            _type = type;
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "AnnotateCommand");
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel), "AnnotateCommand");
-            _dashboard = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel), "AnnotateCommand");
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService), "AnnotateCommand");
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "AnnotateCommand");
-            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "AnnotateCommand");
+            _context = type;
+            _navigationService = navigationService;
+            _loggerCreateViewModel = loggerCreateViewModel;
+            _dashboard = logCacheViewModel;
+            _authService = authService;
+            _dataService = dataService;
+            _cacheService = cacheService;
         }
 
 
@@ -48,36 +44,33 @@ namespace Data_Logger_1._3.Commands.CacheCommands
         {
             try
             {
-                if (_type == LogContext.Qt)
-                    QtCreator = await _dataService.FindApplicationByIDAsync(1);
-
-                if (_type == LogContext.AndroidStudio)
-                    AndroidStudio = await _dataService.FindApplicationByIDAsync(2);
-
                 var userId = _authService.GetUser().UserId;
-                var codeCreateViewModel = (codeCreateViewModel)_loggerCreateViewModel;
 
-                switch(_type)
+
+                switch (_context)
                 {
                     case LogContext.Qt:
                         {
+                            var qtCreateViewModel = (qtCreateViewModel)_loggerCreateViewModel;
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = qtCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+
                             var input = new QtCacheDTO
                             {
                                 UserId = userId,
-                                ProjectName = codeCreateViewModel.ProjectName,
-                                Start = codeCreateViewModel.StartDate,
-                                End = codeCreateViewModel.EndDate,
-                                Bugs = codeCreateViewModel.BugsFound,
-                                Success = codeCreateViewModel.ApplicationOpened,
-                                PostIts = codeCreateViewModel.PostIts.Select(postIt => new PostItCacheDTO
+                                ProjectName = qtCreateViewModel.ProjectName,
+                                Start = qtCreateViewModel.StartDate.ToLongDateString(),
+                                End = qtCreateViewModel.EndDate.ToLongDateString(),
+                                Bugs = qtCreateViewModel.BugsFound,
+                                Success = qtCreateViewModel.ApplicationOpened,
+                                PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     Subject = postIt.Subject,
-                                    Error = postIt.Error,
-                                    Solution = postIt.Solution,
-                                    Suggestion = postIt.Suggestion,
-                                    Comment = postIt.Comment,
-                                    ERCaptureTime = DateCapturer(postIt.Error),
-                                    SOCaptureTime = DateCapturer(postIt.Solution)
+                                    Error = postIt.RtfPostIt.Error,
+                                    Solution = postIt.RtfPostIt.Solution,
+                                    Suggestion = postIt.RtfPostIt.Suggestion,
+                                    Comment = postIt.RtfPostIt.Comment,
+                                    ERCaptureTime = postIt.RtfPostIt.ERCaptureTime,
+                                    SOCaptureTime = postIt.RtfPostIt.SOCaptureTime
                                 }).ToList()
                             };
 
@@ -91,31 +84,34 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                         }
                     case LogContext.AndroidStudio:
                         {
+                            var androidCreateViewModel = (AScodeCreateViewModel)_loggerCreateViewModel;
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = androidCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+
                             var input = new AndroidCacheDTO
                             {
                                 UserId = userId,
-                                ProjectName = codeCreateViewModel.ProjectName,
-                                Start = codeCreateViewModel.StartDate,
-                                End = codeCreateViewModel.EndDate,
-                                Bugs = codeCreateViewModel.BugsFound,
-                                Success = codeCreateViewModel.ApplicationOpened,
-                                PostIts = codeCreateViewModel.PostIts.Select(postIt => new PostItCacheDTO
+                                ProjectName = androidCreateViewModel.ProjectName,
+                                Start = androidCreateViewModel.StartDate.ToLongDateString(),
+                                End = androidCreateViewModel.EndDate.ToLongDateString(),
+                                Bugs = androidCreateViewModel.BugsFound,
+                                Success = androidCreateViewModel.ApplicationOpened,
+                                PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     Subject = postIt.Subject,
-                                    Error = postIt.Error,
-                                    Solution = postIt.Solution,
-                                    Suggestion = postIt.Suggestion,
-                                    Comment = postIt.Comment,
-                                    ERCaptureTime = DateCapturer(postIt.Error),
-                                    SOCaptureTime = DateCapturer(postIt.Solution)
+                                    Error = postIt.RtfPostIt.Error,
+                                    Solution = postIt.RtfPostIt.Solution,
+                                    Suggestion = postIt.RtfPostIt.Suggestion,
+                                    Comment = postIt.RtfPostIt.Comment,
+                                    ERCaptureTime = postIt.RtfPostIt.ERCaptureTime,
+                                    SOCaptureTime = postIt.RtfPostIt.SOCaptureTime
                                 }).ToList(),
-                                Scope = ((AScodeCreateViewModel)codeCreateViewModel).IsSimple,
-                                Sync = ((AScodeCreateViewModel)codeCreateViewModel).SyncTime,
-                                StartingGradleDaemon = ((AScodeCreateViewModel)codeCreateViewModel).GradleDaemonTime,
-                                RunBuild = ((AScodeCreateViewModel)codeCreateViewModel).RunBuildTime,
-                                LoadBuild = ((AScodeCreateViewModel)codeCreateViewModel).LoadBuildTime,
-                                ConfigureBuild = ((AScodeCreateViewModel)codeCreateViewModel).ConfigureBuildTime,
-                                AllProjects = ((AScodeCreateViewModel)codeCreateViewModel).AllProjectsTime
+                                Scope = androidCreateViewModel.IsSimple,
+                                Sync = androidCreateViewModel.SyncTime,
+                                StartingGradleDaemon = androidCreateViewModel.GradleDaemonTime,
+                                RunBuild = androidCreateViewModel.RunBuildTime,
+                                LoadBuild = androidCreateViewModel.LoadBuildTime,
+                                ConfigureBuild = androidCreateViewModel.ConfigureBuildTime,
+                                AllProjects = androidCreateViewModel.AllProjectsTime
                             };
 
                             var androidCodingViewModel = (CodingAndroidViewModel)_dashboard;
@@ -127,24 +123,27 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                         }
                     default:
                         {
+                            var codeCreateViewModel = (codeCreateViewModel)_loggerCreateViewModel;
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = codeCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+
                             var input = new CodingCacheDTO
                             {
                                 UserId = userId,
                                 ApplicationName = codeCreateViewModel.ApplicationName,
                                 ProjectName = codeCreateViewModel.ProjectName,
-                                Start = codeCreateViewModel.StartDate,
-                                End = codeCreateViewModel.EndDate,
+                                Start = codeCreateViewModel.StartDate.ToLongDateString(),
+                                End = codeCreateViewModel.EndDate.ToLongDateString(),
                                 Bugs = codeCreateViewModel.BugsFound,
                                 Success = codeCreateViewModel.ApplicationOpened,
-                                PostIts = codeCreateViewModel.PostIts.Select(postIt => new PostItCacheDTO
+                                PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     Subject = postIt.Subject,
-                                    Error = postIt.Error,
-                                    Solution = postIt.Solution,
-                                    Suggestion = postIt.Suggestion,
-                                    Comment = postIt.Comment,
-                                    ERCaptureTime = DateCapturer(postIt.Error),
-                                    SOCaptureTime = DateCapturer(postIt.Solution)
+                                    Error = postIt.RtfPostIt.Error,
+                                    Solution = postIt.RtfPostIt.Solution,
+                                    Suggestion = postIt.RtfPostIt.Suggestion,
+                                    Comment = postIt.RtfPostIt.Comment,
+                                    ERCaptureTime = postIt.RtfPostIt.ERCaptureTime,
+                                    SOCaptureTime = postIt.RtfPostIt.SOCaptureTime
                                 }).ToList()
                             };
 
@@ -158,38 +157,13 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                         }
                 }
 
-            }
-            catch (InvalidCastException castx)
-            {
-                await _dataService.HandleExceptionAsync(castx);
-                Debug.WriteLine($"Invalid cast canceled exception found in AnnotateCommand.Execute(): {castx.Message}");
-                _navigationService.GoBack(false);
+                return;
+
             }
             catch (TaskCanceledException taskx)
             {
                 await _dataService.HandleExceptionAsync(taskx);
                 Debug.WriteLine($"Task canceled exception found in AnnotateCommand.Execute(): {taskx.Message}");
-                _navigationService.GoBack(false);
-            }
-            catch (ArgumentNullException nullx)
-            {
-                await _dataService.HandleExceptionAsync(nullx);
-                MessageBox.Show("A problem occurred on our end. We apologise for any inconvenience caused. Feedback will automatically be sent to us.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-
-                Debug.WriteLine($"Argument null exception found in AnnotateCommand.Execute(): {nullx.Message}");
-
-                _navigationService.GoBack(false);
-            }
-            catch (IndexOutOfRangeException index)
-            {
-                await _dataService.HandleExceptionAsync(index);
-                MessageBox.Show("A problem occurred on our end. We apologise for any inconvenience caused. Feedback will automatically be sent to us.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-
-                Debug.WriteLine($"Index out of range exception found in AnnotateCommand.Execute(): {index.Message}");
-
-                _navigationService.GoBack(false);
             }
             catch (FormatException formx)
             {
@@ -206,7 +180,6 @@ namespace Data_Logger_1._3.Commands.CacheCommands
 
                 Debug.WriteLine($"Format exception found in AnnotateCommand.Execute(): {formx.Message}");
 
-                _navigationService.GoBack(false);
             }
             catch (Exception ex)
             {
@@ -215,13 +188,10 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
                 Debug.WriteLine($"Exception found in AnnotateCommand.Execute(): {ex.Message}");
-
-                _navigationService.GoBack(false);
             }
 
+            _navigationService.GoBack(false);
         }
 
-        private DateTime DateCapturer(string fieldContent) => string.IsNullOrWhiteSpace(RtfConverter.ToPlainText(fieldContent).Text) ? default :
-            DateTime.Now;
     }
 }

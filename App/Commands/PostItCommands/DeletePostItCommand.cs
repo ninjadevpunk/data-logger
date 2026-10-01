@@ -1,41 +1,32 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.Commands;
+using System.Diagnostics;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
 {
-    public class DeletePostItCommand : CommandBase
+    internal class DeletePostItCommand : CommandBase
     {
-        private readonly LoggerViewModel _viewModel;
+        private readonly LoggerViewModel _loggerViewModel;
 
-        public DeletePostItCommand(LoggerViewModel viewModel)
+        public DeletePostItCommand(LoggerViewModel loggerViewModel)
         {
-            try
-            {
-                _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            }
-            catch (Exception)
-            {
-                //
-            }
+            _loggerViewModel = loggerViewModel;
         }
 
         public override void Execute(object parameter)
         {
             try
             {
-                var item = parameter as PostItViewModel;
-
-                _viewModel.PostIts.Remove(item);
+                if (parameter is StickyPostItViewModel item)
+                    _loggerViewModel.PostIts.Remove(item);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 MessageBox.Show("An error occurred on our end. We apologise for any inconvenience. Feedback will be automatically sent to us but feel free to contact us if you need any assistance.",
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
-
-                // TODO
-                // feedback sent here.
+                Debug.WriteLine($"Exception occurred in DeletePostItCommand.Execute: {ex.Message}");
             }
         }
     }

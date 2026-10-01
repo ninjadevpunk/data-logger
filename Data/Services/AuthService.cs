@@ -25,7 +25,7 @@ namespace Data.Services
         /// Retrieve the logged in user.
         /// </summary>
         /// <returns>A UserDTO</returns>
-        public UserDTO GetUser() => Account;
+        public UserDTO GetUser() => Account != null ? Account : throw new ArgumentNullException(nameof(Account), "GetUser() returned null!");
 
         /// <summary>
         /// Validates a user's email before processing

@@ -1,13 +1,13 @@
-﻿using Data_Logger_1._3.ViewModels.Reporter.Updater;
+﻿using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
     public class CurrentStartDateCommand : CommandBase
     {
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
 
-        public CurrentStartDateCommand(ReporterUpdaterViewModel viewModel)
+        public CurrentStartDateCommand(CodingLoggerUpdateViewModel viewModel)
         {
 
 

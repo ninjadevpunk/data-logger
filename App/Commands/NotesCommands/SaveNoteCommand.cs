@@ -1,6 +1,6 @@
 ﻿using System.Windows;
-using Core.Models;
-using Core.Models.App_Models;
+using Core.DTOs.Notes;
+using Core.Interfaces;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -10,45 +10,25 @@ using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.NotesCommands
 {
-    public class SaveNoteCommand : AsyncCommandBase
+    internal class SaveNoteCommand : AsyncCommandBase
     {
         protected readonly NavigationService _navigationService;
+        protected readonly IAuthService _authService;
         protected readonly IDataService _dataService;
         protected readonly CreateNoteViewModel _createNoteViewModel;
-        protected readonly NOTESViewModel _notesViewModel;
+        protected readonly NOTESDashboardViewModel _notesViewModel;
 
 
-        public SaveNoteCommand(NavigationService navigationService, IDataService dataService, CreateNoteViewModel createNoteViewModel, NOTESViewModel notesViewModel)
+        public SaveNoteCommand(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+            CreateNoteViewModel createNoteViewModel, NOTESDashboardViewModel notesViewModel)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-                _createNoteViewModel = createNoteViewModel ?? throw new ArgumentNullException(nameof(createNoteViewModel));
-                _notesViewModel = notesViewModel ?? throw new ArgumentNullException(nameof(notesViewModel));
-
-            }
-            catch (Exception)
-            {
-                //
-            }
+            _navigationService = navigationService;
+            _authService = authService;
+            _dataService = dataService;
+            _createNoteViewModel = createNoteViewModel;
+            _notesViewModel = notesViewModel;
         }
 
-        public SaveNoteCommand(NavigationService navigationService, IDataService dataService, CreateNoteViewModel createNoteViewModel, NOTESViewModel notesViewModel, NoteLOGViewModel noteLOGViewModel)
-        {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-                _createNoteViewModel = createNoteViewModel ?? throw new ArgumentNullException(nameof(createNoteViewModel));
-                _notesViewModel = notesViewModel ?? throw new ArgumentNullException(nameof(notesViewModel));
-
-            }
-            catch (Exception)
-            {
-                //
-            }
-        }
 
         protected override async Task ExecuteAsync(object parameter)
         {
@@ -60,36 +40,41 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                 }
                 else
                 {
-                    NoteItem noteItem = new();
-
-                    ACCOUNT account = _dataService.GetUser();
-                    ApplicationClass? dataLoggerNotesApp = await _dataService.FindApplicationByIDAsync(15);
-
-                    noteItem.Author = account;
-                    noteItem.Project = await _dataService.FindProjectByIDAsync(1);
-
-                    if (dataLoggerNotesApp != null)
+                    var user = _authService.GetUser();
+                    var noteDTO = new NoteDTO
                     {
-                        noteItem.Application = dataLoggerNotesApp;
-                        noteItem.Start = DateTime.Parse(_createNoteViewModel.CreationDate);
-                        noteItem.End = DateTime.Parse(_createNoteViewModel.ModifiedDate);
-                        noteItem.Output = await _dataService.FindOutputByIDAsync(37);
-                        noteItem.Type = await _dataService.FindTypeByIDAsync(39);
+                        UserId = user.UserId,
+                        Subject = _createNoteViewModel.NoteSubject,
+                        NoteContent = _createNoteViewModel.NoteContent,
+                        CreationDate = _createNoteViewModel.CreationDate,
+                        ModifiedDate = _createNoteViewModel.ModifiedDate
+                    };
 
-                        noteItem.Subject = _createNoteViewModel.NoteSubject;
-                        noteItem.NoteContent = _createNoteViewModel.NoteContent;
+                    // Send to database
+                    var (success, noteDataDTO) = await _dataService.CreateNoteAsync(noteDTO);
 
-
-
-
-                        // Send to database
-                        await _dataService.CreateLOGAsync(noteItem);
+                    if(success && noteDataDTO != null)
+                    {
+                        var notesViewItemDTO = new NotesViewItemDTO
+                        {
+                            NoteDTO = noteDataDTO,
+                            Subject = noteDataDTO.Subject,
+                            Content = noteDataDTO.NoteContent,
+                            CreationDate = noteDataDTO.CreationDate
+                        };
 
                         var list = _notesViewModel.NoteItems;
-                        list.Add(new NoteLOGViewModel(_dataService, _notesViewModel, noteItem));
+                        list.Add(new NoteLOGViewModel(_dataService, _notesViewModel, notesViewItemDTO));
 
                         _notesViewModel.NoteItems = list;
                     }
+                    else
+                    {
+                        MessageBox.Show("An error occurred while saving the note. Please try again later.", "Error", MessageBoxButton.OK, 
+                            MessageBoxImage.Error);
+                    }
+
+
                 }
 
                 await _navigationService.NavigateToNotesDashboard();
@@ -97,7 +82,8 @@ namespace Data_Logger_1._3.Commands.NotesCommands
             }
             catch (Exception ex)
             {
-                //
+                await _dataService.HandleExceptionAsync(ex);
+                MessageBox.Show("An error occurred. Please try again later.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

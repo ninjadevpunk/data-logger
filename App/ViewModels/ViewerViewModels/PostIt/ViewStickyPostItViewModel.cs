@@ -1,6 +1,6 @@
 ﻿using Core.DTOs;
 using Core.Utilities;
-using Data_Logger_1._3.ViewModels.Utilities;
+using Data_Logger_1._3.Utilities;
 using System.Windows;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt

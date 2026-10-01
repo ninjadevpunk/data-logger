@@ -461,7 +461,7 @@ namespace FileSys.Services
         /// </summary>
         /// <param name="log">The log that is top be saved</param>
         /// <param name="filePath">The location to store the log</param>
-        public void SaveLOG(LogCacheDTO logCacheDTO, string filePath)
+        public void SaveLOGFile(LogCacheDTO logCacheDTO, string filePath)
         {
 
             using var fileStream = new FileStream(filePath, FileMode.Create);

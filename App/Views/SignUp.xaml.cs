@@ -1,5 +1,4 @@
-﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels;
+﻿using Data_Logger_1._3.ViewModels;
 using System.Windows;
 
 namespace Data_Logger_1._3.Views
@@ -14,7 +13,7 @@ namespace Data_Logger_1._3.Views
             InitializeComponent();
         }
 
-        internal SignUp(NavigationService navigationService, SignUpViewModel signUpViewModel)
+        internal SignUp(SignUpViewModel signUpViewModel)
         {
             InitializeComponent();
             DataContext = signUpViewModel;

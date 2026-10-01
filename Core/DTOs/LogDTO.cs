@@ -9,8 +9,8 @@ namespace Core.DTOs
         public abstract string ApplicationName { get; init; }
         public string ProjectName { get; init; } = string.Empty;
 
-        public DateTime Start { get; init; }
-        public DateTime End { get; init; }
+        public string Start { get; init; } = string.Empty;
+        public string End { get; init; } = string.Empty;
 
         public int OutputID { get; init; }
         public string OutputName { get; init; } = string.Empty;

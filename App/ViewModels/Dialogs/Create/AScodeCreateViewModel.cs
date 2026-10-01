@@ -12,50 +12,30 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    internal class AScodeCreateViewModel : codeCreateViewModel
+    internal class AScodeCreateViewModel : CodingLoggerCreateViewModel
     {
-        private readonly CodingAndroidViewModel _asCodingViewModel;
         public override LogContext Context => LogContext.AndroidStudio;
-        protected override bool AppFieldEnabled => false;
-        public override ICommand AnnotateCommand => new AnnotateCommand(_navigationService, this, _asCodingViewModel, _authService, _dataService, 
-            _cacheService, Context);
+        private readonly CodingAndroidViewModel _asCodingViewModel;
+        public override bool AppFieldEnabled => false;
 
-        public AScodeCreateViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IAuthService authService,
+        public override ICommand SaveCommand { get; }
+        public override ICommand AnnotateCommand { get; }
+
+        public AScodeCreateViewModel(NavigationService navigationService, CodingAndroidViewModel codingAndroidViewModel, IAuthService authService,
             IDataService dataService, ICacheService cacheService)
-            : base(navigationService, logCacheViewModel, authService, dataService, cacheService)
+            : base(navigationService, authService, dataService, cacheService)
         {
-            if (_codingViewModel == null)
-                throw new InvalidOperationException("_codingViewModel is null in AScodeCreateViewModel constructor!");
 
-            _asCodingViewModel = (CodingAndroidViewModel)_codingViewModel;
+            _asCodingViewModel = codingAndroidViewModel;
 
             ApplicationName = Constants.Android;
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
-            ASOnly = true;
             IsSimple = false;
             IsConsidered = false;
-
-            
-            SaveCommand = new SaveCommand(this, authService, dataService, cacheService);
+            SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
+            AnnotateCommand = new AnnotateCommand(_navigationService, this, _asCodingViewModel, _authService, _dataService,
+            _cacheService, Context);
         }
-
-        public override async Task AutoStartAsync()
-        {
-            await LoadProjectsAndApplicationsAsync();
-            await LoadAndroidStudioOutputs();
-            await LoadAndroidStudioTypes();
-
-            await UpdateLogCount();
-        }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -92,6 +72,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
             }
         }
 
+
+
+
         #endregion
 
 
@@ -104,39 +87,22 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
 
+       
+        protected override async Task LoadProjects() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Android)).ToHashSet();
 
-        private async Task LoadProjectsAndApplicationsAsync()
-        {
-            var items = await _dataService.InitialiseProjectsLISTAsync(Constants.Android);
-            _projects.Clear();
-            _applications.Clear();
+        protected override async Task LoadApplications() => Applications = [];
 
-            foreach (var project in items)
-            {
-                _projects.Add(project);
-            }
-        }
-
-        private async Task LoadAndroidStudioOutputs()
+        protected override async Task LoadOutputs()
         {
             Output = "APK (*.apk)";
-            _outputs.Clear();
-            
-            foreach(var output in await _dataService.ListASOutputsAsync())
-            {
-                _outputs.Add(output);
-            }
+            Outputs = (await _dataService.ListASOutputsAsync()).ToHashSet();
         }
 
-        private async Task LoadAndroidStudioTypes()
+
+        protected override async Task LoadTypes()
         {
             Type = "Sync";
-            _types.Clear();
-
-            foreach(var type in await _dataService.ListASTypesAsync())
-            {
-                _types.Add(type);
-            }
+            Types = (await _dataService.ListASTypesAsync()).ToHashSet();
         }
 
 
@@ -176,10 +142,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         }
 
         #endregion
-
-
-
-
 
 
 

@@ -1,13 +1,13 @@
 ﻿using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
 {
-    internal class PostCommand : AsyncCommandBase
+    internal class PostItCommand : AsyncCommandBase
     {
         public enum ActionType { Create, Edit }
         public enum PostItContext { POSTIT, EDITPOSTIT }
@@ -19,14 +19,14 @@ namespace Data_Logger_1._3.Commands.PostItCommands
         private readonly ActionType _actionType = ActionType.Create;
         private readonly PostItContext _postItContext = PostItContext.POSTIT;
 
-        public PostCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
+        public PostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
             _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
         }
 
-        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
+        public PostItCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
@@ -35,7 +35,7 @@ namespace Data_Logger_1._3.Commands.PostItCommands
             _postItContext = postItContext;
         }
 
-        public PostCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, EditPostItViewModel editPostItViewModel, PostItViewModel createPostItViewModel)
+        public PostItCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, EditPostItViewModel editPostItViewModel, PostItViewModel createPostItViewModel)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
             _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));

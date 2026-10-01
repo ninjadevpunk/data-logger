@@ -1,38 +1,35 @@
-﻿
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using Data_Logger_1._3.Commands;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.ViewModels;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class LoginViewModel : ViewModelBase
+    internal class LoginViewModel : ViewModelBase
     {
-
-
 
         private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
         private readonly UIFactory _factory;
-
-
+        public Brush MessageGood => TryParseBrush("GREEN");
+        public Brush MessageBad => TryParseBrush("RED");
+        private static readonly Brush EnabledColor = TryParseBrush("iconColourAccent02");
+        private static readonly Brush DisabledColor = TryParseBrush("AccentColour");
 
 
 
         public LoginViewModel(IAuthService authService, NavigationService navigationService, UIFactory uiFactory)
         {
-
             _authService = authService;
             _navigationService = navigationService;
             _factory = uiFactory;
 
             StatusMessage = "";
-            StatusMessageColour = _factory.MessageBad;
+            StatusMessageColour = MessageBad;
 
-            MessageGood = _factory.MessageGood;
-            MessageBad = _factory.MessageBad;
 
             IsButtonBackEnabled = true;
             IsButtonForwardEnabled = false;
@@ -109,10 +106,7 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        private static readonly Brush EnabledColor = UIFactory.TryParseBrush("iconColourAccent02");
-        private static readonly Brush DisabledColor = UIFactory.TryParseBrush("AccentColour");
-        public Brush MessageGood { get; set; }
-        public Brush MessageBad { get; set; }
+        
 
         private bool _isButtonBackEnabled;
         public bool IsButtonBackEnabled
@@ -150,6 +144,20 @@ namespace Data_Logger_1._3.ViewModels
         public event Action? RequestClose;
 
 
+
+
+
+        public static Brush TryParseBrush(string value)
+        {
+            try
+            {
+                return (Brush)Application.Current.FindResource(value);
+            }
+            catch (ResourceReferenceKeyNotFoundException)
+            {
+                return Brushes.Transparent;
+            }
+        }
 
     }
 }

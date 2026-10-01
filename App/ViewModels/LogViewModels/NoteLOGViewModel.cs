@@ -1,57 +1,60 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.DTOs.Notes;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    public class NoteLOGViewModel : ViewModelBase
+    internal class NoteLOGViewModel : ViewModelBase
     {
-        public readonly NoteItem? _NoteItem;
+        private readonly CheckListDataDTO? _checkListDataDTO;
+        private readonly NoteDataDTO? _noteDataDTO;
+        public ICommand DeleteNoteItemCommand { get; set; } = null!;
 
-        public ICommand? DeleteNoteItemCommand { get; set; }
-
-        public ICommand? EditNoteItemCommand { get; set; }
+        public ICommand EditNoteItemCommand { get; set; } = null!;
 
 
 
         #region Constructors
 
 
-        public NoteLOGViewModel(IDataService dataService, NOTESViewModel notesViewModel, NoteItem noteItem)
+        public NoteLOGViewModel(IDataService dataService, NOTESDashboardViewModel notesViewModel, NotesViewDTO notesViewDTO)
         {
-            _NoteItem = noteItem;
+            if(notesViewDTO is NotesViewCheckListDTO checkListDTO)
+                _checkListDataDTO = checkListDTO.NoteDTO;
+            else
+                _noteDataDTO = ((NotesViewItemDTO)notesViewDTO).NoteDTO;
 
-            IsCollection = _NoteItem != null && _NoteItem.Checklist != null;
+            Subject = notesViewDTO.Subject;
 
-
-            if(_NoteItem is not null && IsCollection)
+            if(IsCollection)
             {
-                Items = new();
+                var checkList = _checkListDataDTO?.Items
+                    .Where(i => i.IsChecked)
+                    .Select(i => i.Item)
+                    .ToHashSet();
 
-                foreach (var item in _NoteItem.Checklist?.Items ?? [])
-                {
-                    if(!item.IsChecked)
-                        Items.Add(new CheckListItemViewModel(item));
-                }
-
+                if(checkList != null)
+                    Items = new(checkList);
             }
+            Date = notesViewDTO.CreationDate;
 
-            NoteContent = PostItViewModel.ConvertRtfToPlainText(_NoteItem?.NoteContent ?? string.Empty);
-
-            DeleteNoteItemCommand = new DeleteNoteItemCommand(notesViewModel, dataService);
+            DeleteNoteItemCommand = new DeleteNoteItemCommand(notesViewModel, dataService, _noteDataDTO?.UserId ?? _checkListDataDTO!.UserId);
         }
 
 
 
 
-
-
         #endregion
+
+
+
+
+
 
 
 
@@ -59,21 +62,15 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-        public int ViewModelID => _NoteItem?.ID ?? -1;
+        public bool IsCollection => _checkListDataDTO != null;
 
-        public bool IsCollection { get; set; }
+        public string Subject { get; init; } = string.Empty;
 
-        public string Subject => _NoteItem?.Subject ?? string.Empty;
+        public string? NoteContent => _noteDataDTO?.NoteContent;
 
-        public string NoteContent { get; set; } = string.Empty;
+        public ObservableCollection<string>? Items { get; init; } = null;
 
-        public ObservableCollection<CheckListItemViewModel> Items { get; set; } = [];
-
-        public string Date => $"Created {_NoteItem?.Start.ToString("d/M/yyyy HH:mm")}" ?? string.Empty;
-
-
-
-
+        public string Date { get; init; } = string.Empty;
 
 
 
@@ -81,43 +78,6 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         #endregion
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #region Member Functions
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #endregion
 
 
     }

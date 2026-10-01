@@ -1,4 +1,6 @@
-﻿using Data_Logger_1._3.ViewModels.Utilities;
+﻿using Data.Interfaces;
+using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using System.Windows;
 using System.Windows.Input;
 
@@ -8,19 +10,32 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
     /// UI representation of a sticky note on the logger page.
     /// </summary>
     /// <typeparam name="T">A PostItDataDTO type</typeparam>
-    internal abstract class StickyPostItViewModel<T>
+    internal abstract class StickyPostItViewModel
     {
-        /// <summary>
-        /// Snapshot of a saved PostIt
-        /// </summary>
-        protected readonly T _postItDTO;
-        protected ICommand EditPostItCommand { get; set; } = null!;
-        protected ICommand DeletePostItCommand { get; set; } = null!;
 
-        protected StickyPostItViewModel(T postItDTO)
+        protected readonly NavigationService _navigationService;
+        protected readonly IDataService _dataService;
+        protected readonly LoggerViewModel _loggerCreateViewModel;
+
+        /// <summary>
+        /// Edits a PostIt in cacheed log.
+        /// </summary>
+        public abstract ICommand EditPostItCommand { get; }
+
+        /// <summary>
+        /// Deletes a PostIt from cacheed log.
+        /// </summary>
+        public abstract ICommand DeletePostItCommand { get; }
+
+        public StickyPostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel)
         {
-            _postItDTO = postItDTO ?? throw new ArgumentNullException(nameof(postItDTO), "StickyPostItViewModel");
+            _navigationService = navigationService;
+            _dataService = dataService;
+            _loggerCreateViewModel = loggerCreateViewModel;
         }
+
+
+        public string Subject { get; set; } = string.Empty;
 
         public string DisplayError { get; protected init; } = string.Empty;
         public Visibility ErrorVisible => Formatters.FieldVisible(DisplayError);

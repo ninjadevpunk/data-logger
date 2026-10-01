@@ -37,7 +37,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-        private readonly codeCreateViewModel _qtLogger;
+        private readonly qtCreateViewModel _qtLogger;
         private readonly AScodeCreateViewModel _asLogger;
         private readonly codeCreateViewModel _codingLogger;
 
@@ -59,7 +59,7 @@ namespace Data_Logger_1._3.Services
 
         private readonly CodingViewModel _codingDashboard;
 
-        private readonly NOTESViewModel _notesDashboard;
+        private readonly NOTESDashboardViewModel _notesDashboard;
 
 
 
@@ -158,13 +158,11 @@ namespace Data_Logger_1._3.Services
                 Debug.WriteLine($"Exception occurred in LoadCachedLogs: {ex.Message}");
             }
 
-            _notesDashboard = serviceProvider.GetRequiredService<NOTESViewModel>();
+            _notesDashboard = serviceProvider.GetRequiredService<NOTESDashboardViewModel>();
 
-            var viewModelFactory = serviceProvider.GetRequiredService<ViewModelFactory>();
-
-            _qtLogger = viewModelFactory.CreateQtCodeCreateViewModel();
+            _qtLogger = serviceProvider.GetRequiredService<qtCreateViewModel>();
             _asLogger = serviceProvider.GetRequiredService<AScodeCreateViewModel>();
-            _codingLogger = viewModelFactory.CreateCodeCreateViewModel();
+            _codingLogger = serviceProvider.GetRequiredService<codeCreateViewModel>();
 
             _mainWindowViewModel = serviceProvider.GetRequiredService<MainWindowViewModel>();
         }

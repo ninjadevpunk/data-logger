@@ -1,5 +1,7 @@
 ﻿using Core.DTOs.Cache;
+using Core.DTOs.Data;
 using Core.DTOs.Identity;
+using Core.DTOs.Notes;
 using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
@@ -57,6 +59,20 @@ namespace Data.Interfaces
 
         // Inserts
         Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO);
+
+        /// <summary>
+        /// Inserts a note DTO into the database.
+        /// </summary>
+        /// <param name="noteDTO">The note DTO to insert.</param>
+        /// <returns>Returns a tuple: (success flag, the created note data DTO).</returns>
+        Task<(bool Success, NoteDataDTO? NoteDataDTO)> CreateNoteAsync(NoteDTO noteDTO);
+
+        /// <summary>
+        /// Creates a new checklist in the database based on the provided CheckListDTO object.
+        /// </summary>
+        /// <param name="checkListItemDTOs">The checklist DTO to create.</param>
+        /// <returns>Returns a tuple: (success flag, the created checklist data DTO).</returns>
+        Task<(bool Success, CheckListDataDTO? CheckListDataDTO)> CreateCheckListAsync(CheckListDTO checkListItemDTOs);
 
 
         // Reads

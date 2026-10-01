@@ -1,4 +1,6 @@
 ﻿using Core.DTOs.Cache;
+using Core.DTOs.Data;
+using Core.DTOs.Notes;
 using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
@@ -11,7 +13,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using static Core.Models.FeedbackMessage;
-using static Core.Models.NotesLOG;
 
 namespace Data.Services
 {
@@ -181,6 +182,8 @@ namespace Data.Services
         /// Creates a logCacheDTO in the database.
         /// </summary>
         /// <param name="logCacheDTO">The logCacheDTO being stored.</param>
+        /// <param name="id">The user ID of logged in user.</param>
+        /// <returns>Returns true if the logCacheDTO was successfully created; otherwise false.</returns>
         public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -254,42 +257,94 @@ namespace Data.Services
 
             switch (logCacheDTO.Context)
             {
-                case LogContext.Coding when logCacheDTO is CodingCacheDTO codingCacheDTO:
+                case LogContext.Qt when logCacheDTO is QtCacheDTO qtCacheDTO:
                     {
 
                         break;
                     }
-                    //case LogContext.NOTES when logCacheDTO is NotesLOG notesLog:
+                case LogContext.AndroidStudio when logCacheDTO is AndroidCacheDTO androidCacheDTO:
+                    {
 
-                    //    switch (notesLog.notelogtype)
-                    //    {
-                    //        case NOTELOGType.FLEXI when notesLog is FlexiNotesLOG flexiNotesLog:
-                    //            {
-                    //                await master.FlexiNotesLogs.AddAsync(flexiNotesLog);
-
-                    //                break;
-                    //            }
-                    //        default:
-                    //            {
-                    //                var genericNotesLog = (NoteItem)notesLog;
-
-
-                    //                if (genericNotesLog.Checklist is not null && genericNotesLog.Checklist.Items.Count > 0)
-                    //                {
-                    //                    master.Checklists.Add(genericNotesLog.Checklist);
-
-                    //                    foreach (var item in genericNotesLog.Checklist.Items)
-                    //                        await master.ChecklistItems.AddAsync(item);
-                    //                }
-                    //                else
-                    //                {
-                    //                    await master.NoteItems.AddAsync(genericNotesLog);
-                    //                }
-                    //                break;
-                    //            }
-                    //    }
-                    //    break;
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
             }
+        }
+
+
+        /// <summary>
+        /// Inserts a note DTO into the database.
+        /// </summary>
+        /// <param name="noteDTO">The noteDTO to insert.</param>
+        /// <param name="id">The user ID of logged in user.</param>
+        /// <returns>Returns a tuple: (success flag, the created note data DTO).</returns>
+        public async Task<(bool Success, NoteDataDTO? NoteDataDTO)> CreateNoteAsync(NoteDTO noteDTO, int id)
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+
+
+            try
+            {
+                await using var transaction = await master.Database.BeginTransactionAsync();
+
+                // TODO: Create entity with NoteDTO and use EntityNoteService
+
+                await master.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return (true, new NoteDataDTO { });
+            }
+            catch (OperationCanceledException opex)
+            {
+                await HandleExceptionAsync(opex);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+            }
+
+            return (false, null);
+        }
+
+        /// <summary>
+        /// Inserts a checklist DTO into the database.
+        /// </summary>
+        /// <param name="checkListDTO">The checklist DTO to insert.</param>
+        /// <param name="id">The ID of the entity to insert.</param>
+        /// <returns>Returns a tuple: (success flag, the created checklist data DTO).</returns>
+        public async Task<(bool Success, CheckListDataDTO? CheckListDataDTO)> CreateCheckListAsync(CheckListDTO checkListDTO, int id)
+        {
+            await using var scope = _serviceProvider.CreateAsyncScope();
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+
+
+            try
+            {
+                await using var transaction = await master.Database.BeginTransactionAsync();
+
+                // TODO: Create entity with CheckListDTO and use EntityCheckListService
+                // TODO: Create a checklist data DTO with a checklist retrieved from the database after saving changes
+                // and return it.
+
+                await master.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return (true, new CheckListDataDTO { });
+            }
+            catch (OperationCanceledException opex)
+            {
+                await HandleExceptionAsync(opex);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(ex);
+            }
+
+            return (false, null);
         }
 
 

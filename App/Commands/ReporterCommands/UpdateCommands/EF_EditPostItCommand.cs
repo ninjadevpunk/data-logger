@@ -1,5 +1,5 @@
 ﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
@@ -7,9 +7,9 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
     public class EF_EditPostItCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
 
-        public EF_EditPostItCommand(NavigationService navigationService, ReporterUpdaterViewModel reporterEditorViewModel)
+        public EF_EditPostItCommand(NavigationService navigationService, CodingLoggerUpdateViewModel reporterEditorViewModel)
         {
 
 

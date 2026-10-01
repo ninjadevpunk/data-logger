@@ -1,5 +1,7 @@
 ﻿using Core.DTOs.Cache;
+using Core.DTOs.Data;
 using Core.DTOs.Identity;
+using Core.DTOs.Notes;
 using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
@@ -47,8 +49,6 @@ namespace Data.Services
         public async Task SignInUserAsync()
         {
             var user = _authService.GetUser();
-            if (user == null)
-                return;
 
             await UseWriterAsync(writer => writer.SetCurrentUserAsync(user.UserId));
         }
@@ -829,6 +829,28 @@ namespace Data.Services
         {
             var user = await EnsureValidUserAsync();
             return await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO, user.UserId));
+        }
+
+        /// <summary>
+        /// Inserts a note DTO into the database.
+        /// </summary>
+        /// <param name="noteDTO">The note DTO to insert.</param>
+        /// <returns>Returns a tuple: (success flag, the created note data DTO).</returns>
+        public async Task<(bool Success, NoteDataDTO? NoteDataDTO)> CreateNoteAsync(NoteDTO noteDTO)
+        {
+            var user = await EnsureValidUserAsync();
+            return await UseWriterAsync(writer => writer.CreateNoteAsync(noteDTO, user.UserId));
+        }
+
+        /// <summary>
+        /// Inserts a checklist DTO into the database.
+        /// </summary>
+        /// <param name="checkListDTO">The checklist DTO to insert.</param>
+        /// <returns>Returns a tuple: (success flag, the created checklist data DTO).</returns>
+        public async Task<(bool Success, CheckListDataDTO? CheckListDataDTO)> CreateCheckListAsync(CheckListDTO checkListDTO)
+        {
+            var user = await EnsureValidUserAsync();
+            return await UseWriterAsync(writer => writer.CreateCheckListAsync(checkListDTO, user.UserId));
         }
 
         /// <summary>

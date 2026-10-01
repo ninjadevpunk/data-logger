@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Reporter.Updater;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -13,32 +13,11 @@ namespace Data_Logger_1._3.Views.Dialogs
         private readonly PostItViewModel? _postItViewModel;
         private readonly EF_PostItViewModel? _efPostItViewModel;
 
-        internal PostItPage(PostItViewModel createPostItViewModel)
+        internal PostItPage()
         {
             InitializeComponent();
-
-            _postItViewModel = createPostItViewModel;
-            DataContext = _postItViewModel;
-            _postItViewModel.ActiveEditor = this.inputText_ERROR;
-
-
         }
 
-        public PostItPage(EF_PostItViewModel efPostItViewModel)
-        {
-            InitializeComponent();
-
-            _efPostItViewModel = efPostItViewModel;
-            DataContext = _efPostItViewModel;
-            _efPostItViewModel.ActiveEditor = this.inputText_ERROR;
-
-
-        }
-
-        public PostItPage()
-        {
-            
-        }
 
         public static string RtfStringToPlainText(string rtfString)
         {

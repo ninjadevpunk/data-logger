@@ -1,12 +1,14 @@
 ﻿using Core.DTOs.Cache;
+using Core.Enums;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
-    internal class DeleteCacheItemCommand<TLOGViewModel> : AsyncCommandBase
+    internal class DeleteCacheItemCommand : AsyncCommandBase
     {
         private readonly LogCacheDTO _logCacheDTO;
         private readonly LogCacheViewModel _logCacheViewModel;
@@ -30,12 +32,8 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         {
             try
             {
-                var logViewModel = (TLOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand<TLOGViewModel>");
+                var logViewModel = (LOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand<TLOGViewModel>");
                 await HandleCodingCacheItem(logViewModel);
-            }
-            catch (InvalidCastException castx)
-            {
-                await _dataService.HandleExceptionAsync(castx);
             }
             catch (Exception ex)
             {
@@ -44,33 +42,95 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         }
 
 
-        private async Task HandleCodingCacheItem(TLOGViewModel item)
+        private async Task HandleCodingCacheItem(LOGViewModel item)
         {
-            var tempCodingDashboardItems = _logCacheViewModel.CacheItems;
+            var cachedDashboardItems = _logCacheViewModel.CacheItems;
+            var context = _logCacheDTO.Context;
+            var startDate = DateTime.Parse(_logCacheDTO.Start);
 
-            if (_timeUp)
+            switch (_logCacheDTO.Context)
             {
-                // Send data to database first
-                var codingCacheDTO = (CodingCacheDTO)_logCacheDTO;
-                bool isLogged = await _dataService.CreateLOGAsync(codingCacheDTO);
+                case LogContext.Qt when _logCacheDTO is QtCacheDTO qtCacheDTO:
+                    {
+                        if (_timeUp)
+                        {
+                            // Send data to database first
+                            bool isLogged = await _dataService.CreateLOGAsync(qtCacheDTO);
 
-                if (isLogged)
-                {
-                    tempCodingDashboardItems.Remove(item);
-                    _logCacheViewModel.CacheItems = tempCodingDashboardItems;
-                    await _logCacheViewModel.UpdateLogCount();
+                            if (isLogged)
+                            {
+                                cachedDashboardItems.Remove(item);
+                                _logCacheViewModel.CacheItems = cachedDashboardItems;
+                                await _logCacheViewModel.UpdateLogCount();
 
-                }
-            }
-            else
-            {
-                var context = _logCacheDTO.Context;
+                            }
+                        }
+                        else
+                        {
 
-                _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"), context);
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
 
-                tempCodingDashboardItems.Remove(item);
-                _logCacheViewModel.CacheItems = tempCodingDashboardItems;
-                await _logCacheViewModel.UpdateLogCount();
+                            cachedDashboardItems.Remove(item);
+                            _logCacheViewModel.CacheItems = cachedDashboardItems;
+                            await _logCacheViewModel.UpdateLogCount();
+                        }
+
+                        break;
+                    }
+                case LogContext.AndroidStudio when _logCacheDTO is AndroidCacheDTO androidCacheDTO:
+                    {
+                        if (_timeUp)
+                        {
+                            // Send data to database first
+                            bool isLogged = await _dataService.CreateLOGAsync(androidCacheDTO);
+
+                            if (isLogged)
+                            {
+                                cachedDashboardItems.Remove(item);
+                                _logCacheViewModel.CacheItems = cachedDashboardItems;
+                                await _logCacheViewModel.UpdateLogCount();
+
+                            }
+                        }
+                        else
+                        {
+
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
+
+                            cachedDashboardItems.Remove(item);
+                            _logCacheViewModel.CacheItems = cachedDashboardItems;
+                            await _logCacheViewModel.UpdateLogCount();
+                        }
+
+                        break;
+                    }
+                default:
+                    {
+                        if (_timeUp)
+                        {
+                            // Send data to database first
+                            bool isLogged = await _dataService.CreateLOGAsync((CodingCacheDTO)_logCacheDTO);
+
+                            if (isLogged)
+                            {
+                                cachedDashboardItems.Remove(item);
+                                _logCacheViewModel.CacheItems = cachedDashboardItems;
+                                await _logCacheViewModel.UpdateLogCount();
+
+                            }
+                        }
+                        else
+                        {
+
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
+
+                            cachedDashboardItems.Remove(item);
+                            _logCacheViewModel.CacheItems = cachedDashboardItems;
+                            await _logCacheViewModel.UpdateLogCount();
+                        }
+
+                        break;
+                    }
             }
         }
 

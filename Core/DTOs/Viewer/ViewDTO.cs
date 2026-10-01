@@ -1,4 +1,4 @@
-﻿namespace Core.DTOs
+﻿namespace Core.DTOs.Viewer
 {
     public abstract record ViewDTO
     {

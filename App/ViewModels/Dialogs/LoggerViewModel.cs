@@ -7,7 +7,6 @@ using Data_Logger_1._3.Commands.CacheCommands;
 using Data_Logger_1._3.Commands.LoggerCommands;
 using Data_Logger_1._3.Commands.PostItCommands;
 using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
@@ -31,27 +30,20 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         protected readonly UserDTO _userDTO;
         protected readonly IDataService _dataService;
         protected readonly NavigationService _navigationService;
-        protected readonly LogCacheViewModel _logCacheViewModel;
 
 
 
 
-
-        protected LoggerViewModel(NavigationService navigationService, LogCacheViewModel logCacheViewModel, IAuthService authService,
-            IDataService dataService)
+        protected LoggerViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "LoggerViewModel");
-            _logCacheViewModel = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel), "LoggerViewModel");
             _authService = authService ?? throw new ArgumentNullException(nameof(authService), "LoggerViewModel");
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "LoggerViewModel");
 
             _userDTO = authService.GetUser();
 
-            ProjectName = "";
-            _projects = [];
-
-            ApplicationName = "";
-            _applications = [];
+            ProjectName = string.Empty;
+            ApplicationName = string.Empty;
 
             StartHours = DateTime.Now.Hour;
             StartMinutes = DateTime.Now.Minute;
@@ -67,54 +59,49 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
             EndDate = DateTime.Now;
 
-            Output = "";
-            _outputs = [];
-            Type = "";
-            _types = [];
-
-
+            Output = string.Empty;
+            Type = string.Empty;
             PostIts = [];
 
             CurrentStartDateCommand = new CurrentStartDateCommand(this);
             CurrentEndDateCommand = new CurrentEndDateCommand(this);
-            AddPostItCommand = new AddPostItCommand(_navigationService, this);
+            
             ClearPostItListCommand = new ClearPostItListCommand(this);
         }
 
 
-        protected readonly ObservableCollection<string> _projects = [];
-        protected readonly ObservableCollection<string> _applications = [];
-        protected readonly HashSet<string> _outputs = [];
-        protected readonly HashSet<string> _types = [];
 
-        public IEnumerable<string> Projects => _projects;
-
-        public IEnumerable<string> Applications => _applications;
-
-        public IEnumerable<string> Outputs => _outputs;
-
-        public IEnumerable<string> Types => _types;
+        public string ApplicationToolTip { get; set; } = "The application's name.";
+        public string TimeStartToolTip { get; set; } = "Updates the current start time AND end time. Does not update automatically!";
+        public string TimeEndToolTip { get; set; } = "Updates the END TIME ONLY. Does not update automatically.";
+        public string OutputToolTip { get; set; } = "Please select from this list. Options cannot be modified.";
+        public string TypeToolTip { get; set; } = "Please select from this list. Options cannot be modified.";
 
 
+        protected HashSet<string> Projects { get; set; } = [];
+
+        protected HashSet<string> Applications { get; set; } = [];
+
+        protected HashSet<string> Outputs { get; set; } = [];
+
+        protected HashSet<string> Types { get; set; } = [];
 
 
 
 
-        public Visibility DisplayPicVisibility => SignUpImage == null ? Visibility.Collapsed : Visibility.Visible;
+
+
+        public Visibility DisplayPicVisibility => SignUpImage != null ? Visibility.Collapsed : Visibility.Visible;
 
         public string Author => $"{_userDTO.Name ?? string.Empty} {_userDTO.Surname ?? string.Empty}";
 
 
-        private BitmapImage? signupImage;
         public BitmapImage? SignUpImage => BitmapService.LoadImage(_userDTO.ProfilePic);
 
         private string projectName = string.Empty;
         public string ProjectName
         {
-            get
-            {
-                return projectName;
-            }
+            get => projectName;
             set
             {
                 projectName = value;
@@ -125,10 +112,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private string applicationName = string.Empty;
         public string ApplicationName
         {
-            get
-            {
-                return applicationName;
-            }
+            get => applicationName;
             set
             {
                 applicationName = value;
@@ -136,7 +120,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             }
         }
 
-        protected abstract bool AppFieldEnabled { get; }
+        public virtual bool AppFieldEnabled { get; } = true;
 
 
         #region START
@@ -146,10 +130,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private DateTime startDate;
         public DateTime StartDate
         {
-            get
-            {
-                return startDate;
-            }
+            get => startDate;
             set
             {
                 startDate = value;
@@ -245,10 +226,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private DateTime endDate;
         public DateTime EndDate
         {
-            get
-            {
-                return endDate;
-            }
+            get => endDate;
             set
             {
                 endDate = value;
@@ -340,10 +318,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private string output = string.Empty;
         public string Output
         {
-            get
-            {
-                return output;
-            }
+            get => output;
             set
             {
                 output = value;
@@ -354,10 +329,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private string type = string.Empty;
         public string Type
         {
-            get
-            {
-                return type;
-            }
+            get => type;
             set
             {
                 type = value;
@@ -366,13 +338,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         }
 
 
-        private ObservableCollection<PostItViewModel> postIts = [];
-        public ObservableCollection<PostItViewModel> PostIts
+        private ObservableCollection<StickyPostItViewModel> postIts = [];
+        public ObservableCollection<StickyPostItViewModel> PostIts
         {
-            get
-            {
-                return postIts;
-            }
+            get => postIts;
             set
             {
                 postIts = value;
@@ -383,10 +352,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private bool isDatabaseOnline;
         public bool IsDatabaseOnline
         {
-            get
-            {
-                return isDatabaseOnline;
-            }
+            get => isDatabaseOnline;
             set
             {
                 isDatabaseOnline = value;
@@ -401,10 +367,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private string logCount = string.Empty;
         public string LogCount
         {
-            get
-            {
-                return logCount;
-            }
+            get => logCount;
             set
             {
                 logCount = value;
@@ -416,10 +379,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private Brush? databaseStatusFill;
         public Brush? DatabaseStatusFill
         {
-            get
-            {
-                return databaseStatusFill;
-            }
+            get => databaseStatusFill;
             set
             {
                 databaseStatusFill = value;
@@ -430,10 +390,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         private string databaseStatus = string.Empty;
         public string DatabaseStatus
         {
-            get
-            {
-                return databaseStatus;
-            }
+            get => databaseStatus;
             set
             {
                 databaseStatus = value;
@@ -452,21 +409,16 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         /// </summary>
         public abstract ICommand SaveCommand { get; }
 
+        /// <summary>
+        /// Clears the PostIt list.
+        /// </summary>
+        public ICommand ClearPostItListCommand { get; set; } = null!;
 
         /// <summary>
-        /// Edit a log in log cache.
+        /// Clears all fields in the logger.
         /// </summary>
-        public ICommand CacheEditCommand { get; set; } = null!;
-
-        public ICommand UpdateLogCommand { get; set; } = null!;
-
-
-        // Clears the PostIt list
-        public ICommand ClearPostItListCommand { get; set; } = null!;
-        // Clears all fields in the logger
         public ICommand ClearLoggerCommand { get; set; } = null!;
-        // Adds a PostIt to the PostIt list
-        public ICommand AddPostItCommand { get; set; } = null!;
+        
 
 
 
@@ -474,35 +426,60 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         #region Member Functions
 
 
+        /// <summary>
+        /// Loads defaults asynchronously when the logger is opened. This includes loading the project list, application list, output list, and type list.
+        /// </summary>
+        /// <returns></returns>
+        internal abstract Task AutoStartAsync();
 
+
+        /// <summary>
+        /// Loads the list of projects from the database asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task LoadProjects();
+
+
+        /// <summary>
+        /// Loads the list of applications from the database asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task LoadApplications();
+
+
+        /// <summary>
+        /// Loads the list of outputs from the database asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task LoadOutputs();
+
+
+        /// <summary>
+        /// Loads the list of types from the database asynchronously.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract Task LoadTypes();
+
+
+        /// <summary>
+        /// Updates the log count asynchronously. This is used to display the number of logs in the cache/database.
+        /// </summary>
+        /// <returns></returns>
         public abstract Task UpdateLogCount();
 
-        public void UpdateDateControl()
+
+
+        private void UpdateDateControl()
         {
             StartDate = DateTime.Parse(StartDate.Date.ToLongDateString() + " " + StartHours + ":" + StartMinutes + ":" + StartSeconds + "." + StartMilliseconds);
         }
 
-        public void UpdateEndDateControl()
+        private void UpdateEndDateControl()
         {
             EndDate = DateTime.Parse(EndDate.Date.ToLongDateString() + " " + EndHours + ":" + EndMinutes + ":" + EndSeconds + "." + EndMilliseconds);
         }
 
-        public void TimeNow(bool updateStart)
-        {
-            if (updateStart)
-            {
-                StartHours = DateTime.Now.Hour;
-                StartMinutes = DateTime.Now.Minute;
-                StartSeconds = DateTime.Now.Second;
-                StartMilliseconds = DateTime.Now.Millisecond;
-            }
-
-            EndHours = DateTime.Now.Hour;
-            EndMinutes = DateTime.Now.Minute;
-            EndSeconds = DateTime.Now.Second;
-            EndMilliseconds = DateTime.Now.Millisecond;
-
-        }
+        
 
         #endregion
     }

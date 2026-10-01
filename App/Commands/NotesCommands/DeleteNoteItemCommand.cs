@@ -2,27 +2,20 @@
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.Commands;
-using System.Diagnostics;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.NotesCommands
 {
-    public class DeleteNoteItemCommand : AsyncCommandBase
+    internal class DeleteNoteItemCommand : AsyncCommandBase
     {
-        private readonly NOTESViewModel? _notesViewModel;
-        private readonly IDataService? _dataService;
+        private readonly NOTESDashboardViewModel _notesViewModel;
+        private readonly IDataService _dataService;
+        private readonly int _noteId;
 
-        public DeleteNoteItemCommand(NOTESViewModel notesViewModel, IDataService dataService)
+        public DeleteNoteItemCommand(NOTESDashboardViewModel notesViewModel, IDataService dataService, int noteId)
         {
-            try
-            {
-                _notesViewModel = notesViewModel ?? throw new ArgumentNullException(nameof(notesViewModel));
-                _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An error occurred near DeleteNoteItemCommand(notesViewModel,dataService) CONSTRUCTOR: {ex.Message}");
-            }
+            _notesViewModel = notesViewModel;
+            _dataService = dataService;
         }
 
         protected override async Task ExecuteAsync(object parameter)
@@ -32,7 +25,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                 if (parameter is NoteLOGViewModel noteToDelete)
                 {
                     // Delete from database first
-                    var noteDeleted = await _dataService.DeleteNoteAsync(noteToDelete.ViewModelID);
+                    var noteDeleted = await _dataService.DeleteNoteAsync(_noteId);
 
                     // Remove the note from the ObservableCollection
                     if(noteDeleted)
@@ -43,8 +36,6 @@ namespace Data_Logger_1._3.Commands.NotesCommands
             }
             catch (Exception ex)
             {
-                // Send to Feedback
-
                 MessageBox.Show("A problem occurred on our end. We apologise for any inconvenience caused. Feedback will automatically be sent to us.",
                    "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 

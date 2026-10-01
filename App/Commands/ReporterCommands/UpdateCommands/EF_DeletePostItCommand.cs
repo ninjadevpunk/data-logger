@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Reporter.Updater;
+﻿using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 using System.Windows;
 
@@ -6,9 +6,9 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
     public class EF_DeletePostItCommand : CommandBase
     {
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
 
-        public EF_DeletePostItCommand(ReporterUpdaterViewModel viewModel)
+        public EF_DeletePostItCommand(CodingLoggerUpdateViewModel viewModel)
         {
             try
             {

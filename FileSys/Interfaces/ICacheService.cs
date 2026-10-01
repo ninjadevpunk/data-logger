@@ -58,7 +58,7 @@ namespace FileSys.Interfaces
         /// <param name="log">The log that is top be saved.</param>
         /// <param name="filePath">The location to store the log.</param>
         /// <param name="cacheContext">The type of log being saved.</param>
-        void SaveLOG(LogCacheDTO logCacheDTO, string filePath);
+        void SaveLOGFile(LogCacheDTO logCacheDTO, string filePath);
 
 
         /// <summary>

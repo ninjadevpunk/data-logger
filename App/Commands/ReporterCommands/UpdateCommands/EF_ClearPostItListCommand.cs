@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Reporter.Updater;
+﻿using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
@@ -6,9 +6,9 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
     public class EF_ClearPostItListCommand : CommandBase
     {
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
 
-        public EF_ClearPostItListCommand(ReporterUpdaterViewModel viewModel)
+        public EF_ClearPostItListCommand(CodingLoggerUpdateViewModel viewModel)
         {
             try
             {

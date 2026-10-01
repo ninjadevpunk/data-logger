@@ -1,5 +1,5 @@
 ﻿using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 using System.Windows;
@@ -11,13 +11,13 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
         public enum ActionType { Create, Edit }
 
         private readonly NavigationService _navigationService;
-        private readonly ReporterUpdaterViewModel _reporterUpdaterViewModel;
+        private readonly CodingLoggerUpdateViewModel _reporterUpdaterViewModel;
         private readonly EF_EditPostItViewModel _efEditPostItViewModel;
         private readonly EF_PostItViewModel _efPostItViewModel;
         private ActionType _actionType = ActionType.Create;
 
 
-        public EF_PostCommand(NavigationService navigationService, ReporterUpdaterViewModel reporterUpdaterViewModel)
+        public EF_PostCommand(NavigationService navigationService, CodingLoggerUpdateViewModel reporterUpdaterViewModel)
         {
             try
             {
@@ -36,7 +36,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
         }
 
 
-        public EF_PostCommand(ActionType actionType, NavigationService navigationService, ReporterUpdaterViewModel reporterUpdaterViewModel, EF_EditPostItViewModel efEditPostItViewModel, EF_PostItViewModel efPostItViewModel)
+        public EF_PostCommand(ActionType actionType, NavigationService navigationService, CodingLoggerUpdateViewModel reporterUpdaterViewModel, EF_EditPostItViewModel efEditPostItViewModel, EF_PostItViewModel efPostItViewModel)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
             }
         }
 
-        public EF_PostCommand(NavigationService navigationService, ReporterUpdaterViewModel reporterUpdaterViewModel, EF_EditPostItViewModel efEditPostItViewModel)
+        public EF_PostCommand(NavigationService navigationService, CodingLoggerUpdateViewModel reporterUpdaterViewModel, EF_EditPostItViewModel efEditPostItViewModel)
         {
             try
             {

@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace Data_Logger_1._3.ViewModels.Utilities
+namespace Data_Logger_1._3.Utilities
 {
     /// <summary>
     /// UI helper methods and formatters.

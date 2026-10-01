@@ -707,7 +707,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_ERROR" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Error}" />
+                                                       Text="{Binding DisplayError}" />
 
                                         </Grid>
                                     </Border>
@@ -727,7 +727,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SOLUTION" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Solution}" />
+                                                       Text="{Binding DisplaySolution}" />
 
                                         </Grid>
                                     </Border>
@@ -747,7 +747,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SUGGESTION" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Suggestion}" />
+                                                       Text="{Binding DisplaySuggestion}" />
 
                                         </Grid>
                                     </Border>
@@ -767,7 +767,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_COMMENT" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Comment}" />
+                                                       Text="{Binding DisplayComment}" />
 
                                         </Grid>
                                     </Border>
@@ -935,7 +935,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_ERROR" Style="{DynamicResource text_LIST_ERROR_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Error, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayError, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
                                         </Grid>
                                     </Border>
@@ -955,7 +955,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SOLUTION" Style="{DynamicResource text_LIST_SOLUTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding Display_Solution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySolution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
                                         </Grid>
                                     </Border>
@@ -975,7 +975,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SUGGESTION" Style="{DynamicResource text_LIST_SUGGESTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding Display_Suggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySuggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
                                         </Grid>
                                     </Border>
@@ -995,7 +995,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_COMMENT" Style="{DynamicResource text_LIST_COMMENT_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Comment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayComment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
                                         </Grid>
                                     </Border>

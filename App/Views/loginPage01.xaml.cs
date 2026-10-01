@@ -9,7 +9,7 @@ namespace Data_Logger_1._3.Views
     /// </summary>
     public partial class loginPage01 : Page
     {
-        public loginPage01(LoginViewModel loginViewModel)
+        internal loginPage01(LoginViewModel loginViewModel)
         {
             InitializeComponent();
             DataContext = loginViewModel;

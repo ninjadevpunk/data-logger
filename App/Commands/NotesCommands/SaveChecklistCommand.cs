@@ -1,5 +1,5 @@
-﻿using Core.Models;
-using Core.Models.App_Models;
+﻿using Core.DTOs.Notes;
+using Core.Interfaces;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -7,106 +7,83 @@ using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
+using System.Windows;
 
 namespace Data_Logger_1._3.Commands.NotesCommands
 {
-    public class SaveChecklistCommand : AsyncCommandBase
+    internal class SaveChecklistCommand : AsyncCommandBase
     {
-        private readonly NavigationService? _navigationService;
-        private readonly IDataService? _dataService;
-        private readonly CreateCheckListViewModel? _createCheckListViewModel;
-        private readonly NOTESViewModel? _notesViewModel;
+        private readonly NavigationService _navigationService;
+        private readonly IAuthService _authService;
+        private readonly IDataService _dataService;
+        private readonly CreateCheckListViewModel _createCheckListViewModel;
+        private readonly NOTESDashboardViewModel _notesDashboardViewModel;
 
 
-        public SaveChecklistCommand(NavigationService navigationService)
+        public SaveChecklistCommand(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+            CreateCheckListViewModel createCheckListViewModel, NOTESDashboardViewModel notesViewModel)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-
-            }
-            catch (Exception)
-            {
-                //
-            }
-        }
-
-        public SaveChecklistCommand(NavigationService? navigationService, IDataService? dataService, CreateCheckListViewModel createCheckListViewModel, NOTESViewModel notesViewModel)
-        {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-                _createCheckListViewModel = createCheckListViewModel ?? throw new ArgumentNullException(nameof(createCheckListViewModel));
-                _notesViewModel = notesViewModel ?? throw new ArgumentNullException(nameof(notesViewModel));
-
-            }
-            catch (Exception)
-            {
-                //
-            }
+            _navigationService = navigationService;
+            _authService = authService;
+            _dataService = dataService;
+            _createCheckListViewModel = createCheckListViewModel;
+            _notesDashboardViewModel = notesViewModel;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                NoteItem noteItem = new();
+                var user = _authService.GetUser();
 
-                if (_dataService == null || _navigationService == null)
-                    throw new InvalidOperationException("Navigation and DataService is null!");
-
-                var user = _dataService?.GetUser();
-
-                ACCOUNT? account = user;
-
-                if (account == null)
-                    throw new InvalidOperationException("Account is null!");
-
-                ApplicationClass? DataLoggerNotesApp = await _dataService!.FindApplicationByIDAsync(15);
-
-                noteItem.Author = account;
-                noteItem.Project = new(-1, account, "", DataLoggerNotesApp,
-                    LOG.CATEGORY.NOTES, false);
-
-                noteItem.Application = DataLoggerNotesApp;
-
-                if (_createCheckListViewModel == null)
-                    throw new InvalidOperationException("Checklist viewmodel is null!");
-
-                noteItem.Start = DateTime.Parse(_createCheckListViewModel.CreationDate);
-                noteItem.End = DateTime.Parse(_createCheckListViewModel.ModifiedDate);
-                noteItem.Output = await _dataService.FindOutputByIDAsync(37);
-                noteItem.Type = await _dataService.FindTypeByIDAsync(39);
-
-                noteItem.Subject = _createCheckListViewModel.NoteSubject;
-
-                noteItem.Checklist = new();
-
-                foreach (var item in _createCheckListViewModel.ChecklistItems)
+                var checkListDTO = new CheckListDTO
                 {
-                    CheckListItem checkListItem = new CheckListItem(-1, item.IsDone, item.Item);
-                    noteItem.Checklist.Items.Add(checkListItem);
-                }
-
+                    UserId = user.UserId,
+                    ListSubject = _createCheckListViewModel.NoteSubject,
+                    CreationDate = _createCheckListViewModel.CreationDate,
+                    ModifiedDate = _createCheckListViewModel.ModifiedDate,
+                    Items = _createCheckListViewModel.ChecklistItems.Select(item => new CheckListItemDTO
+                    {
+                        IsChecked = item.IsDone,
+                        Item = item.Item
+                    }).ToList()
+                };
 
 
 
                 // Send to database
-                await _dataService.CreateLOGAsync(noteItem);
+                var (success, checkListDataDTO) = await _dataService.CreateCheckListAsync(checkListDTO);
 
-                var list = _notesViewModel?.NoteItems ?? throw new InvalidOperationException("Notes viewmodel is null!");
-                list.Add(new NoteLOGViewModel(_dataService, _notesViewModel, noteItem));
+                if(success && checkListDataDTO != null)
+                {
+                    var viewCheckListDTO = new NotesViewCheckListDTO
+                    {
+                        NoteDTO = checkListDataDTO,
+                        Subject = checkListDTO.ListSubject,
+                        CreationDate = checkListDTO.CreationDate,
+                        Items = checkListDTO.Items
+                    };
 
-                _notesViewModel.NoteItems = list;
+                    var list = _notesDashboardViewModel.NoteItems;
+                    list.Add(new NoteLOGViewModel(_dataService, _notesDashboardViewModel, viewCheckListDTO));
+
+                    _notesDashboardViewModel.NoteItems = list;
+                }
+                else
+                {
+                    MessageBox.Show("An unexpected error occurred while saving the checklist. Please try again later.", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
 
                 await _navigationService.NavigateToNotesDashboard();
                 _navigationService.SetChecklistNotesChecked(false);
             }
             catch (Exception ex)
             {
-                if (_dataService != null)
-                    await _dataService.HandleExceptionAsync(ex);
+                await _dataService.HandleExceptionAsync(ex);
+                MessageBox.Show("An unexpected error occurred. Please try again later.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 Debug.WriteLine($"Exception occurred in SaveChecklistCommand.ExecuteAsync: {ex.Message}");
             }
         }

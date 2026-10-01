@@ -1,5 +1,5 @@
 ﻿using Core.Models;
-using Data_Logger_1._3.ViewModels.Reporter.Updater;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
@@ -7,14 +7,14 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
     public class EF_ResetLoggerCommand : CommandBase
     {
-        private readonly ReporterUpdaterViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _viewModel;
         private const string Qt = "Qt Creator";
         private const string Android = "Android Studio Quail 4 — 2026.1.4";
         private const string VisualStudio = "Visual Studio Community 2022";
 
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
 
-        public EF_ResetLoggerCommand(ReporterUpdaterViewModel viewModel, LOG.CATEGORY category)
+        public EF_ResetLoggerCommand(CodingLoggerUpdateViewModel viewModel, LOG.CATEGORY category)
         {
             try
             {
