@@ -35,7 +35,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
-using Data_Logger_1._3.ViewModels.LogViewModels;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Core.Utilities;
@@ -45,7 +44,7 @@ namespace Data_Logger_1._3
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
-    public partial class App
+    internal partial class App
     {
 
         private readonly IServiceProvider _serviceProvider;
@@ -114,7 +113,6 @@ namespace Data_Logger_1._3
                     service.AddTransient<SignUpViewModel>();
                     service.AddSingleton<MainWindowViewModel>();
 
-                    service.AddTransient<LOGViewModelFactory>();
                     service.AddSingleton<CodingQtViewModel>();
                     service.AddSingleton<CodingAndroidViewModel>();
                     service.AddSingleton<CodingViewModel>();
@@ -264,14 +262,14 @@ namespace Data_Logger_1._3
 
 
 
-        protected override async void OnExit(ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
             try
             {
-                await using var scope = _serviceProvider.CreateAsyncScope();
+                using var scope = _serviceProvider.CreateScope();
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                await dataService.SignOutUserAsync();
+                dataService.SignOutUserAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

@@ -5,7 +5,7 @@ namespace Data_Logger_1._3.Views
     /// <summary>
     /// Interaction logic for Splashscreen.xaml
     /// </summary>
-    public partial class Splashscreen : DLSWindow
+    internal partial class Splashscreen : DLSWindow
     {
         public Splashscreen()
         {

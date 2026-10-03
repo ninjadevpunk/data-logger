@@ -133,25 +133,20 @@ namespace Data_Logger_1._3.Services
             var asList = _cacheMaster.LoadASCodeCache(userId);
             var cdeList = _cacheMaster.LoadCodeCache(userId);
 
-            var logViewModelFactory = _serviceProvider.GetRequiredService<LOGViewModelFactory>();
+            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
             _codingQtDashboard = serviceProvider.GetRequiredService<CodingQtViewModel>();
             _codingAndroidDashboard = serviceProvider.GetRequiredService<CodingAndroidViewModel>();
             _codingDashboard = serviceProvider.GetRequiredService<CodingViewModel>();
 
             try
             {
-                var navigationService = _serviceProvider.GetRequiredService<NavigationService>();
-
-
-
-                var qtLogs = ConvertLogsToViewModels(qtList, qtLog => logViewModelFactory.Create((QtCacheDTO)qtLog, _codingQtDashboard, false));
+                var qtLogs = ConvertLogsToViewModels(qtList, qtLog => viewModelFactory.Create((QtCacheDTO)qtLog, _codingQtDashboard, false));
                 LoadCacheItems(qtLogs, _codingQtDashboard);
 
-                var cdeLogs = ConvertLogsToViewModels(cdeList, codingLog => new CodeLOGViewModel(navigationService, (CodingCacheDTO)codingLog,
-                    _codingDashboard, _dataService, _cacheMaster, false));
+                var cdeLogs = ConvertLogsToViewModels(cdeList, codingLog => viewModelFactory.Create((CodingCacheDTO)codingLog, _codingDashboard, false));
                 LoadCacheItems(cdeLogs, _codingDashboard);
 
-                var asLogs = ConvertLogsToViewModels(asList, androidLog => logViewModelFactory.Create((AndroidCacheDTO)androidLog,
+                var asLogs = ConvertLogsToViewModels(asList, androidLog => viewModelFactory.Create((AndroidCacheDTO)androidLog,
                     _codingAndroidDashboard, false));
                 LoadCacheItems(asLogs, _codingAndroidDashboard);
             }

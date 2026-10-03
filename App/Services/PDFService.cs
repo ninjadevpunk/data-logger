@@ -27,10 +27,10 @@ namespace Data_Logger_1._3.Services
         private string filePath = "";
 
         /// <summary>
-        /// Formats a date with the correct suffix
+        /// Formats a Date with the correct suffix
         /// </summary>
-        /// <param name="date">The unformatted date</param>
-        /// <returns>Returns the date in its correct format</returns>
+        /// <param name="date">The unformatted Date</param>
+        /// <returns>Returns the Date in its correct format</returns>
         public static string FormatDateWithSuffix(DateTime date)
         {
             string daySuffix = GetDaySuffix(date.Day);

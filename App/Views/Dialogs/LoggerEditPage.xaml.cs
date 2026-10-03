@@ -5,7 +5,7 @@ namespace Data_Logger_1._3.Views.Dialogs
     /// <summary>
     /// Interaction logic for LoggerEditPage.xaml
     /// </summary>
-    public partial class LoggerEditPage : Page
+    internal partial class LoggerEditPage : Page
     {
         public LoggerEditPage()
         {

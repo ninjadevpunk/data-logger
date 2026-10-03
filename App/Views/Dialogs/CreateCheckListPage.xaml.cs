@@ -1,29 +1,32 @@
-﻿using System.Windows.Controls;
+﻿using Data_Logger_1._3.Utilities;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace Data_Logger_1._3.Views.LogPages
 {
     /// <summary>
     /// Interaction logic for CreateCheckListPage.xaml
     /// </summary>
-    public partial class CreateCheckListPage : Page
+    internal partial class CreateCheckListPage : Page
     {
-        public string Created { get; set; } = date();
+        public string CreationDate { get; } = Extensions.NoteDateTimeNow();
+        public static string ModifiedDate => Extensions.NoteDateTimeNow();
 
         public CreateCheckListPage()
         {
             InitializeComponent();
 
-            this.text_DATE.Text = "Created " + Created + ". Last modified " + Created;
+            UpdateDates();
         }
 
-        public static string date()
+        public void UpdateDates()
         {
-            return DateTime.Now.ToString("d MMMM yyyy HH:mm");
+            text_DATE.Text = Extensions.CreatedAndModifiedDate(CreationDate, ModifiedDate);
         }
 
-        private void on_AddItem_clicked(object sender, System.Windows.RoutedEventArgs e)
+        private void On_AddItem_clicked(object sender, RoutedEventArgs e)
         {
-            this.text_DATE.Text = "Created " + Created + ". Last modified " + date();
+            UpdateDates();
         }
     }
 }

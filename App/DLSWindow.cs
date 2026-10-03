@@ -3,7 +3,7 @@ using System.Windows.Media.Imaging;
 
 namespace Data_Logger_1._3
 {
-    public class DLSWindow : Window
+    internal class DLSWindow : Window
     {
         protected string AppVersion { get; }
 

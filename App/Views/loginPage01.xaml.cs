@@ -7,9 +7,9 @@ namespace Data_Logger_1._3.Views
     /// <summary>
     /// Interaction logic for loginPage01.xaml
     /// </summary>
-    public partial class loginPage01 : Page
+    internal partial class loginPage01 : Page
     {
-        internal loginPage01(LoginViewModel loginViewModel)
+        public loginPage01(LoginViewModel loginViewModel)
         {
             InitializeComponent();
             DataContext = loginViewModel;

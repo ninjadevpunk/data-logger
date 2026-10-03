@@ -12,12 +12,12 @@ namespace Data_Logger_1._3
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : DLSWindow
+    internal partial class MainWindow : DLSWindow
     {
         private readonly NavigationService _navigationService;
         private readonly MainWindowViewModel _mainWindowViewModel;
 
-        internal MainWindow(MainWindowViewModel mainWindowViewModel, NavigationService navigationService)
+        public MainWindow(MainWindowViewModel mainWindowViewModel, NavigationService navigationService)
         {
             InitializeComponent();
 

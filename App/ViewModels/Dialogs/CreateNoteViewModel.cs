@@ -2,6 +2,7 @@
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.NotesCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using MVVMEssentials.ViewModels;
 using System.Windows.Input;
@@ -10,11 +11,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 {
     internal class CreateNoteViewModel : ViewModelBase
     {
-
-
-        public CreateNoteViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, NOTESDashboardViewModel notesViewModel)
+        public CreateNoteViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+            NOTESDashboardViewModel notesViewModel)
         {
-            StartandEndDate();
             NoteSubject = "No Subject";
             NoteContent = string.Empty;
 
@@ -32,26 +31,13 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             set
             {
                 noteSubject = value;
-                StartandEndDate();
+                UpdateDates();
                 OnPropertyChanged(nameof(NoteSubject));
             }
         }
 
-        public string CreationDate => DateTime.Now.ToString("dd MMMM yyyy HH:mm");
-
-        private string modifiedDate = string.Empty;
-        public string ModifiedDate
-        {
-            get
-            {
-                return modifiedDate;
-            }
-            set
-            {
-                modifiedDate = value;
-                OnPropertyChanged(nameof(ModifiedDate));
-            }
-        }
+        public string CreationDate { get; } = Extensions.NoteDateTimeNow();
+        public string ModifiedDate => Extensions.NoteDateTimeNow();
 
 
         private string date = string.Empty;
@@ -79,13 +65,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             set
             {
                 noteContent = value;
-                StartandEndDate() ;
+                UpdateDates();
                 OnPropertyChanged(nameof(NoteContent));
             }
         }
-
-
-
 
 
 
@@ -99,12 +82,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         #region Member Functions
 
 
-
-
-
-        private string UpdateLastModified() => ModifiedDate = DateTime.Now.ToString("dd MMMM yyyy HH:mm");
-
-        private void StartandEndDate() => Date = $"Created on {CreationDate}. Last modified on {UpdateLastModified()}";
+        private void UpdateDates() => Date = Extensions.CreatedAndModifiedDate(CreationDate, ModifiedDate);
 
 
 

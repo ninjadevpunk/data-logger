@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Media.Animation;
 
 namespace Data_Logger_1._3.Views
@@ -7,7 +6,7 @@ namespace Data_Logger_1._3.Views
     /// <summary>
     /// Interaction logic for Updater.xaml
     /// </summary>
-    public partial class VelopackUpdaterWindow : Window
+    internal partial class VelopackUpdaterWindow : Window
     {
         private readonly Storyboard _startUpdating;
         private readonly bool _startUpdatingImmediately;

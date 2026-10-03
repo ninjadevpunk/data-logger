@@ -6,14 +6,14 @@ namespace Data_Logger_1._3.Views
     /// <summary>
     /// Interaction logic for SignUp.xaml
     /// </summary>
-    public partial class SignUp : DLSWindow
+    internal partial class SignUp : DLSWindow
     {
         public SignUp()
         {
             InitializeComponent();
         }
 
-        internal SignUp(SignUpViewModel signUpViewModel)
+        public SignUp(SignUpViewModel signUpViewModel)
         {
             InitializeComponent();
             DataContext = signUpViewModel;

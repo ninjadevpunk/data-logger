@@ -1,6 +1,7 @@
 ﻿using ReasonableRTF;
 using ReasonableRTF.Enums;
 using ReasonableRTF.Models;
+using System.Diagnostics;
 
 namespace Core.Utilities
 {
@@ -22,6 +23,7 @@ namespace Core.Utilities
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"{Constants.ExceptionPrefix} ToPlainText: {ex.Message}");
                 return (string.Empty, ex);
             }
         }

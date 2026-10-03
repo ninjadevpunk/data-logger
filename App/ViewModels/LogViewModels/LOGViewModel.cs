@@ -4,6 +4,7 @@ using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using FileSys.Interfaces;
 using MVVMEssentials.ViewModels;
@@ -30,7 +31,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
         public bool IsDisposed { get; set; } = false;
 
-        public Timer? _timer;
+        private Timer? _timer;
 
         public ICommand EditCommand { get; set; } = null!;
 
@@ -53,7 +54,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         {
             _isCacheSave = isCacheSave;
             _logCacheViewModel = logCacheViewModel;
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "LOGViewModel");
+            _navigationService = navigationService;
             _dataService = dataService;
 
             _logCacheDTO = logCacheDTO;
@@ -68,8 +69,8 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                 //NotaryContent = PostItContent(createPostItViewModels);
                 //_logCacheDTO.Content = NotaryContent;
 
-                _cacheMaster = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "LOGViewModel");
-                _cacheMaster.AddLogCacheIdentifier(_logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"));
+                _cacheMaster = cacheService;
+                _cacheMaster.AddLogCacheIdentifier(Extensions.CreateCacheIdentifier(_logCacheDTO.Start));
             }
             else
             { 
@@ -141,7 +142,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         public int CommentCount => _logCacheDTO.PostIts.Count(p => RtfConverter.HasContent(p.Comment));
 
         /// <summary>
-        /// Formatted start and end date.
+        /// Formatted start and end Date.
         /// </summary>
         public string StartEndDate => $"{_logCacheDTO.Start.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")} - " +
             $"{_logCacheDTO.End.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")}";

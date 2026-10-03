@@ -25,7 +25,7 @@ namespace Data_Logger_1._3.Utilities
         /// </summary>
         /// <param name="value">Resource value</param>
         /// <returns>Returns a Brush</returns>
-        public static Brush TryParseBrush(string value)
+        internal static Brush TryParseBrush(string value)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace Data_Logger_1._3.Utilities
         /// </summary>
         /// <param name="value">Resource value</param>
         /// <returns>Returns a Brush</returns>
-        public static Style? TryParsePath(string value)
+        internal static Style? TryParsePath(string value)
         {
             try
             {
@@ -65,6 +65,16 @@ namespace Data_Logger_1._3.Utilities
 
             return null;
         }
+
+        internal static string NoteDateTimeNow() => DateTime.Now.ToString("d MMMM yyyy HH:mm");
+
+        internal static string CreatedAndModifiedDate(string creationDate, string modified)
+        {
+            modified = creationDate == modified ? string.Empty : $". Last modified on {modified}";
+            return $"Created on {creationDate}{modified}";
+        }
+
+        internal static string CreateCacheIdentifier(DateTime logCacheStartTime) => logCacheStartTime.ToString("yyyyMMdd_HHmmss");
 
         /// <summary>
         /// Gets the number of coding logs in the cache list.

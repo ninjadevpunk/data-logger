@@ -18,11 +18,16 @@ namespace Data_Logger_1._3.Services
             _serviceProvider = serviceProvider;
         }
 
+        public TDLSWindow CreateDLSWindow<TDLSWindow>() where TDLSWindow : DLSWindow
+        {
+            return _serviceProvider.GetRequiredService<TDLSWindow>();
+        }
 
         public T CreatePage<T>() where T : Page
         {
             return _serviceProvider.GetRequiredService<T>();
         }
+
 
         public ReporterDashboard CreateReporterPage(string vmKey)
         {

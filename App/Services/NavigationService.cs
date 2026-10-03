@@ -233,10 +233,11 @@ namespace Data_Logger_1._3.Services
         {
             try
             {
-                var loginWindow = _serviceProvider.GetRequiredService<Login>();
+                var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
+                var loginWindow = uiFactory.CreateDLSWindow<Login>();
                 _login = loginWindow;
 
-                var page01 = _serviceProvider.GetRequiredService<loginPage01>();
+                var page01 = uiFactory.CreatePage<loginPage01>();
 
                 if (isSignOut)
                 {
@@ -259,6 +260,7 @@ namespace Data_Logger_1._3.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"{Constants.ExceptionPrefix} NavigateToLogin: {ex.Message}");
+                CloseApp();
             }
         }
 

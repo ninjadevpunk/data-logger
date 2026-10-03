@@ -1,17 +1,16 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace Data_Logger_1._3.Views.Dialogs
 {
     /// <summary>
     /// Interaction logic for PostItPage.xaml
     /// </summary>
-    public partial class PostItPage : Page
+    internal partial class PostItPage : Page
     {
         private readonly PostItViewModel _postItViewModel;
 
-        internal PostItPage(PostItViewModel postItViewModel)
+        public PostItPage(PostItViewModel postItViewModel)
         {
             InitializeComponent();
             _postItViewModel = postItViewModel;
