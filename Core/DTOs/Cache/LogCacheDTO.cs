@@ -1,9 +1,6 @@
 ﻿namespace Core.DTOs.Cache
 {
-    public abstract record LogCacheDTO : LogDTO<PostItCacheDTO>
+    public abstract record LogCacheDTO : LogDTO
     {
-        public int UserId { get; init; }
-
-        public override IReadOnlyList<PostItCacheDTO> PostIts { get; init; } = [];
     }
 }

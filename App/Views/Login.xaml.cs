@@ -12,7 +12,7 @@ namespace Data_Logger_1._3.Views
         private readonly Brush? disabledColor = TryParseBrush("AccentColour");
 
 
-        public Login()
+        internal Login()
         {
             InitializeComponent();
             VersionText.Text = AppVersion;

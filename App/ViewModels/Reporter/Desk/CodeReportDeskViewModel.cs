@@ -1,20 +1,25 @@
 ﻿using Data_Logger_1._3.Commands.ReporterCommands;
 using Core.Models;
-using Core.Models.App_Models;
 using Data_Logger_1._3.Services;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Data.Interfaces;
+using Data_Logger_1._3.ViewModels.Reporter.Logs;
+using Core.Enums;
+using Core.Utilities;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
+    /// <summary>
+    /// TODO
+    /// </summary>
     internal class CodeReportDeskViewModel : ReportDeskViewModel
     {
         public override LogContext Context => LogContext.Coding;
         private bool _isBusy = false;
 
 
-        public CodeReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService) : 
+        public CodeReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService) :
             base(navigationService, dataService, pdfService)
         {
 
@@ -47,32 +52,19 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             if (_isBusy) return;
             _isBusy = true;
 
-            await _dataService.InitialiseApplicationsLISTAsync(LOG.CATEGORY.CODING);
-
             Applications.Clear();
             Applications.Add("ANY");
             string holdApp = "ANY";
 
             try
             {
-                foreach (ApplicationClass app in _dataService.SQLITE_APPLICATIONS)
+                foreach (var app in await _dataService.InitialiseApplicationsLISTAsync(LOG.CATEGORY.CODING))
                 {
-                    if (!new[] { 1, 2 }.Contains(app.appID))
-                    {
-                        Applications.Add(app.Name);
+                    Applications.Add(app);
 
-                        if (string.IsNullOrEmpty(Application) && Applications.Count > 0)
-                            holdApp = Applications.ElementAt(1);
-                    }
+                    if (string.IsNullOrEmpty(Application) && Applications.Count > 0)
+                        holdApp = Applications.ElementAt(1);
                 }
-            }
-            catch (InvalidOperationException invex)
-            {
-                Debug.WriteLine($"InvalidOperationException near AutoStartAsync: {invex.Message}");
-            }
-            catch (ArgumentException index)
-            {
-                Debug.WriteLine($"ArgumentException near AutoStartAsync: {index.Message}");
             }
             catch (Exception ex)
             {
@@ -80,7 +72,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             }
 
             Application = holdApp;
-
             _isBusy = false;
         }
 
@@ -92,7 +83,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             if (_isBusy) return;
             _isBusy = true;
 
-            await _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING);
 
             Projects.Clear();
             Projects.Add("NONE");
@@ -101,44 +91,21 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
             try
             {
-                foreach (ProjectClass project in _dataService.SQLITE_PROJECTS)
+                foreach (var project in await _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING))
                 {
-                    if (!new[] { 1, 2 }.Contains(project.Application.appID) &&
-                        project.Application.Name == Application)
-                    {
-                        Projects.Add(project.Name);
+                    Projects.Add(project);
 
-                        try
-                        {
-                            if (string.IsNullOrEmpty(Project) && Projects.Count > 0)
-                                holdProjectName = Projects.ElementAt(2);
-                        }
-                        catch (ArgumentException index)
-                        {
-                            Debug.WriteLine($"ArgumentException near InitialiseProjectsAsync: {index.Message}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Exception near InitialiseProjectsAsync: {ex.Message}");
-                        }
-                    }
+                    if (string.IsNullOrEmpty(Project) && Projects.Count > 2)
+                        holdProjectName = Projects.ElementAt(2);
                 }
-            }
-            catch (InvalidOperationException invex)
-            {
-                Debug.WriteLine($"InvalidOperationException near InitialiseProjectsAsync: {invex.Message}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error occurred in InitialiseProjectsAsync()");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} InitialiseProjectsAsync(): {ex.Message}");
             }
 
             Project = holdProjectName;
-
             _isBusy = false;
-
-
-
         }
 
         /// <summary>
@@ -152,34 +119,19 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
                 Logs.Clear();
 
                 ObservableCollection<REPORTViewModel> list = new ObservableCollection<REPORTViewModel>();
-                int projectID = 1;
-
-                await _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING);
-                foreach (ProjectClass item in _dataService.SQLITE_PROJECTS)
-                {
-                    if (item.Name == Project && item.Application.Name == Application)
-                        projectID = item.projectID;
-                }
+                
 
                 foreach (LOG log in await _dataService.RetrieveLogsAsync(LogContext.Coding))
                 {
-                    if (log.Project == null)
-                        continue;
-                    if (log.Project.projectID == projectID)
-                        list.Add(new codeREPORTViewModel((CodingLOG)log, this, _navigationService, _dataService,
-                            _pdfService));
+                    
                 }
 
                 Logs = list;
                 SetNoLogsMessageVisibility();
             }
-            catch (ArgumentNullException nullex)
-            {
-                Debug.WriteLine("Null exception. Probably a project that wasn't meant to be logged.");
-            }
             catch (Exception ex)
             {
-                //
+                Debug.WriteLine($"{Constants.ExceptionPrefix} UpdateLogsListAsync: {ex.Message}");
             }
 
             _isBusy = false;

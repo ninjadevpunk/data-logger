@@ -4,7 +4,6 @@ using Core.Interfaces;
 using Core.Models;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
-using Data_Logger_1._3.Commands.LoggerCommands;
 using Data_Logger_1._3.Commands.PostItCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;

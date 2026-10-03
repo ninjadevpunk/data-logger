@@ -1,8 +1,8 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.Enums;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -13,40 +13,15 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
     public class SingleExportCommand : AsyncCommandBase
     {
         private readonly PDFService _pdfService;
-        private readonly LOG? _log = null;
+        private readonly LogDataDTO _logDataDTO;
+        private readonly LogContext _context;
 
-        public LogContext Context { get; set; }
 
-
-        public SingleExportCommand()
+        public SingleExportCommand(PDFService pdfService, LogDataDTO logDataDTO, LogContext context = LogContext.Coding)
         {
-        }
-
-        public SingleExportCommand(LogContext context, PDFService pdfService)
-        {
-            try
-            {
-                _pdfService = pdfService ?? throw new ArgumentNullException(nameof(pdfService));
-                Context = context;
-            }
-            catch (Exception ex)
-            {
-
-            }
-        }
-
-        public SingleExportCommand(LOG log, LogContext context, PDFService pdfService)
-        {
-            try
-            {
-                _pdfService = pdfService ?? throw new ArgumentNullException(nameof(pdfService));
-                Context = context;
-                _log = log;
-            }
-            catch (Exception ex)
-            {
-
-            }
+            _pdfService = pdfService;
+            _logDataDTO = logDataDTO;
+            _context = context;
         }
 
 
@@ -54,38 +29,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
         {
             try
             {
-                if (_log != null)
-                {
-                    switch (Context)
-                    {
-                        case LogContext.Qt:
-                            await _pdfService.ExportQtLogToPDF(_log);
-
-                            break;
-                        case LogContext.AndroidStudio:
-                            await _pdfService.ExportASLogToPDF(_log);
-
-                            break;
-                        case LogContext.Coding:
-                            await _pdfService.ExportCodingLogToPDF(_log);
-
-                            break;
-                        case LogContext.Graphics:
-                            await _pdfService.ExportGraphicsLogToPDF(_log);
-
-                            break;
-                        case LogContext.Film:
-                            await _pdfService.ExportFilmLogToPDF(_log);
-
-                            break;
-                        case LogContext.Flexi:
-                            await _pdfService.ExportFlexiLogToPDF(_log);
-
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                // TODO: Handle exporting using PDFService
             }
             catch (Exception ex)
             {

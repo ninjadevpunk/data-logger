@@ -5,7 +5,10 @@ using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Commands.EditCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using FileSys.Interfaces;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
@@ -24,17 +27,27 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
             ProjectName = codingCacheDTO.ProjectName;
             ApplicationName = codingCacheDTO.ApplicationName;
 
-            StartDate = DateTime.Parse(codingCacheDTO.Start);
+            StartDate = codingCacheDTO.Start;
             StartHours = StartDate.Hour;
             StartMinutes = StartDate.Minute;
             StartSeconds = StartDate.Second;
             StartMilliseconds = StartDate.Millisecond;
 
-            EndDate = DateTime.Parse(codingCacheDTO.End);
+            EndDate = codingCacheDTO.End;
             EndHours = EndDate.Hour;
             EndMinutes = EndDate.Minute;
             EndSeconds = EndDate.Second;
             EndMilliseconds = EndDate.Millisecond;
+
+            Output = codingCacheDTO.OutputName;
+            Type = codingCacheDTO.TypeName;
+            PostIts = new ObservableCollection<StickyPostItViewModel>(codingCacheDTO.PostIts.Select(p =>
+            {
+                var postIt = (PostItCacheDTO)p;
+                return new CacheStickyPostItViewModel(_navigationService, _dataService, this, postIt);
+            }));
+            BugsFound = codingCacheDTO.Bugs;
+            ApplicationOpened = codingCacheDTO.Success;
 
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
             CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, codingCacheDTO);

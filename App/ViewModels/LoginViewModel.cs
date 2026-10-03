@@ -1,8 +1,8 @@
 ﻿using Core.Interfaces;
 using Data_Logger_1._3.Commands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using MVVMEssentials.ViewModels;
-using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -13,11 +13,9 @@ namespace Data_Logger_1._3.ViewModels
 
         private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
-        private readonly UIFactory _factory;
-        public Brush MessageGood => TryParseBrush("GREEN");
-        public Brush MessageBad => TryParseBrush("RED");
-        private static readonly Brush EnabledColor = TryParseBrush("iconColourAccent02");
-        private static readonly Brush DisabledColor = TryParseBrush("AccentColour");
+        
+        private static readonly Brush EnabledColor = Extensions.TryParseBrush("iconColourAccent02");
+        private static readonly Brush DisabledColor = Extensions.TryParseBrush("AccentColour");
 
 
 
@@ -25,10 +23,9 @@ namespace Data_Logger_1._3.ViewModels
         {
             _authService = authService;
             _navigationService = navigationService;
-            _factory = uiFactory;
 
-            StatusMessage = "";
-            StatusMessageColour = MessageBad;
+            StatusMessage = string.Empty;
+            StatusMessageColour = Extensions.MessageBad;
 
 
             IsButtonBackEnabled = true;
@@ -147,17 +144,7 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        public static Brush TryParseBrush(string value)
-        {
-            try
-            {
-                return (Brush)Application.Current.FindResource(value);
-            }
-            catch (ResourceReferenceKeyNotFoundException)
-            {
-                return Brushes.Transparent;
-            }
-        }
+        
 
     }
 }

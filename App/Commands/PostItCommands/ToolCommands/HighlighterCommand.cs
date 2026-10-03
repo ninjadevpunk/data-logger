@@ -1,4 +1,5 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs;
+﻿using Core.Utilities;
+using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 using System.Windows.Documents;
@@ -7,24 +8,13 @@ using static Data_Logger_1._3.ViewModels.Dialogs.PostItViewModel;
 
 namespace Data_Logger_1._3.Commands.PostItCommands.ToolCommands
 {
-    public class HighlighterCommand : CommandBase
+    internal class HighlighterCommand : CommandBase
     {
         private readonly PostItViewModel _createPostItViewModel;
 
         public HighlighterCommand(PostItViewModel createPostItViewModel)
         {
-            try
-            {
-                _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-            }
-            catch (ArgumentNullException nullx)
-            {
-                Debug.WriteLine($"Argument null exception: {nullx.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An exception occurred: {ex.Message}");
-            }
+            _createPostItViewModel = createPostItViewModel;
         }
 
         public override void Execute(object parameter)
@@ -60,9 +50,9 @@ namespace Data_Logger_1._3.Commands.PostItCommands.ToolCommands
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //
+                Debug.WriteLine($"{Constants.ExceptionPrefix} HighlighterCommand.Execute: {ex.Message}");
             }
         }
     }

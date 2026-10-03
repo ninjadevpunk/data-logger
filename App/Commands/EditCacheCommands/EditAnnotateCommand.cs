@@ -31,7 +31,7 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
         {
             try
             {
-                // TODO: Implement editing a cached log. Create a DTO from the logger UI and replace the old DTO with it by creating a
+                // TODO: Implement editing a cached log. CreateViewerViewModel a DTO from the logger UI and replace the old DTO with it by creating a
                 // new LOGViewModel containing the new edited DTO.
 
                 await _navigationService.NavigateToLogCachePage(_logCacheDTO.Context);

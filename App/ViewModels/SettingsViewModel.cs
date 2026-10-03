@@ -8,10 +8,11 @@ using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using Data.Interfaces;
 using Core.Interfaces;
+using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class SettingsViewModel : ViewModelBase
+    internal class SettingsViewModel : ViewModelBase
     {
         public enum PasswordResetStage
         {
@@ -21,8 +22,10 @@ namespace Data_Logger_1._3.ViewModels
             PasswordChanged
         }
 
+        private readonly ICacheService _cacheService;
         private readonly SettingsService _settingsService;
-        private Settings _settings;
+        private readonly Settings _settings;
+
         public ICommand OpenImageCommand { get; set; }
         public ICommand ResetImageCommand { get; set; }
         public ICommand PasswordResetCommand { get; set; }
@@ -32,13 +35,15 @@ namespace Data_Logger_1._3.ViewModels
         public ICommand SaveSettingsCommand { get; set; }
         public ICommand ReturnToDashboardCommand { get; set; }
 
-        public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, SettingsService settingsService,
-            MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService)
-        {
-            var id = dataService.GetUser().accountID;
 
+
+        public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, ICacheService cacheService, 
+            SettingsService settingsService, MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService)
+        {
+            var id = authService.GetUser().UserId;
+            _cacheService = cacheService;
             _settingsService = settingsService;
-            _settings = _settingsService.Load(id);
+            _settings = _settingsService.Load(id) ?? throw new ArgumentNullException(nameof(settingsService), "Settings are null!");
 
             var author = _settings.User;
             author.Id = id;
@@ -47,7 +52,7 @@ namespace Data_Logger_1._3.ViewModels
             DisplayPicPath = author.ProfilePic;
             DefaultPicVisibility = SignUpImage == null ? Visibility.Visible : Visibility.Collapsed;
 
-            BitmapService.DeleteTempProfilePics();
+            cacheService.DeleteTempProfilePics();
 
             Name = author.Name;
             Surname = author.Surname;
@@ -68,7 +73,7 @@ namespace Data_Logger_1._3.ViewModels
             SubmitVerificationCodeCommand = new SubmitVerificationCodeCommand(this, passwordResetService, dataService);
             ChangePasswordCommand = new ChangePasswordCommand(this, authService, dataService);
             DeleteAccountCommand = new DeleteAccountCommand(authService, dataService, settingsService);
-            SaveSettingsCommand = new SaveSettingsCommand(authService, dataService, settingsService, _settings, mainWindowViewModel, this);
+            SaveSettingsCommand = new SaveSettingsCommand(authService, dataService, cacheService, settingsService, _settings, mainWindowViewModel, this);
             SaveIsEnabled = SettingsService.FieldsAcceptable(Email, YesBox, CompanyName);
             ReturnToDashboardCommand = new ReturnToDashboardCommand(mainWindowViewModel, dataService);
         }

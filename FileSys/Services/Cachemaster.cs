@@ -4,11 +4,8 @@ using Core.Models;
 using Core.Utilities;
 using FileSys.Interfaces;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Diagnostics;
-using System.Reflection;
-using System.Security.AccessControl;
-using System.Security.Principal;
+using System.Text.Json.Nodes;
 
 namespace FileSys.Services
 {
@@ -18,9 +15,7 @@ namespace FileSys.Services
     /// </summary>
     public class CacheMaster : ICacheService
     {
-
-
-        public List<string>? Identifiers { get; set; } = new();
+        public List<string> Identifiers { get; set; } = [];
         public StreamWriter? Writer { get; set; }
 
         JsonSerializerSettings settings = new JsonSerializerSettings
@@ -28,18 +23,13 @@ namespace FileSys.Services
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
 
-        public readonly string MainFolder;
-        public readonly string DepositoryPath;
-        public readonly string SettingsPath;
-        public readonly string ProgramDataPath;
-
-        public readonly string ResourceDirectory;
-        public readonly string IdentifiersPath;
-        public readonly string SubjectIdsPath;
-        public readonly string PostitIdsPath;
+        private readonly string MainFolder;
+        private readonly string DepositoryPath;
+        private readonly string ResourceDirectory;
+        private readonly string IdentifiersPath;
 
 
-        public CacheMaster(bool mustDefer = false)
+        public CacheMaster()
         {
 #if DEBUG
             string configFileName = "appsettings.DevMode.json";
@@ -47,316 +37,70 @@ namespace FileSys.Services
             string configFileName = "appsettings.json";
 #endif
 
-            var installerAssembly = Assembly.GetEntryAssembly() ?? throw new InvalidOperationException("Could not determine the entry assembly.");
+            string settingsPath = Path.Combine(AppContext.BaseDirectory, configFileName);
 
-            string resourceName = installerAssembly.GetManifestResourceNames()
-                .First(name => name.EndsWith(configFileName, StringComparison.OrdinalIgnoreCase));
+            if (!File.Exists(settingsPath))
+                throw new ArgumentNullException(nameof(settingsPath));
 
-            using Stream stream = installerAssembly.GetManifestResourceStream(resourceName)
-                ?? throw new FileNotFoundException("Configuration resource not found.", resourceName);
+            string jsonString = File.ReadAllText(settingsPath);
+            JsonNode? rootNode = JsonNode.Parse(jsonString);
 
-            using StreamReader reader = new StreamReader(stream);
+            if (rootNode == null)
+                throw new ArgumentNullException(nameof(rootNode));
 
-            JObject config = JObject.Parse(reader.ReadToEnd());
-
-            MainFolder = config["Paths"]?["Root"]?.ToString() ?? throw new InvalidOperationException("Paths:Root is missing from configuration.");
-            ProgramDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
+            MainFolder = rootNode["Paths"]?["Root"]?.GetValue<string>() ?? @"C:\Data Logger Central";
 
             DepositoryPath = Path.Combine(MainFolder, "Depository");
-
             ResourceDirectory = Path.Combine(DepositoryPath, "res");
-
             IdentifiersPath = Path.Combine(ResourceDirectory, "_identifiers.index");
-            SubjectIdsPath = Path.Combine(ResourceDirectory, "subject.index");
-            PostitIdsPath = Path.Combine(ResourceDirectory, "postit.index");
-#if DEBUG
-            SettingsPath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
-#else
-            SettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger");
-#endif
-
-
-            if (!mustDefer)
-            {
-                if (ResourcesCreated())
-                {
-                    IdentifiersChecked();
-                }
-            }
         }
 
 
-
-        public bool CreateDirectory(string path)
-        {
-            try
-            {
-                Directory.CreateDirectory(path);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in CreateDirectory(): {ex.Message}");
-                return false;
-            }
-        }
-
-
-
-        public string? ReadAllText(string path)
-        {
-            try
-            {
-                return File.ReadAllText(path);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in ReadAllText(): {ex.Message}");
-                return null;
-            }
-        }
-
-        public bool WriteAllText(string path, string contents)
-        {
-            try
-            {
-                File.WriteAllText(path, contents);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in WriteAllText(): {ex.Message}");
-                return false;
-            }
-        }
-
-        public bool DeleteDirectory(string path)
-        {
-            try
-            {
-                if (!Directory.Exists(path))
-                    return true;
-
-                Directory.Delete(path, recursive: true);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in DeleteDirectory(): {ex.Message}");
-                return false;
-            }
-        }
-
-
-        /// <summary>
-        /// Creates a settings file. Throws an <see cref="InvalidOperationException"/> is the settings path is invalid.
-        /// </summary>
-        /// <param name="userId">The logged-in user's ID.</param>
-        /// <returns>Returns whether the operation was successful or not.</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public bool CreateSettingsFile(int userId)
-        {
-            try
-            {
-                var userFolder = Path.Combine(SettingsPath ?? throw new InvalidOperationException("Path is null!"), userId.ToString());
-
-                if (!Directory.Exists(userFolder))
-                {
-                    Directory.CreateDirectory(userFolder);
-                }
-
-                return true;
-            }
-            catch (UnauthorizedAccessException unex)
-            {
-                Debug.WriteLine($"UnauthorizedAccessException error occurred in CreateSettingsFile(userId): {unex.Message}");
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in CreateSettingsFile(userId): {ex.Message}");
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Creates vital resources for the app to function correctly.
-        /// </summary>
-        /// <returns>Returns whether or not the resources were successfully created if they had not existed.</returns>
-        public bool ResourcesCreated()
-        {
-            /** Make sure the file with Identifiers exists.
-             * If it doesn't exist, create it.
-             */
-            try
-            {
-                var folder = MainFolder;
-                // Base Folder
-                if (!Directory.Exists(MainFolder))
-                {
-                    folder ??= string.Empty;
-                    Directory.CreateDirectory(folder);
-                    GrantFolderPermissions(folder);
-                }
-
-                // Depository
-                if (!Directory.Exists(DepositoryPath))
-                {
-                    folder = DepositoryPath ?? string.Empty;
-                    Directory.CreateDirectory(folder);
-
-                    // Hide Depository
-                    DirectoryInfo depositoryInfo = new DirectoryInfo(folder);
-                    depositoryInfo.Attributes |= FileAttributes.Hidden;
-                }
-
-                // Respurces Folder
-                if (!Directory.Exists(ResourceDirectory))
-                {
-                    folder = ResourceDirectory ?? string.Empty;
-                    Directory.CreateDirectory(folder);
-
-                    // Main Index File
-                    using (var fileStream = new FileStream(IdentifiersPath!, FileMode.CreateNew)) { }
-
-                    // Subject ID Index
-                    using (var fileStream = new FileStream(SubjectIdsPath!, FileMode.CreateNew)) { }
-
-                    // PostIt ID Index
-                    using (var fileStream = new FileStream(PostitIdsPath!, FileMode.CreateNew)) { }
-                }
-
-                return true;
-            }
-            catch (UnauthorizedAccessException unex)
-            {
-                Debug.WriteLine($"An UnauthorizedAccessException error occurred in ResourcesCreated(): {unex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An exception occurred in ResourcesCreated(): {ex.Message}");
-                Identifiers = null;
-            }
-
-            return false;
-
-        }
-
-        private void GrantFolderPermissions(string folderPath)
-        {
-#pragma warning disable CA1416 // Validate platform compatibility
-            DirectoryInfo dirInfo = new DirectoryInfo(folderPath);
-            DirectorySecurity dirSecurity = dirInfo.GetAccessControl();
-
-            SecurityIdentifier sid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
-
-            FileSystemAccessRule accessRule = new FileSystemAccessRule(
-                sid,
-                FileSystemRights.Modify | FileSystemRights.ReadAndExecute | FileSystemRights.Synchronize,
-                InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit,
-                PropagationFlags.None,
-                AccessControlType.Allow
-                );
-
-            dirSecurity.AddAccessRule(accessRule);
-            dirInfo.SetAccessControl(dirSecurity);
-#pragma warning restore CA1416 // Validate platform compatibility
-        }
 
 
         /// <summary>
         /// Only checks if the Identifiers file exists and creates it if it doesn't. Will then insert found identifiers into the Identifiers list.
         /// </summary>
-        /// <returns>Returns true if the file was successfully created in the event that the file doesn't already exist or true because all identifiers found were successfully added.
-        /// </returns>
-        public bool IdentifiersChecked()
+        /// <returns>Returns true if the file was successfully created in the event that the file doesn't already exist or true.</returns>
+        public bool IdentifiersLoaded()
         {
-            if (Identifiers is not null)
-                Identifiers.Clear();
-            else
-                return false;
+            Identifiers.Clear();
 
             try
             {
-                if (!File.Exists(IdentifiersPath))
+                if (File.Exists(IdentifiersPath))
                 {
-                    var f = new FileStream(IdentifiersPath!, FileMode.CreateNew);
-                    f.Close();
-
-                }
-                else
-                {
-
                     foreach (string s in File.ReadLines(IdentifiersPath))
-                    {
                         Identifiers.Add(s);
-                    }
 
                 }
-
+                return true;
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Identifiers = null;
-                return false;
+                Debug.WriteLine($"{Constants.ExceptionPrefix} IdentifiersLoaded: {ex.Message}");
+                Identifiers = [];
             }
 
-            return true;
+            return false;
         }
+
+        
 
         /// <summary>
-        /// Checks if the Identifiers file exists and adds a new log's ID into the list. P.S. Will call IdentifiersChecked() automatically.
+        /// Adds a log cache's cache ID to the identifiers file.
         /// </summary>
-        /// <param name="log">The log that will be cached.</param>
-        /// <returns>The log's ID if the identifier was successfully inserted.</returns>
-        public string IdentifiersChecked(LOG log)
+        /// <param name="id">Start date as ID</param>
+        public void AddLogCacheIdentifier(string id)
         {
-            if (IdentifiersChecked() && Identifiers is not null)
-            {
-                try
-                {
-                    var id = log.Start.ToString("yyyyMMdd_HHmmss");
-
-                    /** If the id doesn't exist, add it to the Identifiers List and write the new id to the
-                     * Identifiers.index file.
-                     */
-
-                    if (!Identifiers.Contains(id))
-                    {
-                        Identifiers.Add(id);
-
-                        Writer = new StreamWriter(IdentifiersPath!);
-                        foreach (string t in Identifiers.Order())
-                        {
-                            Writer.WriteLine(t);
-                        }
-
-                    }
-
-                    return id;
-                }
-                catch (Exception)
-                {
-                    Identifiers = null;
-                }
-            }
-
-            return "";
-
-        }
-
-        public void IdentifiersChecked(string id)
-        {
-            if (IdentifiersChecked() && Identifiers is not null)
+            if (IdentifiersLoaded())
             {
                 try
                 {
 
                     // If the id doesn't exist, add it to the Identifiers List and write the new id to the
                     // Identifiers .index file.
-
                     if (!Identifiers.Contains(id))
                     {
                         Identifiers.Add(id);
@@ -368,17 +112,37 @@ namespace FileSys.Services
                         }
 
                         Writer.Close();
-
                     }
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    Identifiers = null;
+                    Debug.WriteLine($"{Constants.ExceptionPrefix} AddLogCacheIdentifier: {ex.Message}");
+                    Identifiers = [];
                 }
             }
 
+        }
 
+
+        /// <summary>
+        /// Checks if an image is a temp folder profile pic.
+        /// </summary>
+        /// <param name="path">The location of pic</param>
+        /// <returns>Returns true if the pic is a temp folder pic; otherwise false.</returns>
+        public bool IsTemporaryProfilePic(string path)
+        {
+            try
+            {
+                string tempFolder = Path.Combine(Path.GetTempPath(), "Data Logger", "Temp Profile Pics");
+                return path.StartsWith(tempFolder, StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception ex)
+            {
+                //App.LogExceptionAsync(ex);
+                Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} LoadImage");
+            }
+            return false;
         }
 
         /// <summary>
@@ -406,7 +170,7 @@ namespace FileSys.Services
             catch (Exception ex)
             {
                 //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in SaveProfilePicture");
+                Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} SaveProfilePicture");
                 return string.Empty;
             }
         }
@@ -439,7 +203,7 @@ namespace FileSys.Services
             catch (Exception ex)
             {
                 //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in DeleteTempProfilePics");
+                Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} DeleteTempProfilePics");
             }
         }
 
@@ -608,7 +372,7 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in SaveQtCodeCache: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} SaveQtCodeCache: {ex.Message}");
             }
         }
 
@@ -633,7 +397,7 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in SaveCodeCache: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} SaveCodeCache: {ex.Message}");
             }
         }
 
@@ -656,7 +420,7 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in SaveAndroidCodeCache: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} SaveAndroidCodeCache: {ex.Message}");
             }
         }
 
@@ -695,7 +459,7 @@ namespace FileSys.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Exception occurred in LoadQtCodeCache: {ex.Message}");
+                    Debug.WriteLine($"{Constants.ExceptionPrefix} LoadQtCodeCache: {ex.Message}");
                 }
             }
 
@@ -733,7 +497,7 @@ namespace FileSys.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Exception occurred in LoadCodeCache: {ex.Message}");
+                    Debug.WriteLine($"{Constants.ExceptionPrefix} LoadCodeCache: {ex.Message}");
                 }
             }
 
@@ -771,7 +535,7 @@ namespace FileSys.Services
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Exception occurred in LoadASCodeCache: {ex.Message}");
+                    Debug.WriteLine($"{Constants.ExceptionPrefix} LoadASCodeCache: {ex.Message}");
                 }
             }
 

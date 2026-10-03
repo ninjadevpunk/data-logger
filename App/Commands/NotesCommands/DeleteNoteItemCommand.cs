@@ -16,6 +16,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
         {
             _notesViewModel = notesViewModel;
             _dataService = dataService;
+            _noteId = noteId;
         }
 
         protected override async Task ExecuteAsync(object parameter)

@@ -6,7 +6,7 @@ using System.Diagnostics;
 /// <summary>
 /// A command to send the user to the login page.
 /// </summary>
-public class NavigateToLoginCommand : AsyncCommandBase
+internal class NavigateToLoginCommand : AsyncCommandBase
 {
     private readonly NavigationService _navigationService;
     private readonly SignUpViewModel _signUpViewModel;
@@ -24,9 +24,9 @@ public class NavigateToLoginCommand : AsyncCommandBase
             await _navigationService.NavigateToLogin();
             _signUpViewModel.CloseSignUp();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.WriteLine($"Exception occurred near NavigateToLoginCommand.Execute(): {e.Message}");
+            Debug.WriteLine($"Exception occurred near NavigateToLoginCommand.Execute(): {ex.Message}");
         }
     }
 }

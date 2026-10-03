@@ -20,10 +20,10 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         public DeleteCacheItemCommand(LogCacheViewModel logCacheViewModel, IDataService dataService, ICacheService cacheService,
             LogCacheDTO logCacheDTO, bool timeIsUp, Timer? timer)
         {
-            _logCacheViewModel = logCacheViewModel ?? throw new ArgumentNullException(nameof(logCacheViewModel));
-            _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
-            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
-            _logCacheDTO = logCacheDTO ?? throw new ArgumentNullException(nameof(logCacheDTO));
+            _logCacheViewModel = logCacheViewModel;
+            _dataService = dataService;
+            _cacheService = cacheService;
+            _logCacheDTO = logCacheDTO;
             _timeUp = timeIsUp;
             _timer = timer;
         }
@@ -32,7 +32,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         {
             try
             {
-                var logViewModel = (LOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand<TLOGViewModel>");
+                var logViewModel = (LOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand");
                 await HandleCodingCacheItem(logViewModel);
             }
             catch (Exception ex)
@@ -46,7 +46,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         {
             var cachedDashboardItems = _logCacheViewModel.CacheItems;
             var context = _logCacheDTO.Context;
-            var startDate = DateTime.Parse(_logCacheDTO.Start);
+            var startDate = _logCacheDTO.Start;
 
             switch (_logCacheDTO.Context)
             {

@@ -1,6 +1,8 @@
 ﻿using Core.Interfaces;
 using Data_Logger_1._3.Commands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
+using FileSys.Interfaces;
 using MVVMEssentials.ViewModels;
 using System.Windows;
 using System.Windows.Input;
@@ -11,17 +13,15 @@ namespace Data_Logger_1._3.ViewModels
 {
     internal class SignUpViewModel : ViewModelBase
     {
-
-
-        private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
-        private readonly UIFactory _factory;
+        private readonly IAuthService _authService;
+        private readonly ICacheService _cacheService;
 
-        public SignUpViewModel(IAuthService authService, NavigationService navigationService, UIFactory uiFactory)
+        public SignUpViewModel(NavigationService navigationService, IAuthService authService, ICacheService cacheService, UIFactory uiFactory)
         {
-            _authService = authService ?? throw new ArgumentNullException(nameof(authService), "SignUpViewModel");
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "SignUpViewModel");
-            _factory = uiFactory ?? throw new ArgumentNullException(nameof(uiFactory), "SignUpViewModel");
+            _navigationService = navigationService;
+            _authService = authService;
+            _cacheService = cacheService;
 
             SignUpImage = null;
             Name = "";
@@ -32,12 +32,12 @@ namespace Data_Logger_1._3.ViewModels
             CompanyLogo = "";
 
             StatusMessage = "";
-            StatusMessageColour = UIFactory.TryParseBrush("RED");
+            StatusMessageColour = Extensions.TryParseBrush("RED");
 
-            MessageGood = _factory.MessageGood;
-            MessageBad = _factory.MessageBad;
+            MessageGood = Extensions.MessageGood;
+            MessageBad = Extensions.MessageBad;
 
-            DisplayPicCommand = new DisplayPicCommand(this, _authService);
+            DisplayPicCommand = new DisplayPicCommand(this, _authService, _cacheService);
             EmailSignUpCommand = new EmailSignUpCommand(this, _authService, _navigationService);
             GoogleSignInCommand = new GoogleSignInCommand(this, _authService);
             NavigateToLoginCommand = new NavigateToLoginCommand(_navigationService, this);

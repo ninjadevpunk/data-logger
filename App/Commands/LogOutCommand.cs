@@ -7,7 +7,7 @@ using System.Windows;
 /// <summary>
 /// Logs out a user and takes them to the login page.
 /// </summary>
-public class LogOutCommand : AsyncCommandBase
+internal class LogOutCommand : AsyncCommandBase
 {
     private readonly NavigationService _navigationService;
 
@@ -26,12 +26,10 @@ public class LogOutCommand : AsyncCommandBase
             {
                 await _navigationService.NavigateToLogin(true);
             }
-
-            
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.WriteLine($"Exception occurred near LogOutCommand.Execute(): {e.Message}");
+            Debug.WriteLine($"Exception occurred near LogOutCommand.Execute(): {ex.Message}");
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using Core.Models;
+﻿using Core.Enums;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
-using static FileSys.Services.CacheMaster;
 
-namespace Data_Logger_1._3.ViewModels.Reporter
+namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
-    public class as_SearchResultViewModel : SearchResultViewModel
+    internal class as_SearchResultViewModel : SearchResultViewModel
     {
         public override LogContext SearchResultContext => LogContext.AndroidStudio;
 

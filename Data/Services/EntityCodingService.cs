@@ -59,7 +59,7 @@ namespace Data.Services
                     Project = project,
                     Subject = postIt.Subject
                 };
-
+            
                 log.PostItList.Add(new PostIt
                 {
                     Subject = subject,

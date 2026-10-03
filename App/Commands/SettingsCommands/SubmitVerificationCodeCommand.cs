@@ -1,11 +1,12 @@
-﻿using Data.Interfaces;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using Data_Logger_1._3.Services.CommandLogic;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class SubmitVerificationCodeCommand : AsyncCommandBase
+    internal class SubmitVerificationCodeCommand : AsyncCommandBase
     {
         SettingsViewModel _settingsViewModel;
         PasswordResetService _passwordResetService;
@@ -35,7 +36,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"Exception occurred in SubmitVerificationCodeCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} SubmitVerificationCodeCommand.ExecuteAsync(): {ex.Message}");
             }
         }
 

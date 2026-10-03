@@ -1,4 +1,6 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.Models;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
@@ -11,40 +13,33 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
     /// <summary>
     /// Allows the user to edit a log retrieved from the database.
     /// </summary>
-    public class EditLogCommand : CommandBase
+    internal class EditLogCommand : AsyncCommandBase
     {
-        private readonly REPORTViewModel _viewModel;
-        private readonly ReportDeskViewModel _reportDeskViewModel;
         private readonly NavigationService _navigationService;
-        private readonly LOG _log;
+        private readonly IDataService _dataService;
+        private readonly ReportDeskViewModel _reportDeskViewModel;
+        private readonly LogDataDTO _logDataDTO;
 
-        public EditLogCommand()
+        
+
+        public EditLogCommand(NavigationService navigationService, IDataService dataService, ReportDeskViewModel reportDeskViewModel, LogDataDTO logDataDTO)
         {
-
-        }
-
-        public EditLogCommand(REPORTViewModel reportViewModel, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService)
-        {
-            _reportDeskViewModel = reportDeskViewModel;
             _navigationService = navigationService;
-        }
-
-        public EditLogCommand(LOG log, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService)
-        {
-            _log = log;
+            _dataService = dataService;
             _reportDeskViewModel = reportDeskViewModel;
-            _navigationService = navigationService;
+            _logDataDTO = logDataDTO;
         }
 
-        public override void Execute(object parameter)
+        protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                _navigationService.NavigateToUpdater(_log, _reportDeskViewModel);
+                await _navigationService.NavigateToUpdater(_logDataDTO, _reportDeskViewModel);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred near EditCommand.Execute(): {e.Message}");
+                await _dataService.HandleExceptionAsync(ex);
+                Debug.WriteLine($"Exception occurred near EditCommand.Execute(): {ex.Message}");
             }
         }
     }

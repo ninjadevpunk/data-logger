@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Core.Utilities;
+using System.Diagnostics;
 using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -29,36 +30,6 @@ namespace Data_Logger_1._3.Services
             return new TransformedBitmap(bitmap, new ScaleTransform(scale, scale));
         }
 
-        // TODO: Delete
-        /// <summary>
-        /// Saves a temporary profile picture to the permanent profile picture directory.
-        /// </summary>
-        /// <param name="tempPath">The temporary profile picture path.</param>
-        /// <returns>Returns the permanent file path, or an empty string if the save failed.</returns>
-        public static string SaveProfilePicture(string tempPath)
-        {
-            try
-            {
-                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger", "Profile Pics");
-
-                Directory.CreateDirectory(folder);
-
-                string newPath = Path.Combine(folder, $"{Guid.NewGuid()}.png");
-
-                if (tempPath.Contains("/Assets"))
-                    return string.Empty;
-
-                File.Copy(tempPath, newPath, overwrite: false);
-
-                return newPath;
-            }
-            catch (Exception ex)
-            {
-                //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in SaveProfilePicture");
-                return string.Empty;
-            }
-        }
 
         /// <summary>
         /// Saves a resized image to a temporary folder in the user's temp directory. This is used for profile pictures before they are permanently saved.
@@ -85,43 +56,11 @@ namespace Data_Logger_1._3.Services
             catch (Exception ex)
             {
                 //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in TempSaveResizedImage");
+                Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} TempSaveResizedImage");
                 return string.Empty;
             }
         }
 
-        // TODO: DELETE
-        /// <summary>
-        /// Deletes profile pics saved in temp folder created by Browse button logic
-        /// </summary>
-        public static void DeleteTempProfilePics()
-        {
-            try
-            {
-                // Save to User's Temp folder
-                string folder = Path.Combine(Path.GetTempPath(), "Data Logger", "Temp Profile Pics");
-
-                if (!Directory.Exists(folder))
-                    return;
-
-                // Delete all files.
-                foreach (var file in Directory.GetFiles(folder))
-                {
-                    File.Delete(file);
-                }
-
-                // Delete any subdirectories and their contents.
-                foreach (var directory in Directory.GetDirectories(folder))
-                {
-                    Directory.Delete(directory, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in DeleteTempProfilePics");
-            }
-        }
 
         public static BitmapImage? LoadImage(string path)
         {
@@ -135,19 +74,5 @@ namespace Data_Logger_1._3.Services
             return bitmap;
         }
 
-        public static bool IsTemporaryProfilePic(string path)
-        {
-            try
-            {
-                string tempFolder = Path.Combine(Path.GetTempPath(), "Data Logger", "Temp Profile Pics");
-                return path.StartsWith(tempFolder, StringComparison.OrdinalIgnoreCase);
-            }
-            catch (Exception ex)
-            {
-                //App.LogExceptionAsync(ex);
-                Debug.WriteLine(ex, "Exception occurred in LoadImage");
-            }
-            return false;
-        }
     }
 }

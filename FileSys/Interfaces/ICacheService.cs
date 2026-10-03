@@ -7,46 +7,43 @@ namespace FileSys.Interfaces
 
     public interface ICacheService
     {
-        bool CreateDirectory(string path);
-        public bool Exists(string path) => File.Exists(path);
-        string? ReadAllText(string path);
-        bool WriteAllText(string path, string contents);
-        bool DeleteDirectory(string path);
-
-        /// <summary>
-        /// Creates a settings file. Throws an <see cref="InvalidOperationException"/> is the settings path is invalid.
-        /// </summary>
-        /// <param name="userId">The logged-in user's ID.</param>
-        /// <returns>Returns whether the operation was successful or not.</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        bool CreateSettingsFile(int userId);
-
-
-        /// <summary>
-        /// Creates vital resources for the app to function correctly.
-        /// </summary>
-        /// <returns>Returns whether or not the resources were successfully created if they had not existed.</returns>
-        bool ResourcesCreated();
-
-
         /// <summary>
         /// Only checks if the Identifiers file exists and creates it if it doesn't. Will then insert found identifiers into the Identifiers list.
         /// </summary>
-        /// <returns>Returns true if the file was successfully created in the event that the file doesn't already exist or true because all identifiers found were successfully added.
-        /// </returns>
-        bool IdentifiersChecked();
+        /// <returns>Returns true if the file was successfully created in the event that the file doesn't already exist or true.</returns>
+        bool IdentifiersLoaded();
+
 
         /// <summary>
-        /// Checks if the Identifiers file exists and adds a new log's ID into the list. P.S. Will call IdentifiersChecked() automatically.
+        /// Adds a log cache's cache ID to the identifiers file.
         /// </summary>
-        /// <param name="log">The log that will be cached.</param>
-        /// <returns>The log's ID if the identifier was successfully inserted.</returns>
-        string IdentifiersChecked(LOG log);
+        /// <param name="id">Start date as ID</param>
+        void AddLogCacheIdentifier(string id);
 
-        void IdentifiersChecked(string id);
 
+
+
+        /// <summary>
+        /// Checks if an image is a temp folder profile pic.
+        /// </summary>
+        /// <param name="path">The location of pic</param>
+        /// <returns>Returns true if the pic is a temp folder pic; otherwise false.</returns>
+        public bool IsTemporaryProfilePic(string path);
+
+        /// <summary>
+        /// Saves a temporary profile picture to the permanent profile picture directory.
+        /// </summary>
+        /// <param name="tempPath">The temporary profile picture path.</param>
+        /// <returns>Returns the permanent file path, or an empty string if the save failed.</returns>
         public string SaveProfilePicture(string tempPath);
+
+        /// <summary>
+        /// Deletes profile pics saved in temp folder created by Browse button logic
+        /// </summary>
         public void DeleteTempProfilePics();
+
+
+
         void DeleteCacheFile(int userId, string fileName, LogContext cacheContext);
         void DeleteLogCache(int userId, string logID, LogContext cacheContext);
 

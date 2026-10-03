@@ -7,7 +7,7 @@ using System.Diagnostics;
 /// <summary>
 /// Command for sending user to the sign up page.
 /// </summary>
-public class NavigateToSignUpCommand : CommandBase
+internal class NavigateToSignUpCommand : CommandBase
 {
     private readonly NavigationService _navigationService;
 
@@ -22,9 +22,9 @@ public class NavigateToSignUpCommand : CommandBase
         {
             _navigationService.NavigateToSignUp();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            Debug.WriteLine($"Exception occurred near NavigateToSignUpCommand.Execute(): {e.Message}");
+            Debug.WriteLine($"Exception occurred near NavigateToSignUpCommand.Execute(): {ex.Message}");
         }
     }
 }

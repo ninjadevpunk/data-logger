@@ -23,6 +23,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt
             Solution = postItCacheDTO.Solution;
             Suggestion = postItCacheDTO.Suggestion;
             Comment = postItCacheDTO.Comment;
+
             PostItCommand = new EditCachedPostItCommand(_navigationService, _dataService, _loggerCreateViewModel, postItCacheDTO);
         }
 

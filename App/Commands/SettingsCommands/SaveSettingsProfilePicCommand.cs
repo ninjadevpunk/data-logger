@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class SaveSettingsProfilePicCommand : AsyncCommandBase
+    internal class SaveSettingsProfilePicCommand : AsyncCommandBase
     {
         private readonly SettingsViewModel _settingsViewModel;
 

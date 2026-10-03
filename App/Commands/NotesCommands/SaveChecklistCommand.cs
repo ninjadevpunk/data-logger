@@ -1,5 +1,6 @@
 ﻿using Core.DTOs.Notes;
 using Core.Interfaces;
+using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -84,7 +85,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                 await _dataService.HandleExceptionAsync(ex);
                 MessageBox.Show("An unexpected error occurred. Please try again later.", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Exception occurred in SaveChecklistCommand.ExecuteAsync: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} SaveChecklistCommand.ExecuteAsync: {ex.Message}");
             }
         }
     }

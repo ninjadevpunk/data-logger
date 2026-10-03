@@ -841,9 +841,7 @@
                             <Grid>
 
                                 <toolkit:RichTextBox x:Name="inputText_ERROR" Style="{DynamicResource inputText_NOTEPAD}"
-                                                     Text="{Binding Error, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                     TextChanged="on_Error_Text_Changed"
-                                                     />
+                                                     Text="{Binding Error, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
                             </Grid>
 
@@ -864,8 +862,7 @@
                                 
                                 
                                 <toolkit:RichTextBox x:Name="inputText_SOLUTION" Style="{DynamicResource inputText_NOTEPAD}"
-                                                     Text="{Binding Solution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                     TextChanged="on_Solution_Text_Changed" />
+                                                     Text="{Binding Solution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                                 
                                 
                             </Grid>
@@ -884,8 +881,7 @@
                             <Grid>
                                 
                                 <toolkit:RichTextBox x:Name="inputText_SUGGESTION" Style="{DynamicResource inputText_NOTEPAD}"
-                                                     Text="{Binding Suggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                     TextChanged="on_Suggestion_Text_Changed" />
+                                                     Text="{Binding Suggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                             </Grid>
                             
 
@@ -907,8 +903,7 @@
                                 
                                 
                                 <toolkit:RichTextBox x:Name="inputText_COMMENT" Style="{DynamicResource inputText_NOTEPAD}"
-                                                     Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
-                                                     TextChanged="on_Comment_Text_Changed" />
+                                                     Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                             
                             
                             </Grid>

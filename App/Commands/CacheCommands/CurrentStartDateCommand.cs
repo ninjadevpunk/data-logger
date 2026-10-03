@@ -1,7 +1,7 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using MVVMEssentials.Commands;
 
-namespace Data_Logger_1._3.Commands.LoggerCommands
+namespace Data_Logger_1._3.Commands.CacheCommands
 {
     internal class CurrentStartDateCommand : CommandBase
     {

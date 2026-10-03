@@ -2,18 +2,24 @@
 using Core.Models;
 using Data_Logger_1._3.Services;
 using System.Windows;
-using static FileSys.Services.CacheMaster;
+using Core.Enums;
+using System.Windows.Input;
+using Core.DTOs.Identity;
+using Core.DTOs.Viewer;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
-    public class AScodeViewerViewModel : codeViewerViewModel
+    internal class AScodeViewerViewModel : ViewerViewModel
     {
         public override LOG.CATEGORY Category { get => LOG.CATEGORY.CODING; }
         public override LogContext Context { get => LogContext.AndroidStudio; }
 
-        public AScodeViewerViewModel(NavigationService navigationService, bool isSimple) : base(navigationService)
+        public override ICommand OKCommand { get; }
+
+        public AScodeViewerViewModel(NavigationService navigationService, UserDTO userDTO, ViewDTO viewDTO, bool isSimple) 
+            : base(navigationService, userDTO, viewDTO)
         {
-            OKCommand = new ViewerOKCommand(navigationService, Context);
+            OKCommand = new ViewerOKCommand(navigationService);
 
             GradleDaemonVisibility = isSimple ? Visibility.Hidden : Visibility.Visible;
             RunBuildVisibility = isSimple ? Visibility.Hidden : Visibility.Visible;
@@ -28,13 +34,11 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
         public Visibility ConfigureBuildVisibility { get; set; }
         public Visibility AllProjectsVisibility { get; set; }
 
-        public string SyncTime { get; set; }
-
-        public string GradleDaemonTime { get; set; }
-
-        public string RunBuildTime { get; set; }
-        public string LoadBuildTime { get; set; }
-        public string ConfigureBuildTime { get; set; }
-        public string AllProjectsTime { get; set; }
+        public string SyncTime { get; set; } = string.Empty;
+        public string GradleDaemonTime { get; set; } = string.Empty;
+        public string RunBuildTime { get; set; } = string.Empty;
+        public string LoadBuildTime { get; set; } = string.Empty;
+        public string ConfigureBuildTime { get; set; } = string.Empty;
+        public string AllProjectsTime { get; set; } = string.Empty;
     }
 }

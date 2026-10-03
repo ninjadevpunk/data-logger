@@ -58,6 +58,13 @@ namespace Data.Interfaces
         Task<IReadOnlyList<string>> InitialiseSubjectsLISTAsync(string appName, string projectName);
 
         // Inserts
+
+
+        /// <summary>
+        /// Inserts a log cache DTO into the database.
+        /// </summary>
+        /// <param name="logCacheDTO">The log DTO to insert.</param>
+        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
         Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO);
 
         /// <summary>
@@ -76,7 +83,7 @@ namespace Data.Interfaces
 
 
         // Reads
-        Task<IEnumerable<LOG>?> RetrieveLogsAsync(LogContext context);
+        Task<IEnumerable<LOG>> RetrieveLogsAsync(LogContext context);
 
         /// <summary>
         /// Retrieves notes from the database that belong to a specific user.

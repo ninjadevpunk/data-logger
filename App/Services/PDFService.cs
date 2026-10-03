@@ -1,4 +1,7 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.Enums;
+using Core.Models;
+using Core.Utilities;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using SkiaSharp;
 using Svg.Skia;
@@ -10,7 +13,6 @@ using System.Drawing;
 using System.IO;
 using System.Net.Http;
 using System.Windows;
-using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Services
 {
@@ -57,11 +59,11 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        private async Task ExportLogToPDF(LOG log, LogContext context)
+        private async Task ExportLogToPDF(LogDataDTO logDataDTO, LogContext context)
         {
             try
             {
-                string defaultFileName = $"{log.Start.ToString("dMMMMyyyy.HHmmssfff")}.{log.Project.Name.Replace(" ", "")}.pdf";
+                /*string defaultFileName = $"{log.Start.ToString("dMMMMyyyy.HHmmssfff")}.{log.Project.Name.Replace(" ", "")}.pdf";
 
                 var dialog = new Microsoft.Win32.SaveFileDialog();
                 dialog.DefaultExt = ".pdf";
@@ -157,7 +159,7 @@ namespace Data_Logger_1._3.Services
                         // Increase the scale factor for better quality rendering (2x, 3x, etc.)
                         float scaleFactor = 3.0f;
 
-                        // Create a surface and SkiaSharp canvas at a higher resolution
+                        // CreateViewerViewModel a surface and SkiaSharp canvas at a higher resolution
                         SKImageInfo imageInfo = new SKImageInfo((int)(width * scaleFactor), (int)(height * scaleFactor));
                         using (SKSurface surface = SKSurface.Create(imageInfo))
                         {
@@ -191,7 +193,7 @@ namespace Data_Logger_1._3.Services
                     currentPage = document.Pages.Add();
                     graphics = currentPage.Graphics;
 
-                    /*      **FOOTER**       */
+                    *//*      **FOOTER**       *//*
 
 
                     // Logo
@@ -257,7 +259,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-                /*      **COLUMN 1**        */
+                *//*      **COLUMN 1**        *//*
 
                 // **QR Code**
                 PdfQRBarcode qrBarcode = new PdfQRBarcode
@@ -370,7 +372,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-                /*      **COLUMN 2**        */
+                *//*      **COLUMN 2**        *//*
 
                 float projectDetailsX = margins.Left + qrCodeSize + columnSpacing;
                 float Ycoordinate = margins.Top;
@@ -734,18 +736,12 @@ namespace Data_Logger_1._3.Services
 
 
 
-
-
-
-
                             break;
                         }
                     default:
                         {
                             if (log is CodingLOG clog)
                             {
-
-
                                 // **BUGS**
 
                                 var bugs = $"{clog.Bugs} bug(s)";
@@ -757,7 +753,6 @@ namespace Data_Logger_1._3.Services
 
                                 var opened = clog.Success ? $"Application Launched Successfully" : $"No Sucessful Launch";
                                 graphics.DrawString(opened, defaultFont, PdfBrushes.Black, new PointF(projectDetailsX, Ycoordinate));
-
                             }
 
                             break;
@@ -773,7 +768,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-                /*      **COLUMN 3**        */
+                *//*      **COLUMN 3**        *//*
 
                 // **POST ITS**
                 float staticPostItColumnX = projectDetailsX + column2Width + columnSpacing + midWaySpacing;
@@ -849,10 +844,10 @@ namespace Data_Logger_1._3.Services
                             }
                         }
 
-                        DrawPostItSection(PostItViewModel.ConvertRtfToPlainText(postIt.Error), PdfBrushes.Red);
-                        DrawPostItSection(PostItViewModel.ConvertRtfToPlainText(postIt.Solution), new PdfSolidBrush(Color.FromArgb(0, 211, 34)));
-                        DrawPostItSection(PostItViewModel.ConvertRtfToPlainText(postIt.Suggestion), new PdfSolidBrush(Color.FromArgb(255, 0, 245)));
-                        DrawPostItSection(PostItViewModel.ConvertRtfToPlainText(postIt.Comment), new PdfSolidBrush(Color.FromArgb(255, 245, 0)));
+                        DrawPostItSection(RtfConverter.ToPlainText(postIt.Error).Text, PdfBrushes.Red);
+                        DrawPostItSection(RtfConverter.ToPlainText(postIt.Solution).Text, new PdfSolidBrush(Color.FromArgb(0, 211, 34)));
+                        DrawPostItSection(RtfConverter.ToPlainText(postIt.Suggestion).Text, new PdfSolidBrush(Color.FromArgb(255, 0, 245)));
+                        DrawPostItSection(RtfConverter.ToPlainText(postIt.Comment).Text, new PdfSolidBrush(Color.FromArgb(255, 245, 0)));
 
                         Ycoordinate += 10;
 
@@ -875,7 +870,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-                /*      **FOOTER Continued        */
+                *//*      **FOOTER Continued        *//*
 
                 var pageCount = document.Pages.Count;
                 var pageFont = new PdfTrueTypeFont(regularFontPath, 8);
@@ -927,7 +922,7 @@ namespace Data_Logger_1._3.Services
                 document.Close(true);
 
                 MessageBox.Show($"Log exported successfully. Find it in this location: {filePath}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-
+*/
             }
             catch(HttpRequestException hex)
             {
@@ -941,7 +936,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in ExportLogToPDF(): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} ExportLogToPDF(): {ex.Message}");
                 MessageBox.Show("An error occurred on our end. We apologise for any inconvenience casued.");
             }
 
@@ -950,68 +945,20 @@ namespace Data_Logger_1._3.Services
 
 
 
-
-
-
-
-
-
-
-        public async Task ExportQtLogToPDF(LOG log)
+        public async Task ExportQtLogToPDF(QtDataDTO qtDataDTO)
         {
-
-            await ExportLogToPDF((CodingLOG)log, LogContext.Qt);
+            
         }
 
-
-
-
-
-
-        public async Task ExportASLogToPDF(LOG log)
+        public async Task ExportASLogToPDF(AndroidDataDTO androidDataDTO)
         {
-            await ExportLogToPDF((AndroidCodingLOG)log, LogContext.AndroidStudio);
-        }
-
-
-
-
-
-
-        public async Task ExportCodingLogToPDF(LOG log)
-        {
-            await ExportLogToPDF((CodingLOG)log, LogContext.Coding);
 
         }
 
-
-
-
-
-
-        public async Task ExportGraphicsLogToPDF(LOG log)
+        public async Task ExportCodingLogToPDF(CodingDataDTO codingDataDTO)
         {
-            await ExportLogToPDF((GraphicsLOG)log, LogContext.Graphics);
+
         }
 
-
-
-
-
-
-        public async Task ExportFilmLogToPDF(LOG log)
-        {
-            await ExportLogToPDF((FilmLOG)log, LogContext.Film);
-        }
-
-
-
-
-
-
-        public async Task ExportFlexiLogToPDF(LOG log)
-        {
-            await ExportLogToPDF((FlexiNotesLOG)log, LogContext.Flexi);
-        }
     }
 }

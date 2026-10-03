@@ -4,26 +4,15 @@ using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
 {
-    public class AddPostItCommand : AsyncCommandBase
+    internal class AddPostItCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
         private readonly LoggerViewModel _loggerCreateViewModel;
 
         public AddPostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel)
         {
-
-
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-            }
-            catch (Exception)
-            {
-                //
-            }
-
-
+            _navigationService = navigationService;
+            _loggerCreateViewModel = loggerCreateViewModel;
         }
 
         protected override async Task ExecuteAsync(object parameter)

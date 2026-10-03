@@ -1,6 +1,8 @@
 ﻿using Core.Enums;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.Reporter.Logs;
+using Data_Logger_1._3.ViewModels.Reporter.Result;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
 using System.Windows;
@@ -22,11 +24,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         protected bool AwaitCall = true;
 
 
-        public ReportDeskViewModel(NavigationService navigationService, IDataService dataService)
-        {
-            _navigationService = navigationService;
-            _dataService = dataService;
-        }
 
         public ReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService)
         {
@@ -201,11 +198,11 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
 
 
-        public ICommand SearchCommand { get; set; }
+        public ICommand SearchCommand { get; set; } = null!;
 
-        public ICommand ExportCommand { get; set; }
+        public ICommand ExportCommand { get; set; } = null!;
 
-        public ICommand ReturnToDashboard { get; set; }
+        public ICommand ReturnToDashboard { get; set; } = null!;
 
 
 

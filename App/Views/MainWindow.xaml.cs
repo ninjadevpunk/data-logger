@@ -21,7 +21,7 @@ namespace Data_Logger_1._3
         {
             InitializeComponent();
 
-            // Create a DoubleAnimation to animate the height of the radiobutton.
+            // CreateViewerViewModel a DoubleAnimation to animate the height of the radiobutton.
             DoubleAnimation startAnimate = new(), endAnimate = new(), n1animation = new(), n2animation = new();
             startAnimate.From = 0;
             startAnimate.To = 180;
@@ -59,7 +59,7 @@ namespace Data_Logger_1._3
             Storyboard.SetTargetName((DoubleAnimation)d, name);
             Storyboard.SetTargetProperty((DoubleAnimation)d, new PropertyPath(StackPanel.HeightProperty));
 
-            // Create a storyboard to contain the animation.
+            // CreateViewerViewModel a storyboard to contain the animation.
             var story1 = new Storyboard();
             story1.Children.Add((DoubleAnimation)d);
 
@@ -77,7 +77,7 @@ namespace Data_Logger_1._3
             Storyboard.SetTargetName((DoubleAnimation)d, name);
             Storyboard.SetTargetProperty((DoubleAnimation)d, new PropertyPath(StackPanel.HeightProperty));
 
-            // Create a storyboard to contain the animation.
+            // CreateViewerViewModel a storyboard to contain the animation.
             var story1 = new Storyboard();
             story1.Children.Add((DoubleAnimation)d);
 

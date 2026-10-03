@@ -1,39 +1,38 @@
-﻿using Core.Models;
+﻿using Core.Enums;
+using Core.Models;
 using Data.Interfaces;
-using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Commands.ReporterCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
-    public class code_SearchResultViewModel : SearchResultViewModel
+    internal class code_SearchResultViewModel : SearchResultViewModel
     {
         public override LogContext SearchResultContext => LogContext.Coding;
 
-        public code_SearchResultViewModel(NavigationService navigationService, IDataService dataService, CodingLOG codingLOG, 
+        public code_SearchResultViewModel(NavigationService navigationService, IDataService dataService, CodingLOG codingLOG,
             CodeReportDeskViewModel codeReportDeskViewModel)
     : base(codingLOG, codeReportDeskViewModel, navigationService)
         {
             ID = codingLOG.ID;
 
             // Default
-            IconStyle = TryParsePath("path_DefaultApp");
+            IconStyle = Extensions.TryParsePath("path_DefaultApp");
 
             switch (codingLOG.Application.Name)
             {
                 case "Visual Studio Community 2022":
-                    IconStyle = TryParsePath("path_VS_SearchResult");
-                        IconPath = null;
+                    IconStyle = Extensions.TryParsePath("path_VS_SearchResult");
+                    IconPath = new();
                     break;
                 case "Visual Studio Code":
-                    IconStyle = TryParsePath("path_VSC");
-                        IconPath = null;
+                    IconStyle = Extensions.TryParsePath("path_VSC");
+                    IconPath = new();
                     break;
                 case "IntelliJ":
                     {
@@ -86,7 +85,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
                         });
 
                         IconContainer = iconGridIntelliJ;
-                        IconPath = null;
+                        IconPath = new();
                         IconStyle = null;
                         break;
                     }
@@ -215,7 +214,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
                         });
 
                         IconContainer = iconGridPyCharm;
-                        IconPath = null;
+                        IconPath = new();
                         IconStyle = null;
 
                         break;
@@ -243,9 +242,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
 
             }
 
-            ViewLogCommand = new ViewCommand(_navigationService, SearchResultContext, ViewType.Log, codingLOG);
-            EditLogCommand = new EditLogCommand(codingLOG, codeReportDeskViewModel, _navigationService);
-            DeleteLogCommand = new DeleteLogCommand(dataService, codeReportDeskViewModel, SearchResultContext, codingLOG);
+            
         }
 
         public int ID { get; set; }

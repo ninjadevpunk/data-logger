@@ -1,27 +1,26 @@
 ﻿using Core.Interfaces;
+using Core.Utilities;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
+using FileSys.Interfaces;
 using MVVMEssentials.Commands;
 using System.IO;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class DisplayPicCommand : CommandBase
+    internal class DisplayPicCommand : CommandBase
     {
 
         private readonly SignUpViewModel _signUpViewModel;
-        private readonly IAuthService? _authService;
+        private readonly IAuthService _authService;
+        private readonly ICacheService _cacheService;
 
-        public DisplayPicCommand(SignUpViewModel signUpViewModel)
-        {
-            _signUpViewModel = signUpViewModel;
-        }
-
-        public DisplayPicCommand(SignUpViewModel signUpViewModel, IAuthService authService)
+        public DisplayPicCommand(SignUpViewModel signUpViewModel, IAuthService authService, ICacheService cacheService)
         {
             _signUpViewModel = signUpViewModel;
             _authService = authService;
+            _cacheService = cacheService;
         }
 
         public override void Execute(object parameter)
@@ -55,8 +54,7 @@ namespace Data_Logger_1._3.Commands
                     _signUpViewModel.ProfilePicPath = tempProfilePicPath;
                     _signUpViewModel.SignUpImage = BitmapService.LoadImage(tempProfilePicPath);
 
-                    if (_authService?.Account != null)
-                        _authService.Account.ProfilePic = tempProfilePicPath;
+                    _authService.GetUser().ProfilePic = tempProfilePicPath;
 
                 }
 
@@ -68,11 +66,8 @@ namespace Data_Logger_1._3.Commands
 
                 
                 _signUpViewModel.SignUpImage = BitmapService.LoadImage(Constants.Avatar);
-
-                if (_authService?.Account != null)
-                    _authService.Account.ProfilePic = "";
-
-                BitmapService.DeleteTempProfilePics();
+                _authService.GetUser().ProfilePic = string.Empty;
+                _cacheService.DeleteTempProfilePics();
             }
 
         }

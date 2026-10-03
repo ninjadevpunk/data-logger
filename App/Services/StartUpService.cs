@@ -1,4 +1,6 @@
 ﻿using Core.DTOs.Cache;
+using Core.DTOs.Data;
+using Core.DTOs.Notes;
 using Core.Interfaces;
 using Core.Utilities;
 using Data.Interfaces;
@@ -155,7 +157,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in LoadCachedLogs: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} LoadCachedLogs: {ex.Message}");
             }
 
             _notesDashboard = serviceProvider.GetRequiredService<NOTESDashboardViewModel>();
@@ -209,7 +211,20 @@ namespace Data_Logger_1._3.Services
 
             foreach (var note in await dataService.RetrieveGenericNotesAsync(id) ?? [])
             {
-                _notesDashboard.NoteItems.Add(new(_dataService, _notesDashboard, note));
+                _notesDashboard.NoteItems.Add(new(_dataService, _notesDashboard, new NotesViewItemDTO
+                {
+                    NoteDTO = new NoteDataDTO
+                    {
+                        UserId = note.accountID,
+                        NoteItemId = note.ID,
+                        CreationDate = note.Start.ToLongDateString(),
+                        ModifiedDate = note.End.ToLongDateString(),
+                        NoteContent = note.Content,
+                    },
+                    Subject = note.Subject,
+                    Content = note.Content,
+                    CreationDate = note.Start.ToLongDateString()
+                }));
             }
 
             var hasNotes = _notesDashboard.NoteItems.Count > 0;
@@ -238,12 +253,9 @@ namespace Data_Logger_1._3.Services
             {
                 var user = _authService.GetUser();
 
-                if (user == null)
-                    throw new ArgumentNullException("User cannot be null!");
-
                 var id = user.UserId;
 
-                if (_cacheMaster.CreateSettingsFile(id))
+                if (_settingsService.CreateSettingsFile())
                 {
                     var settings = _settingsService.Load(id);
 

@@ -20,7 +20,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             : base(navigationService, androidCacheDTO, codingAndroidViewModel, dataService, cacheService, isCacheSave)
         {
             EditCommand = new EditCommand(LogContext.AndroidStudio, navigationService, androidCacheDTO);
-            ViewCommand = new ViewCommand(_navigationService, LogContext.AndroidStudio);
+            ViewCommand = new ViewCommand(_navigationService, androidCacheDTO);
 
             if(_isCacheSave)
                 _cacheMaster.SaveAndroidCodeCache(androidCacheDTO);

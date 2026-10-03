@@ -1,5 +1,8 @@
-﻿using FileSys.Interfaces;
+﻿using Core.Interfaces;
+using Core.Utilities;
+using FileSys.Interfaces;
 using FileSys.Services;
+using Installer.Services;
 using Microsoft.Win32;
 using Migration;
 using System.Diagnostics;
@@ -17,14 +20,14 @@ namespace Installer.Views.Pages
     public partial class SetupPage : UserControl
     {
         private readonly MainWindow _mainWindow;
-        private readonly ICacheService _cacheService;
+        private readonly IFileService _fileService;
         private readonly IInstallationRegistry _installationRegistry;
         private readonly DbMigrationService _databaseMigration;
 
         public readonly string _programDataPath;
         string installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Data Logger");
-        const int APP_SIZE = 330;
+        const int APP_SIZE = 300;
         public bool ShortcutIsCreated { get; set; } = false;
         private readonly bool _isReinstall;
 
@@ -35,11 +38,15 @@ namespace Installer.Views.Pages
             _mainWindow = mainWindow;
             _isReinstall = isReinstall;
 
-            _cacheService = new CacheMaster(true);
+            _fileService = new InstallerFileService();
             _installationRegistry = new InstallationRegistry();
             _databaseMigration = new DbMigrationService();
 
+#if DEBUG
+            _programDataPath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
+#else
             _programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
+#endif
 
             this.textBlock_INSTALL_LOCATION.Text = installPath;
             this.textBlock_APP_SIZE.Text = $"{APP_SIZE}MB";
@@ -72,7 +79,7 @@ namespace Installer.Views.Pages
                 Marshal.FinalReleaseComObject(shortcut);
                 Marshal.FinalReleaseComObject(shell);
 
-                return _cacheService.Exists(shortcutPath);
+                return _fileService.Exists(shortcutPath);
             }
             catch
             {
@@ -87,7 +94,7 @@ namespace Installer.Views.Pages
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 string shortcutPath = Path.Combine(desktopPath, "Data Logger.lnk");
 
-                if (!_cacheService.Exists(shortcutPath))
+                if (!_fileService.Exists(shortcutPath))
                     return false;
 
                 Type shellType = Type.GetTypeFromProgID("Shell.Application")!;
@@ -148,7 +155,7 @@ namespace Installer.Views.Pages
 
             try
             {
-                if (!_cacheService.Exists(exePath))
+                if (!_fileService.Exists(exePath))
                     return false;
 
                 using RegistryKey extensionKey = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.dls") ?? throw new InvalidOperationException("Failed to create .dls registry key.");
@@ -211,7 +218,7 @@ namespace Installer.Views.Pages
                 if (string.IsNullOrWhiteSpace(backupDirectory))
                     return false;
 
-                _cacheService.CreateDirectory(backupDirectory);
+                _fileService.CreateDirectory(backupDirectory);
 
                 if (File.Exists(backupPath))
                     File.Delete(backupPath);
@@ -264,8 +271,8 @@ namespace Installer.Views.Pages
                 }
 
                 // Create ProgramData and Resources folder
-                bool programDataCreated = _cacheService.CreateDirectory(_programDataPath);
-                bool resourcesCreated = _cacheService.ResourcesCreated();
+                bool programDataCreated = _fileService.Exists(_programDataPath);
+                bool resourcesCreated = _fileService.ResourcesCreated();
 
                 if (!programDataCreated || !resourcesCreated)
                 {
@@ -288,9 +295,12 @@ namespace Installer.Views.Pages
                 }
 
                 // Database paths
+#if RELEASE
                 string alpha5DatabasePath = @"C:\DLS\Depository\LOGS.db";
                 string alpha5BackupPath = @"C:\DLS\Depository\_backup\LOGS_OLD_1.3-alpha.5.db";
                 string alpha6DatabasePath = alpha5DatabasePath;
+#endif
+
 
                 string setupPath = ExtractSetup();
 
@@ -320,7 +330,7 @@ namespace Installer.Views.Pages
 
                 File.Delete(setupPath);
 
-
+#if RELEASE
                 /* DATABASE MIGRATION */
 
                 if (previousVersion == "1.3.0-alpha.5")
@@ -352,7 +362,6 @@ namespace Installer.Views.Pages
                     }
                 }
 
-
                 /* POST-INSTALLATION SETUP */
 
                 // Register Data Logger instance
@@ -370,12 +379,13 @@ namespace Installer.Views.Pages
                     AssociateDlsFiles();
                 }
 
+#endif
                 _mainWindow.ShowLaunchPage();
                 return;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in on_INSTALL_ClickedAsync(): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} on_INSTALL_ClickedAsync(): {ex.Message}");
             }
 
             _mainWindow.ShowFailedPage(isSecondFailure: _isReinstall);

@@ -1,4 +1,5 @@
-﻿using Data.Interfaces;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
@@ -26,7 +27,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
             catch (Exception ex)
             {
                 await _dataService.HandleExceptionAsync(ex);
-                Debug.WriteLine($"Exception occurred in CreateLogCommand.ExecuteAsync: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} CreateLogCommand.ExecuteAsync: {ex.Message}");
             }
 
         }

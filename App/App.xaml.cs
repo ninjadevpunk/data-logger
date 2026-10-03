@@ -11,7 +11,6 @@ using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
-using Data_Logger_1._3.ViewModels.ViewerViewModels;
 using Data_Logger_1._3.Views;
 using Data_Logger_1._3.Views.Account;
 using Data_Logger_1._3.Views.Dialogs;
@@ -38,7 +37,8 @@ using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
-using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Core.Utilities;
 
 namespace Data_Logger_1._3
 {
@@ -75,9 +75,9 @@ namespace Data_Logger_1._3
                     service.AddTransient<ViewModelFactory>();
 
 
+                    service.AddDataDependencies(context.Configuration);
                     service.AddFileSysDependencies();
                     service.AddCoreDependencies();
-                    service.AddDataDependencies(context.Configuration);
 
                     service.AddTransient<BitmapService>();
                     service.AddTransient(services => new AppSettingsService(services.GetRequiredService<IConfiguration>()));
@@ -142,19 +142,18 @@ namespace Data_Logger_1._3
                     // LOGGER
 
 
+                    service.AddTransient<qtCreateViewModel>();
                     service.AddTransient<codeCreateViewModel>();
                     service.AddTransient<AScodeCreateViewModel>();
 
                     service.AddTransient<codeEditViewModel>();
-                    service.AddTransient<ViewViewModelFactory>();
 
 
                     // REPORTER
 
 
-                    service.AddTransient<PostItViewModel>();
-                    service.AddTransient<CacheStickyPostItViewModel>();
-                    service.AddTransient<DataStickyPostItViewModel>();
+                    service.AddTransient<CreatePostItViewModel>();
+                    service.AddTransient<EditPostItViewModel>();
                     service.AddTransient<CreateNoteViewModel>();
                     service.AddTransient<CreateCheckListViewModel>();
                     service.AddTransient<CreateChecklistItemViewModel>();
@@ -175,16 +174,12 @@ namespace Data_Logger_1._3
         protected override async void OnStartup(StartupEventArgs e)
         {
             Configuration = _serviceProvider.GetRequiredService<IConfiguration>();
-
             var cachemaster = _serviceProvider.GetRequiredService<ICacheService>();
-
-
 
 
             var splash = _serviceProvider.GetRequiredService<Splashscreen>();
 
             splash.Show();
-
 
             await AnimateProgressBar(splash.progressBar_splashscreen, 33, splash.text_progress);
 
@@ -229,24 +224,14 @@ namespace Data_Logger_1._3
                 }
             }
 
-
             await AnimateProgressBar(splash.progressBar_splashscreen, 100, splash.text_progress);
 
             await navigationService.NavigateToLogin();
 
             splash.Close();
 
-
-
-
             base.OnStartup(e);
         }
-
-
-
-
-
-
 
 
 
@@ -270,7 +255,7 @@ namespace Data_Logger_1._3
             for (var i = currentValue; i <= targetValue; i += stepValue)
             {
                 textBlock.Text = $"{(int)i}%";
-                await Task.Delay(100);
+                await Task.Delay(50);
             }
 
             await tcs.Task;
@@ -290,7 +275,7 @@ namespace Data_Logger_1._3
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex, $"Exception occurred in OnExit: {ex.Message}");
+                Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} OnExit: {ex.Message}");
             }
 
             base.OnExit(e);

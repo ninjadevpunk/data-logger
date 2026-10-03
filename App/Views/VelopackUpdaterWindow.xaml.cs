@@ -10,7 +10,6 @@ namespace Data_Logger_1._3.Views
     public partial class VelopackUpdaterWindow : Window
     {
         private readonly Storyboard _startUpdating;
-        private Border? _borderWindow;
         private readonly bool _startUpdatingImmediately;
 
         public VelopackUpdaterWindow()

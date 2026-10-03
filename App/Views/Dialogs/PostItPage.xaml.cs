@@ -1,5 +1,4 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Reporter.Updater;
 using System.Windows.Controls;
 using System.Windows.Documents;
 
@@ -10,40 +9,14 @@ namespace Data_Logger_1._3.Views.Dialogs
     /// </summary>
     public partial class PostItPage : Page
     {
-        private readonly PostItViewModel? _postItViewModel;
-        private readonly EF_PostItViewModel? _efPostItViewModel;
+        private readonly PostItViewModel _postItViewModel;
 
-        internal PostItPage()
+        internal PostItPage(PostItViewModel postItViewModel)
         {
             InitializeComponent();
+            _postItViewModel = postItViewModel;
         }
 
-
-        public static string RtfStringToPlainText(string rtfString)
-        {
-            Xceed.Wpf.Toolkit.RichTextBox tempRtBox = new Xceed.Wpf.Toolkit.RichTextBox(new FlowDocument());
-
-            
-            tempRtBox.TextFormatter = new Xceed.Wpf.Toolkit.RtfFormatter();
-            tempRtBox.Text = rtfString;
-
-            tempRtBox.TextFormatter = new Xceed.Wpf.Toolkit.PlainTextFormatter();
-            return tempRtBox.Text;
-        }
-
-        private void OnTextChanged(object sender, EventArgs e, Xceed.Wpf.Toolkit.RichTextBox inputText, Action<string> setDisplayProperty)
-        {
-            try
-            {
-                var plainText = RtfStringToPlainText(inputText.Text);
-
-                setDisplayProperty(plainText);
-            }
-            catch (Exception)
-            {
-                // 
-            }
-        }
 
 
         private void onSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -51,42 +24,19 @@ namespace Data_Logger_1._3.Views.Dialogs
             switch (this.tab_POSTIT.SelectedIndex)
             {
                 case 0:
-                    {
-                        if(_postItViewModel != null)
-                            _postItViewModel.ActiveEditor = this.inputText_ERROR;
-                        else if(_efPostItViewModel != null)
-                            _efPostItViewModel.ActiveEditor = this.inputText_ERROR;
-
-                        break;
-                    }
+                    _postItViewModel.ActiveEditor = this.inputText_ERROR;
+                    break;
                 case 1:
-                    {
-                        if (_postItViewModel != null)
-                            _postItViewModel.ActiveEditor = this.inputText_SOLUTION;
-                        else if (_efPostItViewModel != null)
-                            _efPostItViewModel.ActiveEditor = this.inputText_SOLUTION;
-
-                        break;
-                    }
+                    _postItViewModel.ActiveEditor = this.inputText_SOLUTION;
+                    break;
                 case 2:
-                    {
-                        if (_postItViewModel != null)
-                            _postItViewModel.ActiveEditor = this.inputText_SUGGESTION;
-                        else if (_efPostItViewModel != null)
-                            _efPostItViewModel.ActiveEditor = this.inputText_SUGGESTION;
-
-                        break;
-                    }
+                    _postItViewModel.ActiveEditor = this.inputText_SUGGESTION;
+                    break;
                 case 3:
-                    {
-                        if (_postItViewModel != null)
-                            _postItViewModel.ActiveEditor = this.inputText_COMMENT;
-                        else if (_efPostItViewModel != null)
-                            _efPostItViewModel.ActiveEditor = this.inputText_COMMENT;
-
-                        break;
-                    }
+                    _postItViewModel.ActiveEditor = this.inputText_COMMENT;
+                    break;
             }
         }
+
     }
 }

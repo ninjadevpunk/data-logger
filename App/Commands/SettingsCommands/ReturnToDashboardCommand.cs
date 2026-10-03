@@ -1,10 +1,11 @@
-﻿using Data.Interfaces;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class ReturnToDashboardCommand : AsyncCommandBase
+    internal class ReturnToDashboardCommand : AsyncCommandBase
     {
 
         private readonly IDataService _dataService;
@@ -25,7 +26,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception e)
             {
-                await _dataService.HandleExceptionAsync(e, "Exception occurred in ReturnToDashboardCommand.ExecuteAsync");
+                await _dataService.HandleExceptionAsync(e, $"{Constants.ExceptionPrefix} ReturnToDashboardCommand.ExecuteAsync");
             }
         }
 

@@ -69,7 +69,7 @@ namespace Data.Services
                 }
                 else
                 {
-                    existingLog.Application = await master.Applications.FirstOrDefaultAsync(a => a.appID == existingLog.appID);
+                    existingLog.Application = (await master.Applications.FirstOrDefaultAsync(a => a.appID == existingLog.appID))!;
                 }
 
 
@@ -77,7 +77,7 @@ namespace Data.Services
                 if (log.projectID != 0 && log.projectID != existingLog.projectID)
                 {
                     existingLog.projectID = log.projectID;
-                    existingLog.Project = null;
+                    existingLog.Project = null!;
                 }
                 else if (log.Project != null && log.Project.projectID == 0)
                 {
@@ -88,7 +88,7 @@ namespace Data.Services
                 }
                 else
                 {
-                    existingLog.Project = await master.Projects.FirstOrDefaultAsync(p => p.projectID == existingLog.projectID);
+                    existingLog.Project = (await master.Projects.FirstOrDefaultAsync(p => p.projectID == existingLog.projectID))!;
                 }
 
                 if (log.Output != null)

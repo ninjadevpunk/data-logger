@@ -89,6 +89,10 @@ namespace Core.Models
 
         /* CONSTRUCTORS */
 
+        public PostIt()
+        {
+        }
+
 
         public PostIt(ACCOUNT account, SubjectClass subject, string error, string solution, string suggestion, string comment, DateTime ercapturetime, DateTime socapturetime)
         {

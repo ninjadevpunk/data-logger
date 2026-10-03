@@ -69,7 +69,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                 //_logCacheDTO.Content = NotaryContent;
 
                 _cacheMaster = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "LOGViewModel");
-                _cacheMaster.IdentifiersChecked(_logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"));
+                _cacheMaster.AddLogCacheIdentifier(_logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"));
             }
             else
             { 
@@ -90,8 +90,8 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
         private void Setup(IDataService dataService, ICacheService cacheService, LogCacheDTO logCacheDTO)
         {
-            DeleteCacheItemCommand = new DeleteCacheItemCommand<LOGViewModel>(_logCacheViewModel, dataService, cacheService, logCacheDTO, true, _timer);
-            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand<LOGViewModel>(_logCacheViewModel, dataService, cacheService, logCacheDTO, false, _timer);
+            DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true, _timer);
+            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, false, _timer);
         }
 
 
@@ -164,7 +164,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                         if (exception != null)
                         {
                             _dataService.HandleExceptionAsync(exception);
-                            Debug.WriteLine($"Exception occurred in LOGViewModel NotaryContent getter: {exception.Message}");
+                            Debug.WriteLine($"{Constants.ExceptionPrefix} LOGViewModel NotaryContent getter: {exception.Message}");
                             continue;
                         }
 

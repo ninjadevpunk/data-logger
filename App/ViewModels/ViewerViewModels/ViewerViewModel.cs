@@ -11,7 +11,7 @@ using Core.DTOs.Viewer;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
-    internal abstract class ViewViewModel : ViewModelBase
+    internal abstract class ViewerViewModel : ViewModelBase
     {
         protected readonly NavigationService _navigationService;
         private readonly IReadOnlyList<ViewStickyPostItViewModel> _postIts = [];
@@ -19,9 +19,9 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
         public abstract LOG.CATEGORY Category { get; }
         public abstract LogContext Context { get; }
 
-        protected ViewViewModel(NavigationService navigationService, UserDTO userDTO, ViewDTO viewDTO)
+        protected ViewerViewModel(NavigationService navigationService, UserDTO userDTO, ViewDTO viewDTO)
         {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "ViewViewModel");
+            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "ViewerViewModel");
             _postIts = viewDTO.PostIts.Select(postIt => new ViewStickyPostItViewModel(postIt)).ToList();
 
             Author = $"{userDTO.Name} {userDTO.Surname}";
@@ -33,7 +33,6 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
             Date = viewDTO.Date;
             Output = viewDTO.OutputName;
             Type = viewDTO.TypeName;
-            //OKCommand
         }
 
 
@@ -53,6 +52,6 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
         public string Output { get; init; }
         public string Type { get; init; }
         public IReadOnlyList<ViewStickyPostItViewModel> PostIts => _postIts;
-        public ICommand OKCommand { get; init; } = null!;
+        public abstract ICommand OKCommand { get; }
     }
 }

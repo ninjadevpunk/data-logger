@@ -58,8 +58,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                             {
                                 UserId = userId,
                                 ProjectName = qtCreateViewModel.ProjectName,
-                                Start = qtCreateViewModel.StartDate.ToLongDateString(),
-                                End = qtCreateViewModel.EndDate.ToLongDateString(),
+                                Start = qtCreateViewModel.StartDate,
+                                End = qtCreateViewModel.EndDate,
                                 Bugs = qtCreateViewModel.BugsFound,
                                 Success = qtCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -91,8 +91,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                             {
                                 UserId = userId,
                                 ProjectName = androidCreateViewModel.ProjectName,
-                                Start = androidCreateViewModel.StartDate.ToLongDateString(),
-                                End = androidCreateViewModel.EndDate.ToLongDateString(),
+                                Start = androidCreateViewModel.StartDate,
+                                End = androidCreateViewModel.EndDate,
                                 Bugs = androidCreateViewModel.BugsFound,
                                 Success = androidCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -131,8 +131,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 UserId = userId,
                                 ApplicationName = codeCreateViewModel.ApplicationName,
                                 ProjectName = codeCreateViewModel.ProjectName,
-                                Start = codeCreateViewModel.StartDate.ToLongDateString(),
-                                End = codeCreateViewModel.EndDate.ToLongDateString(),
+                                Start = codeCreateViewModel.StartDate,
+                                End = codeCreateViewModel.EndDate,
                                 Bugs = codeCreateViewModel.BugsFound,
                                 Success = codeCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -190,7 +190,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                 Debug.WriteLine($"Exception found in AnnotateCommand.Execute(): {ex.Message}");
             }
 
-            _navigationService.GoBack(false);
+            _navigationService.GoBack();
         }
 
     }

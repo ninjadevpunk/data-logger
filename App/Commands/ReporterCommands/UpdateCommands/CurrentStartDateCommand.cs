@@ -3,40 +3,29 @@ using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
-    public class CurrentStartDateCommand : CommandBase
+    internal class CurrentStartDateCommand : CommandBase
     {
-        private readonly CodingLoggerUpdateViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _codingLoggerUpdateViewModel;
 
-        public CurrentStartDateCommand(CodingLoggerUpdateViewModel viewModel)
+        public CurrentStartDateCommand(CodingLoggerUpdateViewModel codingLoggerUpdateViewModel)
         {
-
-
-            try
-            {
-                _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            }
-            catch (Exception)
-            {
-                //
-            }
-
-
+            _codingLoggerUpdateViewModel = codingLoggerUpdateViewModel;
         }
 
 
         public override void Execute(object parameter)
         {
-            _viewModel.StartDate = DateTime.Now;
-            _viewModel.StartHours = DateTime.Now.Hour;
-            _viewModel.StartMinutes = DateTime.Now.Minute;
-            _viewModel.StartSeconds = DateTime.Now.Second;
-            _viewModel.StartMilliseconds = DateTime.Now.Millisecond;
+            _codingLoggerUpdateViewModel.StartDate = DateTime.Now;
+            _codingLoggerUpdateViewModel.StartHours = DateTime.Now.Hour;
+            _codingLoggerUpdateViewModel.StartMinutes = DateTime.Now.Minute;
+            _codingLoggerUpdateViewModel.StartSeconds = DateTime.Now.Second;
+            _codingLoggerUpdateViewModel.StartMilliseconds = DateTime.Now.Millisecond;
 
-            _viewModel.EndDate = DateTime.Now;
-            _viewModel.EndHours = DateTime.Now.Hour;
-            _viewModel.EndMinutes = DateTime.Now.Minute;
-            _viewModel.EndSeconds = DateTime.Now.Second;
-            _viewModel.EndMilliseconds = DateTime.Now.Millisecond;
+            _codingLoggerUpdateViewModel.EndDate = DateTime.Now;
+            _codingLoggerUpdateViewModel.EndHours = DateTime.Now.Hour;
+            _codingLoggerUpdateViewModel.EndMinutes = DateTime.Now.Minute;
+            _codingLoggerUpdateViewModel.EndSeconds = DateTime.Now.Second;
+            _codingLoggerUpdateViewModel.EndMilliseconds = DateTime.Now.Millisecond;
         }
     }
 }

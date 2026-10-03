@@ -12,7 +12,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt
     /// <typeparam name="T">A PostItDataDTO type</typeparam>
     internal abstract class StickyPostItViewModel
     {
-
         protected readonly NavigationService _navigationService;
         protected readonly IDataService _dataService;
         protected readonly LoggerViewModel _loggerCreateViewModel;

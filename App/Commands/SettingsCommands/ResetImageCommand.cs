@@ -4,7 +4,7 @@ using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class ResetImageCommand : AsyncCommandBase
+    internal class ResetImageCommand : AsyncCommandBase
     {
         private readonly SettingsViewModel _settingsViewModel;
         private readonly Settings _settings;
@@ -20,9 +20,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
         {
             _settingsViewModel.SignUpImage = null;
             _settingsViewModel.DisplayPicPath = string.Empty;
-            _settingsViewModel.DefaultPicVisibility = System.Windows.Visibility.Visible;
-            if(_settings != null && _settings.User != null)
-                _settings.User.ProfilePic = string.Empty;
+            _settings.User.ProfilePic = string.Empty;
         }
     }
 }

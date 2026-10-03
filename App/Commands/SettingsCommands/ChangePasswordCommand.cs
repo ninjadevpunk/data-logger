@@ -1,15 +1,16 @@
 ﻿using Core.Interfaces;
 using Core.Models;
+using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class ChangePasswordCommand : AsyncCommandBase
+    internal class ChangePasswordCommand : AsyncCommandBase
     {
-        SettingsViewModel _settingsViewModel;
-        IAuthService _authService;
+        private readonly SettingsViewModel _settingsViewModel;
+        private readonly IAuthService _authService;
         private readonly IDataService _dataService;
 
 
@@ -35,7 +36,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"Exception occurred in ChangePasswordCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} ChangePasswordCommand.ExecuteAsync(): {ex.Message}");
             }
         }
     }

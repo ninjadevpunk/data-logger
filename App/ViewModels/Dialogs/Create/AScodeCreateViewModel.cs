@@ -5,6 +5,7 @@ using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
 using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using FileSys.Interfaces;
 using System.Windows;
@@ -12,10 +13,10 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    internal class AScodeCreateViewModel : CodingLoggerCreateViewModel
+    internal sealed class AScodeCreateViewModel : CodingLoggerCreateViewModel
     {
         public override LogContext Context => LogContext.AndroidStudio;
-        private readonly CodingAndroidViewModel _asCodingViewModel;
+        private readonly CodingAndroidViewModel _codingAndroidViewModel;
         public override bool AppFieldEnabled => false;
 
         public override ICommand SaveCommand { get; }
@@ -26,14 +27,12 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
             : base(navigationService, authService, dataService, cacheService)
         {
 
-            _asCodingViewModel = codingAndroidViewModel;
+            _codingAndroidViewModel = codingAndroidViewModel;
 
             ApplicationName = Constants.Android;
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
-            IsSimple = false;
-            IsConsidered = false;
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            AnnotateCommand = new AnnotateCommand(_navigationService, this, _asCodingViewModel, _authService, _dataService,
+            AnnotateCommand = new AnnotateCommand(_navigationService, this, _codingAndroidViewModel, _authService, _dataService,
             _cacheService, Context);
         }
 
@@ -114,18 +113,16 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
 
-
-
-
-
         #region Log Count
+
+
 
         public override async Task UpdateLogCount()
         {
-            var count = await _dataService.ASLogCountAsync();
-            LogCount = $"{_asCodingViewModel.CacheItems.Count} Logs Cached";
-            _asCodingViewModel.LogCount = $"{_asCodingViewModel.CacheItems.Count} android logs cached | {count} total logs";
+            LogCount = await Extensions.GetAndroidLogCountAsync(_dataService, _codingAndroidViewModel);
         }
+
+
 
         #endregion
 

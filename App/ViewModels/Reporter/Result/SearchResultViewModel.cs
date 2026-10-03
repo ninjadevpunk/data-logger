@@ -1,4 +1,6 @@
-﻿using Core.Models;
+﻿using Core.Enums;
+using Core.Models;
+using Core.Utilities;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.ViewModels;
@@ -9,15 +11,14 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
-using static FileSys.Services.CacheMaster;
 using Path = System.Windows.Shapes.Path;
 
-namespace Data_Logger_1._3.ViewModels.Reporter
+namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
     /// <summary>
-    /// The base class for all search reult items.
+    /// TODO
     /// </summary>
-    public abstract class SearchResultViewModel : ViewModelBase
+    internal abstract class SearchResultViewModel : ViewModelBase
     {
         protected readonly LOG _LOG;
         protected readonly ReportDeskViewModel _reportDesk;
@@ -29,8 +30,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter
             _LOG = log;
             _reportDesk = reportDeskViewModel;
             _navigationService = navigationService;
-
-
         }
 
 
@@ -41,12 +40,12 @@ namespace Data_Logger_1._3.ViewModels.Reporter
 
         public int ViewModelID => _LOG.ID;
 
-        public Style IconStyle { get; set; }
+        public Style? IconStyle { get; set; }
 
         // For JetBrains (gradient)
-        public Path IconPath { get; set; }
+        public Path IconPath { get; set; } = new();
 
-        public UIElement IconContainer { get; set; }
+        public UIElement IconContainer { get; set; } = new();
 
         public string Date => _LOG.Start.ToString("d MMMM yyyy");
 
@@ -62,11 +61,11 @@ namespace Data_Logger_1._3.ViewModels.Reporter
         #region Commands
 
 
-        public ICommand ViewLogCommand { get; set; }
+        public ICommand ViewLogCommand { get; set; } = null!;
 
-        public ICommand EditLogCommand { get; set; }
+        public ICommand EditLogCommand { get; set; } = null!;
 
-        public ICommand DeleteLogCommand { get; set; }
+        public ICommand DeleteLogCommand { get; set; } = null!;
 
 
         #endregion
@@ -89,7 +88,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter
         {
             try
             {
-                // Create a temporary RichTextBox
+                // CreateViewerViewModel a temporary RichTextBox
                 var richTextBox = new RichTextBox();
 
                 // Convert RTF content to a byte array
@@ -129,21 +128,21 @@ namespace Data_Logger_1._3.ViewModels.Reporter
         {
             foreach (PostIt p in _LOG.PostItList)
             {
-                if (!string.IsNullOrEmpty(ConvertRtfToPlainText(p.Error)))
+                if (RtfConverter.HasContent(p.Error))
                 {
-                    return ConvertRtfToPlainText(p.Error);
+                    return RtfConverter.ToPlainText(p.Error).Text;
                 }
-                if (!string.IsNullOrEmpty(ConvertRtfToPlainText(p.Solution)))
+                if (RtfConverter.HasContent(p.Solution))
                 {
-                    return ConvertRtfToPlainText(p.Solution);
+                    return RtfConverter.ToPlainText(p.Solution).Text;
                 }
-                if (!string.IsNullOrEmpty(ConvertRtfToPlainText(p.Suggestion)))
+                if (RtfConverter.HasContent(p.Suggestion))
                 {
-                    return ConvertRtfToPlainText(p.Suggestion);
+                    return RtfConverter.ToPlainText(p.Suggestion).Text;
                 }
-                if (!string.IsNullOrEmpty(ConvertRtfToPlainText(p.Comment)))
+                if (RtfConverter.HasContent(p.Comment))
                 {
-                    return ConvertRtfToPlainText(p.Comment);
+                    return RtfConverter.ToPlainText(p.Comment).Text;
                 }
             }
 
@@ -153,6 +152,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter
 
         public string CreateSubject()
         {
+            // TODO
             try
             {
                 return _LOG.PostItList is not null && _LOG.PostItList.Count > 0 ? _LOG.PostItList[0].Subject.Subject : "Nothing to Display";
@@ -169,23 +169,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter
             return "Nothing to Display";
         }
 
-        protected static Style? TryParsePath(string value)
-        {
-            try
-            {
-                return (Style)Application.Current.FindResource(value);
-            }
-            catch (ResourceReferenceKeyNotFoundException rex)
-            {
-                Debug.WriteLine($"ResourceReferenceKeyNotFoundException found near qt_SearchResultViewModel.TryParseBrush(): {rex.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception found near qt_SearchResultViewModel.TryParseBrush(): {ex.Message}");
-                return null;
-            }
-        }
 
 
 

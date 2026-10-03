@@ -4,21 +4,24 @@ using Data_Logger_1._3.Services;
 using Core.Enums;
 using Core.DTOs.Identity;
 using Core.DTOs.Viewer;
+using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
-    internal class codeViewerViewModel : ViewViewModel
+    internal class codeViewerViewModel : ViewerViewModel
     {
         public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
         public override LogContext Context => LogContext.Coding;
 
+        public override ICommand OKCommand { get; }
+
         public codeViewerViewModel(NavigationService navigationService, UserDTO userDTO, CodingViewDTO codingViewDTO) :
             base(navigationService, userDTO, codingViewDTO)
         {
-            OKCommand = new ViewerOKCommand(navigationService, Context);
-
             BugsFound = codingViewDTO.Bugs;
             ApplicationOpened = codingViewDTO.ApplicationOpened;
+
+            OKCommand = new ViewerOKCommand(navigationService);
         }
 
 

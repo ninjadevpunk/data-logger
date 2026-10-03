@@ -6,18 +6,15 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class ForgotPasswordViewModel : ViewModelBase
+    internal class ForgotPasswordViewModel : ViewModelBase
     {
         private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
 
-        private string email = "";
+        private string email = string.Empty;
         public string Email
         {
-            get
-            {
-                return email;
-            }
+            get => email;
             set
             {
                 email = value;
@@ -25,7 +22,7 @@ namespace Data_Logger_1._3.ViewModels
             }
         }
 
-        public ICommand RequestForgotPasswordCommand { get; set; }
+        public ICommand RequestForgotPasswordCommand { get; }
 
         public ForgotPasswordViewModel(IAuthService authService, NavigationService navigationService)
         {

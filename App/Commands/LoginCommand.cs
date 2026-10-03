@@ -1,11 +1,15 @@
 ﻿using Core.Interfaces;
+using Core.Utilities;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
+using System.Diagnostics;
+using static Core.Models.Result;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class LoginCommand : AsyncCommandBase
+    internal class LoginCommand : AsyncCommandBase
     {
 
         private readonly LoginViewModel _login;
@@ -26,24 +30,54 @@ namespace Data_Logger_1._3.Commands
             try
             {
                 var result = await _authService.SignInAsync(_login.Username, _login.Password);
-                bool signInSuccessful = result.Success;
 
-                if (signInSuccessful)
+                if(result != null)
                 {
-                    _login.StatusMessage = "Login Successful";
-                    _login.StatusMessageColour = _login.MessageGood;
-                    await _navigationService.NavigateToMainWindow();
-                }
-                else
-                {
-                    _login.StatusMessage = "Your username/password is incorrect";
-                    _login.StatusMessageColour = _login.MessageBad;
+                    switch(result.PublicMessageType)
+                    {
+                        case MessageType.Info:
+                            {
+                                // TODO: Show message box
+                                break;
+                            }
+                        case MessageType.Warning:
+                            {
+                                // TODO: Show message box
+                                break;
+                            }
+                        case MessageType.Error:
+                            {
+                                // TODO: Show message box
+                                break;
+                            }
+                    }
+
+                    if (result.Exception != null)
+                        throw result.Exception;
+
+                    bool signInSuccessful = result.Success;
+
+                    if (signInSuccessful)
+                    {
+                        _login.StatusMessage = "Login Successful";
+                        _login.StatusMessageColour = Extensions.MessageGood;
+                        await _navigationService.NavigateToMainWindow();
+                    }
+                    else
+                    {
+                        _login.StatusMessage = "Your username/password is incorrect";
+                        _login.StatusMessageColour = Extensions.MessageBad;
+                    }
+
+                    return;
                 }
 
+                _login.StatusMessage = "An unexpected error occurred.";
+                _login.StatusMessageColour = Extensions.MessageBad;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO
+                Debug.WriteLine($"{Constants.ExceptionPrefix} LoginCommand.ExecuteAsync: {ex.Message}");
             }
         }
     }

@@ -1,19 +1,11 @@
 ﻿using Core.DTOs.Data;
 using Core.Enums;
 using Core.Interfaces;
-using Core.Models;
-using Core.Models.App_Models;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Dialogs.Updater;
-using Data_Logger_1._3.ViewModels.Reporter;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
-using FileSys.Interfaces;
 using MVVMEssentials.Commands;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
@@ -50,7 +42,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 
                 await _reportDeskViewModel.UpdateLogsListAsync();
 
-                //await _dataService.UpdateLogAsync(_log);
+                //await _dataService.UpdateLogAsync(_logDataDTO);
                 await _navigationService.NavigateToReporter();
 
 

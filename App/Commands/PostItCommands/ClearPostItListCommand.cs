@@ -4,25 +4,13 @@ using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
 {
-    public class ClearPostItListCommand : CommandBase
+    internal class ClearPostItListCommand : CommandBase
     {
         private readonly LoggerViewModel _viewModel;
 
         public ClearPostItListCommand(LoggerViewModel viewModel)
         {
-            try
-            {
-                _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An exception occurred at ClearPostItListCommand(viewModel): {ex.Message}");
-            }
-        }
-
-        public ClearPostItListCommand()
-        {
-
+            _viewModel = viewModel;
         }
 
         public override void Execute(object parameter)

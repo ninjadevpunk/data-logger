@@ -1,7 +1,7 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Enums;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
-using static FileSys.Services.CacheMaster;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -9,32 +9,26 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
     /// <summary>
     /// Returns the user to the log cache.
     /// </summary>
-    public class ReporterReturnCommand : AsyncCommandBase
+    internal class ReporterReturnCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        public LogContext Context { get; set; } = LogContext.Coding;
+        private readonly LogContext _context;
+
         public ReporterReturnCommand(NavigationService navigationService, LogContext logContext)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-                Context = logContext;
-            }
-            catch (ArgumentNullException nullex)
-            {
-                Debug.WriteLine($"ArgumentNullException occurred near DashboardCommand constructor: {nullex.Message}");
-            }
+            _navigationService = navigationService;
+            _context = logContext;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                await _navigationService.NavigateToLogCachePage(Context);
+                await _navigationService.NavigateToLogCachePage(_context);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred near DashboardCommand.Execute(): {e.Message}");
+                Debug.WriteLine($"Exception occurred near DashboardCommand.Execute(): {ex.Message}");
             }
         }
     }

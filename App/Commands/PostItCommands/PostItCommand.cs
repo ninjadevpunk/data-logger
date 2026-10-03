@@ -1,5 +1,9 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.DTOs.Cache;
+using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
@@ -9,144 +13,72 @@ namespace Data_Logger_1._3.Commands.PostItCommands
 {
     internal class PostItCommand : AsyncCommandBase
     {
-        public enum ActionType { Create, Edit }
-        public enum PostItContext { POSTIT, EDITPOSTIT }
 
         private readonly NavigationService _navigationService;
+        private readonly IDataService _dataService;
         private readonly LoggerViewModel _loggerCreateViewModel;
-        private readonly PostItViewModel _createPostItViewModel;
-        private readonly EditPostItViewModel _editPostItViewModel;
-        private readonly ActionType _actionType = ActionType.Create;
-        private readonly PostItContext _postItContext = PostItContext.POSTIT;
+        private readonly CreatePostItViewModel _createPostItViewModel;
 
-        public PostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
+        public PostItCommand(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, CreatePostItViewModel createPostItViewModel)
         {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-        }
-
-        public PostItCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, PostItViewModel createPostItViewModel)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-            _actionType = actionType;
-            _postItContext = postItContext;
-        }
-
-        public PostItCommand(ActionType actionType, PostItContext postItContext, NavigationService navigationService, LoggerViewModel loggerCreateViewModel, EditPostItViewModel editPostItViewModel, PostItViewModel createPostItViewModel)
-        {
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            _loggerCreateViewModel = loggerCreateViewModel ?? throw new ArgumentNullException(nameof(loggerCreateViewModel));
-            _createPostItViewModel = createPostItViewModel ?? throw new ArgumentNullException(nameof(createPostItViewModel));
-            _editPostItViewModel = editPostItViewModel ?? throw new ArgumentNullException(nameof(editPostItViewModel));
-            _actionType = actionType;
-            _postItContext = postItContext;
+            _navigationService = navigationService;
+            _dataService = dataService;
+            _loggerCreateViewModel = loggerCreateViewModel;
+            _createPostItViewModel = createPostItViewModel;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                switch (_postItContext)
+                if (_createPostItViewModel.Subject == string.Empty)
                 {
-                    case PostItContext.POSTIT:
-                        switch (_actionType)
-                        {
-                            case ActionType.Create:
-                                {
-                                    if (_createPostItViewModel.Subject == string.Empty)
-                                    {
-                                        MessageBox.Show("Please add a subject.", "No Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    }
-                                    else
-                                    {
-                                        if ((_createPostItViewModel.Error.Length == 0 || _createPostItViewModel.Error.Length == 353) &&
-                                        (_createPostItViewModel.Solution.Length == 0 || _createPostItViewModel.Solution.Length == 353) &&
-                                        (_createPostItViewModel.Suggestion.Length == 0 || _createPostItViewModel.Suggestion.Length == 353) &&
-                                        (_createPostItViewModel.Comment.Length == 0 || _createPostItViewModel.Comment.Length == 353)
-                                        )
-                                        {
-                                            MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                        }
-                                        else
-                                        {
-                                            _loggerCreateViewModel.PostIts.Add(_createPostItViewModel);
-                                            _navigationService.GoBack(true);
-                                        }
-                                    }
-                                    break;
-                                }
-                            case ActionType.Edit:
-                                {
-                                    if ((_createPostItViewModel.Error.Length == 0 || _createPostItViewModel.Error.Length == 353) &&
-                                        (_createPostItViewModel.Solution.Length == 0 || _createPostItViewModel.Solution.Length == 353) &&
-                                        (_createPostItViewModel.Suggestion.Length == 0 || _createPostItViewModel.Suggestion.Length == 353) &&
-                                        (_createPostItViewModel.Comment.Length == 0 || _createPostItViewModel.Comment.Length == 353)
-                                       )
-                                    {
-                                        MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    }
-                                    else
-                                    {
-                                        var index = _loggerCreateViewModel.PostIts.IndexOf(_createPostItViewModel);
-
-                                        if (index != -1)
-                                            _loggerCreateViewModel.PostIts[index] = _createPostItViewModel;
-
-                                        _navigationService.GoBack(true);
-                                    }
-                                    break;
-                                }
-                        }
-
-                        break;
-                    case PostItContext.EDITPOSTIT:
-                        switch (_actionType)
-                        {
-                            case ActionType.Create:
-                                break;
-                            case ActionType.Edit:
-                                {
-                                    if (_editPostItViewModel.Subject == string.Empty)
-                                    {
-                                        MessageBox.Show("Please add a subject.", "No Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                    }
-                                    else
-                                    {
-                                        if ((_editPostItViewModel.Error.Length == 0 || _editPostItViewModel.Error.Length == 353) &&
-                                            (_editPostItViewModel.Solution.Length == 0 || _editPostItViewModel.Solution.Length == 353) &&
-                                            (_editPostItViewModel.Suggestion.Length == 0 || _editPostItViewModel.Suggestion.Length == 353) &&
-                                            (_editPostItViewModel.Comment.Length == 0 || _editPostItViewModel.Comment.Length == 353)
-                                           )
-                                        {
-                                            MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", MessageBoxButton.OK, MessageBoxImage.Warning);
-                                        }
-                                        else
-                                        {
-                                            var index = _loggerCreateViewModel.PostIts.IndexOf(_editPostItViewModel);
-
-                                            if (index != -1)
-                                                _loggerCreateViewModel.PostIts[index] = _editPostItViewModel;
-
-                                            _navigationService.GoBack(true);
-                                        }
-                                    }
-                                    break;
-                                    break;
-                                }
-                        }
-
-                        break;
+                    MessageBox.Show("Please add a subject.", "No Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
+                else
+                {
+                    bool allAreEmpty = IsEmptyField(_createPostItViewModel.Error) && IsEmptyField(_createPostItViewModel.Solution) &&
+                        IsEmptyField(_createPostItViewModel.Suggestion) && IsEmptyField(_createPostItViewModel.Comment);
 
 
+                    if (allAreEmpty)
+                    {
+                        MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                    else
+                    {
+                        (string errorPlaintext, Exception? errorException) = RtfConverter.ToPlainText(_createPostItViewModel.Error);
+                        (string solutionPlaintext, Exception? solutionException) = RtfConverter.ToPlainText(_createPostItViewModel.Solution);
+
+                        if (errorException != null)
+                            throw errorException;
+                        if (solutionException != null)
+                            throw solutionException;
+
+                        var cachePostIt = new CacheStickyPostItViewModel(_navigationService, _dataService, _loggerCreateViewModel, new PostItCacheDTO
+                        {
+                            Subject = _createPostItViewModel.Subject,
+                            Error = _createPostItViewModel.Error,
+                            Solution = _createPostItViewModel.Solution,
+                            Suggestion = _createPostItViewModel.Suggestion,
+                            Comment = _createPostItViewModel.Comment,
+                            ERCaptureTime = string.IsNullOrWhiteSpace(errorPlaintext) ? default : DateTime.Now,
+                            SOCaptureTime = string.IsNullOrWhiteSpace(solutionPlaintext) ? default : DateTime.Now
+                        });
+                        _loggerCreateViewModel.PostIts.Add(cachePostIt);
+                        _navigationService.GoBack(true);
+                    }
+                }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"Exception: {e.Message}");
+                Debug.WriteLine($"Exception: {ex.Message}");
             }
+
         }
+
+        private bool IsEmptyField(string postItText) => string.IsNullOrWhiteSpace(RtfConverter.ToPlainText(postItText).Text);
+
     }
 }

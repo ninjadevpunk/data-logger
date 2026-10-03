@@ -1,38 +1,32 @@
 ﻿using Core.Interfaces;
-using Data_Logger_1._3.Services;
+using Core.Utilities;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class GoogleLoginCommand : AsyncCommandBase
+    internal class GoogleLoginCommand : AsyncCommandBase
     {
-        private readonly LoginViewModel? _viewModel;
-        private readonly IAuthService? _authService;
+        private readonly LoginViewModel _viewModel;
+        private readonly IAuthService _authService;
 
         public GoogleLoginCommand(LoginViewModel loginViewModel, IAuthService authService)
         {
-            try
-            {
-                _viewModel = loginViewModel ?? throw new ArgumentNullException(nameof(loginViewModel));
-                _authService = authService ?? throw new ArgumentNullException(nameof(authService));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception occurred in GoogleLoginCommand constructor: {ex.Message}");
-            }
+            _viewModel = loginViewModel;
+            _authService = authService;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
+                // TODO
                 //_authService.GoogleSignInAsync();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in GoogleLoginCommand.ExecuteAsync: {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} GoogleLoginCommand.ExecuteAsync: {ex.Message}");
             }
         }
     }

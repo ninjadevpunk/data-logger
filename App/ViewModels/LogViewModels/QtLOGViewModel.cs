@@ -24,7 +24,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             base(navigationService, qtCodingCacheDTO, codingQtViewModel, dataService, cacheService, isCacheSave)
         {
             EditCommand = new EditCommand(LOGViewModelContext, navigationService, qtCodingCacheDTO);
-            ViewCommand = new ViewCommand(navigationService, LOGViewModelContext);
+            ViewCommand = new ViewCommand(navigationService, qtCodingCacheDTO);
 
             if(_isCacheSave)
                 cacheService.SaveQtCodeCache(qtCodingCacheDTO);

@@ -13,7 +13,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
     {
 
         /// <summary>
-        /// Create a log that is sent to cache for 20 mins before database store.
+        /// CreateViewerViewModel a log that is sent to cache for 20 mins before database store.
         /// </summary>
         public abstract ICommand AnnotateCommand { get; }
 

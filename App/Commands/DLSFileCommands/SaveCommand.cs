@@ -7,6 +7,7 @@ using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
@@ -22,8 +23,6 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
         private readonly IAuthService _authService;
         private readonly IDataService _dataService;
         private readonly ICacheService _cachemaster;
-        private ApplicationClass? QtCreator;
-        private ApplicationClass? AndroidStudio;
 
 
         public SaveCommand(LoggerViewModel loggerCreateViewModel, IAuthService authService, IDataService dataService, ICacheService cacheService)
@@ -62,100 +61,112 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                                 {
                                     UserId = user.UserId,
                                     ProjectName = qtCreator.ProjectName,
-                                    Start = qtCreator.StartDate.ToLongDateString(),
-                                    End = qtCreator.EndDate.ToLongDateString(),
+                                    Start = qtCreator.StartDate,
+                                    End = qtCreator.EndDate,
                                     OutputName = qtCreator.Output,
                                     TypeName = qtCreator.Type,
-                                    PostIts = qtCreator.PostIts.Select(p => new PostItCacheDTO
-                                    {
-                                        Subject = p.Subject,
-                                        Error = p.Error,
-                                        Solution = p.Solution,
-                                        Suggestion = p.Suggestion,
-                                        Comment = p.Comment,
+                                    PostIts = qtCreator.PostIts.Select(p => {
+                                        var postIt = (CacheStickyPostItViewModel)p;
+
+                                        return new PostItCacheDTO
+                                        {
+                                            Subject = postIt.Subject,
+                                            Error = postIt.RtfPostIt.Error,
+                                            Solution = postIt.RtfPostIt.Solution,
+                                            Suggestion = postIt.RtfPostIt.Suggestion,
+                                            Comment = postIt.RtfPostIt.Comment,
+                                        };
                                     }).ToList(),
                                     Bugs = qtCreator.BugsFound,
                                     Success = qtCreator.ApplicationOpened
                                 }, dialog.FileName);
-                            }
-                            break;
                         }
+                        break;
+                }
                     case LogContext.AndroidStudio:
+                    {
+                        dialog.Filter = "Android LOG file (.dls)|*.dls|JSON (.json)|*.json";
+
+                        // Show save file dialog box
+                        bool? result = dialog.ShowDialog();
+
+                        // Process save file dialog box results
+                        if (result == true)
                         {
-                            dialog.Filter = "Android LOG file (.dls)|*.dls|JSON (.json)|*.json";
-
-                            // Show save file dialog box
-                            bool? result = dialog.ShowDialog();
-
-                            // Process save file dialog box results
-                            if (result == true)
+                            var androidStudio = (AScodeCreateViewModel)_loggerCreateViewModel;
+                            _cachemaster.SaveLOGFile(new AndroidCacheDTO
                             {
-                                var androidStudio = (AScodeCreateViewModel)_loggerCreateViewModel;
-                                _cachemaster.SaveLOGFile(new AndroidCacheDTO
-                                {
-                                    UserId = user.UserId,
-                                    ProjectName = androidStudio.ProjectName,
-                                    Start = androidStudio.StartDate.ToLongDateString(),
-                                    End = androidStudio.EndDate.ToLongDateString(),
-                                    OutputName = androidStudio.Output,
-                                    TypeName = androidStudio.Type,
-                                    PostIts = androidStudio.PostIts.Select(p => new PostItCacheDTO
-                                    {
-                                        Subject = p.Subject,
-                                        Error = p.Error,
-                                        Solution = p.Solution,
-                                        Suggestion = p.Suggestion,
-                                        Comment = p.Comment,
-                                    }).ToList(),
-                                    Bugs = androidStudio.BugsFound,
-                                    Success = androidStudio.ApplicationOpened,
-                                    Scope = androidStudio.IsSimple,
-                                    Sync = androidStudio.SyncTime,
-                                    StartingGradleDaemon = androidStudio.GradleDaemonTime,
-                                    RunBuild = androidStudio.RunBuildTime,
-                                    LoadBuild = androidStudio.LoadBuildTime,
-                                    ConfigureBuild = androidStudio.ConfigureBuildTime,
-                                    AllProjects = androidStudio.AllProjectsTime
-                                }, dialog.FileName);
-                            }
+                                UserId = user.UserId,
+                                ProjectName = androidStudio.ProjectName,
+                                Start = androidStudio.StartDate,
+                                End = androidStudio.EndDate,
+                                OutputName = androidStudio.Output,
+                                TypeName = androidStudio.Type,
+                                PostIts = androidStudio.PostIts.Select(p => {
+                                    var postIt = (CacheStickyPostItViewModel)p;
 
-                            break;
+                                    return new PostItCacheDTO
+                                    {
+                                        Subject = postIt.Subject,
+                                        Error = postIt.RtfPostIt.Error,
+                                        Solution = postIt.RtfPostIt.Solution,
+                                        Suggestion = postIt.RtfPostIt.Suggestion,
+                                        Comment = postIt.RtfPostIt.Comment,
+                                    };
+                                }).ToList(),
+                                Bugs = androidStudio.BugsFound,
+                                Success = androidStudio.ApplicationOpened,
+                                Scope = androidStudio.IsSimple,
+                                Sync = androidStudio.SyncTime,
+                                StartingGradleDaemon = androidStudio.GradleDaemonTime,
+                                RunBuild = androidStudio.RunBuildTime,
+                                LoadBuild = androidStudio.LoadBuildTime,
+                                ConfigureBuild = androidStudio.ConfigureBuildTime,
+                                AllProjects = androidStudio.AllProjectsTime
+                            }, dialog.FileName);
                         }
-                    case LogContext.Coding:
+
+                        break;
+                    }
+                case LogContext.Coding:
+                    {
+                        dialog.Filter = "LOG file (.dls)|*.dls|JSON (.json)|*.json";
+
+                        // Show save file dialog box
+                        bool? result = dialog.ShowDialog();
+
+                        // Process save file dialog box results
+                        if (result == true)
                         {
-                            dialog.Filter = "LOG file (.dls)|*.dls|JSON (.json)|*.json";
-
-                            // Show save file dialog box
-                            bool? result = dialog.ShowDialog();
-
-                            // Process save file dialog box results
-                            if (result == true)
+                            var codingCreator = (codeCreateViewModel)_loggerCreateViewModel;
+                            _cachemaster.SaveLOGFile(new CodingCacheDTO
                             {
-                                var codingCreator = (codeCreateViewModel)_loggerCreateViewModel;
-                                _cachemaster.SaveLOGFile(new CodingCacheDTO
-                                {
-                                    UserId = user.UserId,
-                                    ProjectName = codingCreator.ProjectName,
-                                    ApplicationName = codingCreator.ApplicationName,
-                                    Start = codingCreator.StartDate.ToLongDateString(),
-                                    End = codingCreator.EndDate.ToLongDateString(),
-                                    OutputName = codingCreator.Output,
-                                    TypeName = codingCreator.Type,
-                                    PostIts = codingCreator.PostIts.Select(p => new PostItCacheDTO
-                                    {
-                                        Subject = p.Subject,
-                                        Error = p.Error,
-                                        Solution = p.Solution,
-                                        Suggestion = p.Suggestion,
-                                        Comment = p.Comment
-                                    }).ToList(),
-                                    Bugs = codingCreator.BugsFound,
-                                    Success = codingCreator.ApplicationOpened
-                                }, dialog.FileName);
-                            }
+                                UserId = user.UserId,
+                                ProjectName = codingCreator.ProjectName,
+                                ApplicationName = codingCreator.ApplicationName,
+                                Start = codingCreator.StartDate,
+                                End = codingCreator.EndDate,
+                                OutputName = codingCreator.Output,
+                                TypeName = codingCreator.Type,
+                                PostIts = codingCreator.PostIts.Select(p => {
+                                    var postIt = (CacheStickyPostItViewModel)p;
 
-                            break;
+                                    return new PostItCacheDTO
+                                    {
+                                        Subject = postIt.Subject,
+                                        Error = postIt.RtfPostIt.Error,
+                                        Solution = postIt.RtfPostIt.Solution,
+                                        Suggestion = postIt.RtfPostIt.Suggestion,
+                                        Comment = postIt.RtfPostIt.Comment,
+                                    };
+                                }).ToList(),
+                                Bugs = codingCreator.BugsFound,
+                                Success = codingCreator.ApplicationOpened
+                            }, dialog.FileName);
                         }
+
+                        break;
+                    }
                 }
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
-﻿using Data.Interfaces;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 
@@ -24,11 +25,9 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, "Exception occurred in OpenUpdaterCommand.ExecuteAsync()");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} OpenUpdaterCommand.ExecuteAsync()");
             }
         }
-
-
 
     }
 }

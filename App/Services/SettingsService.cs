@@ -1,5 +1,6 @@
-﻿using Core.Models;
-using FileSys.Interfaces;
+﻿using Core.Interfaces;
+using Core.Models;
+using Core.Utilities;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.IO;
@@ -14,22 +15,54 @@ namespace Data_Logger_1._3.Services
 #else
         public static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger");
 #endif
-        private readonly ICacheService _cacheService;
+        private readonly int _userId;
 
-        public SettingsService(ICacheService cacheService)
+        public SettingsService(IAuthService authService)
         {
-            _cacheService = cacheService;
+            _userId = authService.GetUser().UserId;
         }
 
-        public string GetUserFilePath(int userId)
+        /// <summary>
+        /// Creates a settings file. Throws an <see cref="InvalidOperationException"/> if the settings path is invalid.
+        /// </summary>
+        /// <param name="userId">The logged-in user's ID.</param>
+        /// <returns>Returns whether the operation was successful or not.</returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public bool CreateSettingsFile()
         {
             try
             {
-                return Path.Combine(BasePath, userId.ToString(), "settings.json");
+                var userFolder = Path.Combine(BasePath, _userId.ToString());
+
+                if (!Directory.Exists(userFolder))
+                {
+                    Directory.CreateDirectory(userFolder);
+                }
+
+                return true;
+            }
+            catch (UnauthorizedAccessException unex)
+            {
+                Debug.WriteLine($"UnauthorizedAccessException error occurred in CreateSettingsFile(userId): {unex.Message}");
+
+                return false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in GetUserFilePath(userId): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} CreateSettingsFile(userId): {ex.Message}");
+                return false;
+            }
+        }
+
+        public string GetUserFilePath()
+        {
+            try
+            {
+                return Path.Combine(BasePath, _userId.ToString(), "settings.json");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{Constants.ExceptionPrefix} GetUserFilePath(userId): {ex.Message}");
                 return string.Empty;
             }
         }
@@ -38,7 +71,7 @@ namespace Data_Logger_1._3.Services
         {
             try
             {
-                var path = GetUserFilePath(userId);
+                var path = GetUserFilePath();
 
                 if (!File.Exists(path))
                     return Save(userId, new Settings());
@@ -49,7 +82,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in Load(userId): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} Load(userId): {ex.Message}");
                 return null;
             }
         }
@@ -63,7 +96,7 @@ namespace Data_Logger_1._3.Services
                     throw new InvalidOperationException("No settings!");
                 }
 
-                var path = GetUserFilePath(userId);
+                var path = GetUserFilePath();
                 
                 var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText(path, json);
@@ -74,7 +107,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in Load(userId): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} Load(userId): {ex.Message}");
                 MessageBox.Show($"An unexpected error occurred. We apologise for any inconvenience caused.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -89,7 +122,7 @@ namespace Data_Logger_1._3.Services
                     throw new InvalidOperationException("No settings!");
                 }
 
-                var path = GetUserFilePath(userId);
+                var path = GetUserFilePath();
 
                 var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
                 File.WriteAllText(path, json);
@@ -103,7 +136,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in Load(userId): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} Load(userId): {ex.Message}");
                 MessageBox.Show($"An unexpected error occurred. We apologise for any inconvenience caused.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return null;
             }
@@ -124,7 +157,7 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in Delete(userId): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} Delete(userId): {ex.Message}");
                 return false;
             }
         }

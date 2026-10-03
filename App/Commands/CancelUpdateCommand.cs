@@ -1,10 +1,11 @@
-﻿using Data.Interfaces;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using MVVMEssentials.Commands;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class CancelUpdateCommand : AsyncCommandBase
+    internal class CancelUpdateCommand : AsyncCommandBase
     {
         private readonly IDataService _dataService;
 
@@ -24,7 +25,7 @@ namespace Data_Logger_1._3.Commands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, "Exception occurred in CancelCommand.ExecuteAsync");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} CancelCommand.ExecuteAsync");
             }
         }
 

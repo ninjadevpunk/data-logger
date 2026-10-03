@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces;
+using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
@@ -7,7 +8,7 @@ using System.Windows;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class DeleteAccountCommand : AsyncCommandBase
+    internal class DeleteAccountCommand : AsyncCommandBase
     {
         private readonly IAuthService _authService;
         private readonly IDataService _dataService;
@@ -30,13 +31,11 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                 if (result == MessageBoxResult.Yes)
                 {
-                    if (_authService.Account == null)
-                        throw new InvalidOperationException("Account cant be null.");
+                    var user = _authService.GetUser();
+                    if(File.Exists(user.ProfilePic))
+                        File.Delete(user.ProfilePic);
 
-                    if(File.Exists(_authService.Account.ProfilePic))
-                        File.Delete(_authService.Account.ProfilePic);
-
-                    _settingsService.Delete(_authService.Account.accountID);
+                    _settingsService.Delete(user.UserId);
 
                     var accountDeleted = await _authService.DeleteAccountAsync();
 
@@ -52,7 +51,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"Exception occurred in DeleteAccountCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} DeleteAccountCommand.ExecuteAsync(): {ex.Message}");
             }
         }
     }

@@ -1,84 +1,66 @@
 ﻿using Core.Models;
+using Core.Utilities;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
-namespace Data_Logger_1._3.Commands.LoggerCommands
+namespace Data_Logger_1._3.Commands.CacheCommands
 {
     internal class ResetLoggerCommand : CommandBase
     {
-        private readonly LoggerViewModel? _viewModel;
-        private const string Qt = "Qt Creator";
-        private const string Android = "Android Studio Quail 4 — 2026.1.4";
-        private const string VisualStudio = "Visual Studio Community 2022";
+        private readonly LoggerViewModel _loggerViewModel;
+        private readonly LOG.CATEGORY _category;
 
-        public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
-
-        public ResetLoggerCommand(LoggerViewModel viewModel, LOG.CATEGORY category)
+        public ResetLoggerCommand(LoggerViewModel loggerViewModel, LOG.CATEGORY category = LOG.CATEGORY.CODING)
         {
-            try
-            {
-                _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-                Category = category;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"An exception occurred near ResetLoggerCommand(viewModel, category) constructor: {ex.Message}");
-            }
+            _loggerViewModel = loggerViewModel;
+            _category = category;
         }
 
-        public ResetLoggerCommand()
-        {
-
-        }
 
         public override void Execute(object parameter)
         {
             try
             {
-                if (_viewModel == null)
-                    throw new InvalidOperationException("_loggerCreateViewModel is null!");
+                var isQt = _loggerViewModel.ApplicationName.Equals(Constants.Qt);
+                var isAndroidStudio = _loggerViewModel.ApplicationName.Equals(Constants.Android);
+                var isVisualStudio = _loggerViewModel.ApplicationName.Equals(Constants.VisualStudio);
 
-                var isQt = _viewModel.ApplicationName.Equals(Qt);
-                var isAndroidStudio = _viewModel.ApplicationName.Equals(Android);
-                var isVisualStudio = _viewModel.ApplicationName.Equals(VisualStudio);
+                _loggerViewModel.ProjectName = string.Empty;
+                _loggerViewModel.ApplicationName = string.Empty;
+                _loggerViewModel.StartDate = DateTime.Now;
+                _loggerViewModel.StartHours = DateTime.Now.Hour;
+                _loggerViewModel.StartMinutes = DateTime.Now.Minute;
+                _loggerViewModel.StartSeconds = DateTime.Now.Second;
+                _loggerViewModel.StartMilliseconds = DateTime.Now.Millisecond;
 
-                _viewModel.ProjectName = string.Empty;
-                _viewModel.ApplicationName = string.Empty;
-                _viewModel.StartDate = DateTime.Now;
-                _viewModel.StartHours = DateTime.Now.Hour;
-                _viewModel.StartMinutes = DateTime.Now.Minute;
-                _viewModel.StartSeconds = DateTime.Now.Second;
-                _viewModel.StartMilliseconds = DateTime.Now.Millisecond;
+                _loggerViewModel.EndDate = DateTime.Now;
+                _loggerViewModel.EndHours = DateTime.Now.Hour;
+                _loggerViewModel.EndMinutes = DateTime.Now.Minute;
+                _loggerViewModel.EndSeconds = DateTime.Now.Second;
+                _loggerViewModel.EndMilliseconds = DateTime.Now.Millisecond;
+                _loggerViewModel.PostIts.Clear();
 
-                _viewModel.EndDate = DateTime.Now;
-                _viewModel.EndHours = DateTime.Now.Hour;
-                _viewModel.EndMinutes = DateTime.Now.Minute;
-                _viewModel.EndSeconds = DateTime.Now.Second;
-                _viewModel.EndMilliseconds = DateTime.Now.Millisecond;
-                _viewModel.PostIts.Clear();
-
-                switch (Category)
+                switch (_category)
                 {
                     case LOG.CATEGORY.CODING:
                         {
-                            var codingViewModel = (codeCreateViewModel)_viewModel;
+                            var codingViewModel = (codeCreateViewModel)_loggerViewModel;
 
                             if (isQt)
-                                codingViewModel.ApplicationName = Qt;
+                                codingViewModel.ApplicationName = Constants.Qt;
                             else if (isVisualStudio)
-                                codingViewModel.ApplicationName = VisualStudio;
+                                codingViewModel.ApplicationName = Constants.VisualStudio;
 
                             codingViewModel.Output = "Widgets Application";
                             codingViewModel.Type = "Build";
                             codingViewModel.BugsFound = 0;
                             codingViewModel.ApplicationOpened = false;
 
-                            if (isAndroidStudio)
+                            if (_loggerViewModel is AScodeCreateViewModel AScodingViewModel)
                             {
-                                codingViewModel.ApplicationName = Android;
-                                var AScodingViewModel = (AScodeCreateViewModel)codingViewModel;
+                                codingViewModel.ApplicationName = Constants.Android;
                                 AScodingViewModel.IsSimple = false;
 
                                 AScodingViewModel.SyncHours = 0;

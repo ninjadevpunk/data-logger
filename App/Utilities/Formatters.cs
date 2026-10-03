@@ -12,13 +12,15 @@ namespace Data_Logger_1._3.Utilities
         /// </summary>
         /// <param name="fieldContent">The field's content</param>
         /// <returns>A visibility state</returns>
-        static internal Visibility FieldVisible(string fieldContent) => string.IsNullOrWhiteSpace(fieldContent) ? Visibility.Collapsed : Visibility.Visible;
+        static internal Visibility FieldVisible(string fieldContent) => string.IsNullOrWhiteSpace(fieldContent) ? Visibility.Collapsed 
+            : Visibility.Visible;
 
         /// <summary>
         /// TODO
         /// </summary>
         /// <param name="fieldContent"></param>
         /// <returns></returns>
-        static internal double BlockHeight(string fieldContent) => string.IsNullOrWhiteSpace(fieldContent) || fieldContent.Length < 64 ? 24 : double.NaN;
+        static internal double BlockHeight(string fieldContent) => string.IsNullOrWhiteSpace(fieldContent) || fieldContent.Length < 64 ? 24 
+            : double.NaN;
     }
 }

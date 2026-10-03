@@ -1,22 +1,17 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Utilities;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
+using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands.NotesCommands
 {
-    public class NewNoteCommand : AsyncCommandBase
+    internal class NewNoteCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
 
         public NewNoteCommand(NavigationService navigationService)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            }
-            catch (Exception)
-            {
-                //
-            }
+            _navigationService = navigationService;
         }
 
         protected override async Task ExecuteAsync(object parameter)
@@ -25,9 +20,9 @@ namespace Data_Logger_1._3.Commands.NotesCommands
             {
                 await _navigationService.NavigateToCreateNotesPage();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //
+                Debug.WriteLine($"{Constants.ExceptionPrefix} NewNoteCommand.ExecuteAsync: {ex.Message}");
             }
         }
     }

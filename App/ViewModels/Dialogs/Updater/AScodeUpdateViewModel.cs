@@ -1,40 +1,47 @@
-﻿using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
-using Core.Models;
+﻿using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
 using Data.Interfaces;
+using System.Windows.Input;
+using Core.Utilities;
+using Core.Interfaces;
+using Core.Enums;
+using Core.DTOs.Data;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 {
-    public class AScodeUpdateViewModel : codeUpdateViewModel
+    /// <summary>
+    /// TODO
+    /// </summary>
+    internal class AScodeUpdateViewModel : CodingLoggerUpdateViewModel
     {
+        public override LogContext Context => LogContext.AndroidStudio;
+        public override bool AppFieldEnabled => false;
         private readonly ASReportDeskViewModel _ASviewModel;
 
-        public AScodeUpdateViewModel(NavigationService navigationService, IDataService dataService, ReportDeskViewModel reportDeskViewModel, LOG log) : 
-            base(navigationService, dataService, reportDeskViewModel, log)
+
+        public override ICommand UpdateLogCommand => throw new NotImplementedException();
+        public override ICommand SaveCommand => throw new NotImplementedException();
+        public override ICommand AddPostItCommand => base.AddPostItCommand;
+
+
+        public AScodeUpdateViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+            ASReportDeskViewModel aSReportDeskViewModel, AndroidDataDTO androidDataDTO) 
+            : base(navigationService, authService, dataService)
         {
-            ApplicationName = AndroidStudio;
+            ApplicationName = Constants.Android;
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
-            ASOnly = true;
-            AppFieldEnabled = false;
             IsSimple = false;
             IsConsidered = false;
 
-            _ASviewModel = (ASReportDeskViewModel)reportDeskViewModel;
-
-            InitializeProjects();
-            InitializeOutputTypes();
-            InitializeLogTypes();
-
-            //UpdateCommand = new UpdateCommand(Context, this, _asCodingViewModel, _navigationService, _dataService, reportViewModel, pdfService);
-            ClearLoggerCommand = new EF_ResetLoggerCommand();
+            _ASviewModel = aSReportDeskViewModel;
         }
 
 
-        public override async Task AutoStartAsync()
+        internal override async Task AutoStartAsync()
         {
-            await UpdateLogCount();
+            
         }
 
         #region Properties
@@ -76,36 +83,29 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 
         #region Initialization Methods
 
-        private void InitializeProjects()
+
+
+        protected override Task LoadProjects()
         {
-            _projects.Clear();
-            _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING);
-            foreach (var project in _dataService.SQLITE_PROJECTS)
-            {
-                if (project.Application.Name == AndroidStudio)
-                    _projects.Add(project.Name);
-            }
-            _applications.Clear();
+            return base.LoadProjects();
         }
 
-        private void InitializeOutputTypes()
+        protected override Task LoadApplications()
         {
-            Output = "APK (*.apk)";
-            _outputs.Clear();
-            _outputs.Add("APK (*.apk)");
-            _outputs.Add("USB");
-            _outputs.Add("Emulator (*.exe)");
+            return base.LoadApplications();
         }
 
-        private void InitializeLogTypes()
+        protected override Task LoadOutputs()
         {
-            Type = "Sync";
-            _types.Clear();
-            _types.Add("Sync");
-            _types.Add("Build");
-            _types.Add("Runtime");
-            _types.Add("Exception");
+            return base.LoadOutputs();
         }
+
+        protected override Task LoadTypes()
+        {
+            return base.LoadTypes();
+        }
+
+
 
         #endregion
 
@@ -135,11 +135,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 
         public override async Task UpdateLogCount()
         {
-            if (ASOnly && _ASviewModel is not null)
-            {
-                var count = await _dataService.ASLogCountAsync();
-                LogCount = $"{_ASviewModel.Logs.Count} Logs Cached";
-            }
+            var count = await _dataService.ASLogCountAsync();
+            LogCount = $"{_ASviewModel.Logs.Count} Logs Cached";
         }
 
         #endregion
@@ -333,7 +330,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
         public int AllProjectsSeconds { get => allProjectsSeconds; set => SetAndNotify(ref allProjectsSeconds, value, UpdateAllProjectsTime, nameof(AllProjectsSeconds)); }
         public int AllProjectsMilliseconds { get => allProjectsMilliseconds; set => SetAndNotify(ref allProjectsMilliseconds, value, UpdateAllProjectsTime, nameof(AllProjectsMilliseconds)); }
 
+
         private void UpdateAllProjectsTime() => UpdateTime(ref allProjectsTime, allProjectsHours, allProjectsMinutes, allProjectsSeconds, allProjectsMilliseconds);
+
+        
 
 
 

@@ -8,6 +8,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using static Data_Logger_1._3.Services.NavigationService;
 using Data.Interfaces;
+using Data_Logger_1._3.Utilities;
 
 namespace Data_Logger_1._3.ViewModels
 {
@@ -42,8 +43,8 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        private static readonly Brush? EnabledColor = UIFactory.TryParseBrush("iconCOLOURAccent01");
-        private static readonly Brush? DisabledColor = UIFactory.TryParseBrush("AccentColour");
+        private static readonly Brush? EnabledColor = Extensions.TryParseBrush("iconCOLOURAccent01");
+        private static readonly Brush? DisabledColor = Extensions.TryParseBrush("AccentColour");
 
 
         private Brush? iconBackFill;

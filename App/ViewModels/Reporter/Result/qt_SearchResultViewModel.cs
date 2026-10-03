@@ -1,14 +1,18 @@
-﻿using Core.Models;
+﻿using Core.Enums;
+using Core.Models;
 using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Commands.ReporterCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
-using static FileSys.Services.CacheMaster;
 
-namespace Data_Logger_1._3.ViewModels.Reporter
+namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
-    public class qt_SearchResultViewModel : SearchResultViewModel
+    /// <summary>
+    /// TODO
+    /// </summary>
+    internal class qt_SearchResultViewModel : SearchResultViewModel
     {
         private readonly CodingLOG _QtCodingLOG;
         public override LogContext SearchResultContext => LogContext.Qt;
@@ -17,12 +21,10 @@ namespace Data_Logger_1._3.ViewModels.Reporter
             base(codingLOG, reportDeskViewModel, navigationService)
         {
             _QtCodingLOG = codingLOG;
-            var style = TryParsePath("path_Qt_icon");
+            var style = Extensions.TryParsePath("path_Qt_icon");
             IconStyle = style == null ? new Style() : style;
 
-            ViewLogCommand = new ViewCommand(navigationService, SearchResultContext, ViewType.Log, codingLOG);
-            EditLogCommand = new EditLogCommand();
-            DeleteLogCommand = new DeleteLogCommand();
+            
         }
 
 

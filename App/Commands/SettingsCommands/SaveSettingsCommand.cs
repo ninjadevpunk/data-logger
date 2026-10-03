@@ -6,26 +6,29 @@ using Data.Exceptions;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
+using FileSys.Interfaces;
 using MVVMEssentials.Commands;
 using System.IO;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class SaveSettingsCommand : AsyncCommandBase
+    internal class SaveSettingsCommand : AsyncCommandBase
     {
         private readonly IAuthService _authService;
         private readonly IDataService _dataService;
+        private readonly ICacheService _cacheService;
         private readonly SettingsService _settingsService;
         private readonly Settings _settings;
         private readonly MainWindowViewModel _mainWindowViewModel;
         private readonly SettingsViewModel _settingsViewModel;
 
-        public SaveSettingsCommand(IAuthService authService, IDataService dataService, SettingsService settingsService, Settings settings, MainWindowViewModel mainWindowViewModel,
-            SettingsViewModel settingsViewModel)
+        public SaveSettingsCommand(IAuthService authService, IDataService dataService, ICacheService cacheService, SettingsService settingsService, 
+            Settings settings, MainWindowViewModel mainWindowViewModel, SettingsViewModel settingsViewModel)
         {
             _authService = authService;
             _dataService = dataService;
+            _cacheService = cacheService;
             _settingsService = settingsService;
             _settings = settings;
             _mainWindowViewModel = mainWindowViewModel;
@@ -68,12 +71,12 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                     _settingsViewModel.CompanyAddress = string.Empty;
                 }
 
-                IsNewProfilePic = BitmapService.IsTemporaryProfilePic(currentProfilePic);
+                IsNewProfilePic = _cacheService.IsTemporaryProfilePic(currentProfilePic);
 
                 if (IsNewProfilePic)
                 {
                     // Copy Selected Pic to AppData Folder
-                    newProfilePicPath = BitmapService.SaveProfilePicture(currentProfilePic);
+                    newProfilePicPath = _cacheService.SaveProfilePicture(currentProfilePic);
                     currentProfilePic = newProfilePicPath;
 
                     // Update new profile picture if profile pic has changed
@@ -130,7 +133,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 }
 
                 // Delete all temp profile pics
-                BitmapService.DeleteTempProfilePics();
+                _cacheService.DeleteTempProfilePics();
 
 
             }
@@ -141,11 +144,11 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"Exception occurred in SaveSettingsCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} SaveSettingsCommand.ExecuteAsync(): {ex.Message}");
 
                 // Profile Pic
                 if (!string.IsNullOrEmpty(currentProfilePic) && IsNewProfilePic)
-                    BitmapService.DeleteTempProfilePics();
+                    _cacheService.DeleteTempProfilePics();
 
                 if (!string.IsNullOrEmpty(newProfilePicPath))
                 {

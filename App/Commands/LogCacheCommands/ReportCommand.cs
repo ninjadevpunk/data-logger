@@ -1,27 +1,17 @@
-﻿using Data_Logger_1._3.Services;
+﻿using Core.Utilities;
+using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
-    public class ReportCommand : AsyncCommandBase
+    internal class ReportCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
 
         public ReportCommand(NavigationService navigationService)
         {
-            try
-            {
-                _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
-            }
-            catch (ArgumentNullException nullex)
-            {
-                Debug.WriteLine($"ArgumentNullException found near ReportCommand: {nullex.Message}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception found near ReportCommand: {ex.Message}");
-            }
+            _navigationService = navigationService;
         }
 
         protected override async Task ExecuteAsync(object parameter)
@@ -32,7 +22,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 			}
 			catch (Exception ex)
 			{
-                //
+                Debug.WriteLine($"{Constants.ExceptionPrefix} ReportCommand.ExecuteAsync: {ex.Message}");
             }
         }
     }

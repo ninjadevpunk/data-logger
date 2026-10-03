@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Core.Utilities;
+using Newtonsoft.Json.Linq;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -12,10 +14,11 @@ namespace Data_Logger_1._3.Services
 
         private const string UploadUrl = "https://upload.imagekit.io/api/v1/files/upload";
 
-        public static async Task<(string imageUrl, string fileId)> UploadImageAsync(string filePath)
+        public static async Task<(string? imageUrl, string? fileId)> UploadImageAsync(string filePath)
         {
-            using (var client = new HttpClient())
+            try
             {
+                using var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(300);
 
                 string credentials = $"{PrivateKey}:";
@@ -38,11 +41,17 @@ namespace Data_Logger_1._3.Services
 
                 var responseBody = await response.Content.ReadAsStringAsync();
                 var json = JObject.Parse(responseBody);
-                string imageUrl = json["url"]?.ToString();
-                string fileId = json["fileId"]?.ToString();
+                string? imageUrl = json["url"]?.ToString();
+                string? fileId = json["fileId"]?.ToString();
 
                 return (imageUrl, fileId);
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{Constants.ExceptionPrefix} UploadImageAsync: {ex.Message}");
+            }
+
+            return (null, null);
         }
 
         public static string GetProcessedImageUrl(string uploadedImageUrl)

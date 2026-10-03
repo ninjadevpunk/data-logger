@@ -10,12 +10,9 @@ namespace Data_Logger_1._3.Views.ReportPages
     {
         private readonly ReportDeskViewModel _reportDeskViewModel;
 
-        public ReporterDashboard()
-        {
-            InitializeComponent();
-        }
+        
 
-        public ReporterDashboard(ReportDeskViewModel reportDeskViewModel)
+        internal ReporterDashboard(ReportDeskViewModel reportDeskViewModel)
         {
             InitializeComponent();
 

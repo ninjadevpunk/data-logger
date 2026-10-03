@@ -9,6 +9,9 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
     internal class CodeLOGViewModel : LOGViewModel
     {
+        private readonly CodingCacheDTO _codingCacheDTO;
+
+
 
 
         #region Constructors
@@ -19,8 +22,10 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
             : base(navigationService, codingCacheDTO, codingViewModel, dataService, cacheService, isCacheSave)
         {
-            EditCommand = new EditCommand(LOGViewModelContext, navigationService, codingCacheDTO);
-            ViewCommand = new ViewCommand(navigationService, LOGViewModelContext);
+            _codingCacheDTO = codingCacheDTO;
+
+            EditCommand = new EditCommand(LOGViewModelContext, navigationService, _codingCacheDTO);
+            ViewCommand = new ViewCommand(_navigationService, codingCacheDTO);
             
 
             if(_isCacheSave)

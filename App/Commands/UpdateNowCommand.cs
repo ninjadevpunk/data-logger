@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces;
+using Core.Utilities;
 using Data.Interfaces;
 using MVVMEssentials.Commands;
 using System.Windows;
@@ -6,7 +7,7 @@ using Velopack;
 
 namespace Data_Logger_1._3.Commands
 {
-    public class UpdateNowCommand : AsyncCommandBase
+    internal class UpdateNowCommand : AsyncCommandBase
     {
         private readonly IDataService _dataService;
         private readonly IVelopackService _velopackService;
@@ -37,7 +38,7 @@ namespace Data_Logger_1._3.Commands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, "Exception occurred in UpdateNowCommand.ExecuteAsync");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} UpdateNowCommand.ExecuteAsync");
                 MessageBox.Show("An unexpected error occurred while trying to update the application. We apologise for any inconvenience caused. Please try again later.", 
                     "Update Failed", MessageBoxButton.OK, MessageBoxImage.Error);
 

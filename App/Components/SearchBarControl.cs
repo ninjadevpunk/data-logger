@@ -1,4 +1,4 @@
-﻿using Data_Logger_1._3.ViewModels.Reporter;
+﻿using Data_Logger_1._3.ViewModels.Reporter.Result;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -11,7 +11,7 @@ namespace Data_Logger_1._3.Components
     /// <summary>
     /// A custom search bar for the reporter.
     /// </summary>
-    public class SearchBarControl : Control
+    internal class SearchBarControl : Control
     {
         static SearchBarControl()
         {
@@ -283,18 +283,19 @@ namespace Data_Logger_1._3.Components
 
         private static void on_ResultsList_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            var ctrl = (SearchBarControl)d;
+            // TODO
+            //var ctrl = (SearchBarControl)d;
 
-            // Unsubscribe from old collection
-            if (e.OldValue is ObservableCollection<SearchResultViewModel> oldCollection)
-                oldCollection.CollectionChanged -= ctrl.SearchResults_CollectionChanged;
+            //// Unsubscribe from old collection
+            //if (e.OldValue is ObservableCollection<SearchResultViewModel> oldCollection)
+            //    oldCollection.CollectionChanged -= ctrl.SearchResults_CollectionChanged;
 
-            // Subscribe to new collection
-            if (e.NewValue is ObservableCollection<SearchResultViewModel> newCollection)
-                newCollection.CollectionChanged += ctrl.SearchResults_CollectionChanged;
+            //// Subscribe to new collection
+            //if (e.NewValue is ObservableCollection<SearchResultViewModel> newCollection)
+            //    newCollection.CollectionChanged += ctrl.SearchResults_CollectionChanged;
 
-            // Update immediately
-            ctrl.UpdateHasNoResults();
+            //// Update immediately
+            //ctrl.UpdateHasNoResults();
         }
 
         private void SearchResults_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)

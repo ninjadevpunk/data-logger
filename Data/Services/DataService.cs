@@ -6,6 +6,7 @@ using Core.Enums;
 using Core.Interfaces;
 using Core.Models;
 using Core.Models.App_Models;
+using Core.Utilities;
 using Data.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
@@ -27,18 +28,6 @@ namespace Data.Services
             _authService = authService;
             _serviceProvider = serviceProvider;
         }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -623,7 +612,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in UseReaderAsync:{ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} UseReaderAsync:{ex.Message}");
             }
 
 #pragma warning disable CS8603 // Possible null reference return.
@@ -821,10 +810,10 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Inserts a logCacheDTO into the database.
+        /// Inserts a log cache DTO into the database.
         /// </summary>
-        /// <param name="logCacheDTO">The logCacheDTO to insert.</param>
-        /// <returns>Returns true if the logCacheDTO was successfully created; otherwise false.</returns>
+        /// <param name="logCacheDTO">The log DTO to insert.</param>
+        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
         public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO)
         {
             var user = await EnsureValidUserAsync();
@@ -883,7 +872,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="context">The logCacheDTO context to filter logs.</param>
         /// <returns>Returns an IEnumerable of LOG objects, or null if an error occurs.</returns>
-        public async Task<IEnumerable<LOG>?> RetrieveLogsAsync(LogContext context)
+        public async Task<IEnumerable<LOG>> RetrieveLogsAsync(LogContext context)
         {
             var user = await EnsureValidUserAsync();
             int id = user.UserId;

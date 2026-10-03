@@ -1,5 +1,5 @@
-﻿using Data.Interfaces;
-using Data_Logger_1._3.Services;
+﻿using Core.Utilities;
+using Data.Interfaces;
 using Data_Logger_1._3.Services.CommandLogic;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
 {
-    public class PasswordResetCommand : AsyncCommandBase
+    internal class PasswordResetCommand : AsyncCommandBase
     {
         private readonly SettingsViewModel _settingsViewModel;
         private readonly IDataService _dataService;
@@ -42,7 +42,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"Exception occurred in PasswordResetCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} PasswordResetCommand.ExecuteAsync(): {ex.Message}");
                 MessageBox.Show("We couldn't process your request right now. Please try again later.", "Password Reset", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 

@@ -144,11 +144,13 @@
 		<None Update=".env" Condition="'$(Configuration)'=='Debug'">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="appsettings.DevMode.json" Condition="'$(Configuration)' == 'Debug'">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Update="appsettings.DevMode.json">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <LogicalName>appsettings.DevMode.json</LogicalName>
 		</None>
 		<None Update="appsettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <LogicalName>appsettings.json</LogicalName>
 		</None>
 		<None Update="Assets\login\attribution\Ayo Ogunseinde.txt">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -166,6 +168,10 @@
 		<Page Update="Views\Splashscreen.xaml">
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
 		</Page>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Commands\ReporterCommands\UpdateCommands\ToolCommands\" />
 	</ItemGroup>
 
 </Project>

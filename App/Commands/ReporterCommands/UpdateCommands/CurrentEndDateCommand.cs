@@ -1,38 +1,24 @@
-﻿using Data_Logger_1._3.ViewModels.Dialogs;
-using Data_Logger_1._3.ViewModels.Dialogs.Updater;
+﻿using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
 {
-    public class CurrentEndDateCommand : CommandBase
+    internal class CurrentEndDateCommand : CommandBase
     {
-        private readonly CodingLoggerUpdateViewModel _viewModel;
+        private readonly CodingLoggerUpdateViewModel _codingLoggerUpdateViewModel;
 
-        public CurrentEndDateCommand(CodingLoggerUpdateViewModel viewModel)
+        public CurrentEndDateCommand(CodingLoggerUpdateViewModel codingLoggerUpdateViewModel)
         {
-
-
-            try
-            {
-                _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
-            }
-            catch (Exception)
-            {
-                //
-            }
-
-
+            _codingLoggerUpdateViewModel = codingLoggerUpdateViewModel;
         }
-
-
 
         public override void Execute(object parameter)
         {
-            _viewModel.EndDate = DateTime.Now;
-            _viewModel.EndHours = DateTime.Now.Hour;
-            _viewModel.EndMinutes = DateTime.Now.Minute;
-            _viewModel.EndSeconds = DateTime.Now.Second;
-            _viewModel.EndMilliseconds = DateTime.Now.Millisecond;
+            _codingLoggerUpdateViewModel.EndDate = DateTime.Now;
+            _codingLoggerUpdateViewModel.EndHours = DateTime.Now.Hour;
+            _codingLoggerUpdateViewModel.EndMinutes = DateTime.Now.Minute;
+            _codingLoggerUpdateViewModel.EndSeconds = DateTime.Now.Second;
+            _codingLoggerUpdateViewModel.EndMilliseconds = DateTime.Now.Millisecond;
         }
     }
 }

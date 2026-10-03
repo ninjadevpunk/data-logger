@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Cache;
+﻿using Core.DTOs;
+using Core.DTOs.Cache;
 using Core.DTOs.Data;
 using Core.DTOs.Notes;
 using Core.Enums;
@@ -179,11 +180,11 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Creates a logCacheDTO in the database.
+        /// Creates a log cache DTO in the database.
         /// </summary>
-        /// <param name="logCacheDTO">The logCacheDTO being stored.</param>
+        /// <param name="logCacheDTO">The log DTO being stored.</param>
         /// <param name="id">The user ID of logged in user.</param>
-        /// <returns>Returns true if the logCacheDTO was successfully created; otherwise false.</returns>
+        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
         public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();

@@ -2,7 +2,6 @@
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
 using Data_Logger_1._3.Commands.DLSFileCommands;
-using Data_Logger_1._3.Commands.LoggerCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using FileSys.Interfaces;
@@ -22,8 +21,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingViewModel = codingViewModel;
-            BugsFound = 0;
-            ApplicationOpened = false;
 
             ClearLoggerCommand = new ResetLoggerCommand(this, Category);
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
