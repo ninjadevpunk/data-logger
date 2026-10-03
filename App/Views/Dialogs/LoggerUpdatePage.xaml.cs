@@ -3,11 +3,11 @@
 namespace Data_Logger_1._3.Views.Dialogs
 {
     /// <summary>
-    /// Interaction logic for ReporterEditPage.xaml
+    /// Interaction logic for LoggerUpdatePage.xaml
     /// </summary>
-    public partial class ReporterEditPage : Page
+    internal partial class LoggerUpdatePage : Page
     {
-        public ReporterEditPage()
+        public LoggerUpdatePage()
         {
             InitializeComponent();
         }

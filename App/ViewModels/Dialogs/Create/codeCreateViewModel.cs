@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 {
-    internal class codeCreateViewModel : CodingLoggerCreateViewModel
+    internal sealed class codeCreateViewModel : CodingLoggerCreateViewModel
     {
         private readonly CodingViewModel _codingViewModel;
 

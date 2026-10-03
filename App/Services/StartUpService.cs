@@ -2,6 +2,8 @@
 using Core.DTOs.Data;
 using Core.DTOs.Notes;
 using Core.Interfaces;
+using Core.Models;
+using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels;
@@ -127,33 +129,9 @@ namespace Data_Logger_1._3.Services
             _settingsService = serviceProvider.GetRequiredService<SettingsService>();
             _cacheMaster = serviceProvider.GetRequiredService<ICacheService>();
 
-            var userId = _authService.GetUser().UserId;
-
-            var qtList = _cacheMaster.LoadQtCodeCache(userId);
-            var asList = _cacheMaster.LoadASCodeCache(userId);
-            var cdeList = _cacheMaster.LoadCodeCache(userId);
-
-            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
             _codingQtDashboard = serviceProvider.GetRequiredService<CodingQtViewModel>();
             _codingAndroidDashboard = serviceProvider.GetRequiredService<CodingAndroidViewModel>();
             _codingDashboard = serviceProvider.GetRequiredService<CodingViewModel>();
-
-            try
-            {
-                var qtLogs = ConvertLogsToViewModels(qtList, qtLog => viewModelFactory.Create((QtCacheDTO)qtLog, _codingQtDashboard, false));
-                LoadCacheItems(qtLogs, _codingQtDashboard);
-
-                var cdeLogs = ConvertLogsToViewModels(cdeList, codingLog => viewModelFactory.Create((CodingCacheDTO)codingLog, _codingDashboard, false));
-                LoadCacheItems(cdeLogs, _codingDashboard);
-
-                var asLogs = ConvertLogsToViewModels(asList, androidLog => viewModelFactory.Create((AndroidCacheDTO)androidLog,
-                    _codingAndroidDashboard, false));
-                LoadCacheItems(asLogs, _codingAndroidDashboard);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"{Constants.ExceptionPrefix} LoadCachedLogs: {ex.Message}");
-            }
 
             _notesDashboard = serviceProvider.GetRequiredService<NOTESDashboardViewModel>();
 
@@ -169,18 +147,39 @@ namespace Data_Logger_1._3.Services
         /// </summary>
         public async Task Initialise(int id)
         {
-            await _dataService.InitialiseApplicationsLISTAsync();
-            await _dataService.InitialiseProjectsLISTAsync();
-
-            LoadCachedLogs();
+            await LoadCachedLogs();
             await LoadNotes(id);
             SetUpSettings();
             SetupUserProfile();
         }
 
-        private void LoadCachedLogs()
+        private async Task LoadCachedLogs()
         {
-            
+            try
+            {
+                var userId = _authService.GetUser().Id;
+
+                var qtList = _cacheMaster.LoadQtCodeCache(userId);
+                var asList = _cacheMaster.LoadASCodeCache(userId);
+                var cdeList = _cacheMaster.LoadCodeCache(userId);
+
+                var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+
+                var qtLogs = ConvertLogsToViewModels(qtList, qtLog => viewModelFactory.Create((QtCacheDTO)qtLog, _codingQtDashboard, false));
+                LoadCacheItems(qtLogs, _codingQtDashboard);
+
+                var cdeLogs = ConvertLogsToViewModels(cdeList, codingLog => viewModelFactory.Create((CodingCacheDTO)codingLog, _codingDashboard, false));
+                LoadCacheItems(cdeLogs, _codingDashboard);
+
+                var asLogs = ConvertLogsToViewModels(asList, androidLog => viewModelFactory.Create((AndroidCacheDTO)androidLog,
+                    _codingAndroidDashboard, false));
+                LoadCacheItems(asLogs, _codingAndroidDashboard);
+            }
+            catch (Exception ex)
+            {
+                await _dataService.HandleExceptionAsync(ex);
+                Debug.WriteLine($"{Constants.ExceptionPrefix} LoadCachedLogs: {ex.Message}");
+            }
         }
 
         private ObservableCollection<LOGViewModel> ConvertLogsToViewModels(IEnumerable<LogCacheDTO> logs, Func<LogCacheDTO, LOGViewModel> converter)
@@ -231,7 +230,7 @@ namespace Data_Logger_1._3.Services
             var user = _authService.GetUser();
             if (user != null)
             {
-                if (user.ProfilePic!.Contains(Constants.Avatar))
+                if (user.ProfilePic.Contains(Constants.Avatar))
                 {
                     _mainWindowViewModel.SignUpImage = null;
                     _mainWindowViewModel.ShowDefault = Visibility.Visible;
@@ -248,21 +247,20 @@ namespace Data_Logger_1._3.Services
             {
                 var user = _authService.GetUser();
 
-                var id = user.UserId;
+                var id = user.Id;
 
-                if (_settingsService.CreateSettingsFile())
+                if (_settingsService.CreateSettingsDir())
                 {
-                    var settings = _settingsService.Load(id);
+                    var settings = _settingsService.Load();
 
-                    if (settings != null && string.IsNullOrWhiteSpace(settings.User.Email))
+                    if (settings == null)
                     {
-                        settings.User.Id = user.UserId;
-                        settings.User.Name = user.Name;
-                        settings.User.Surname = user.Surname;
-                        settings.User.Email = user.Email;
-                        settings.User.ProfilePic = user.ProfilePic ?? Constants.Avatar;
+                        settings = new Settings
+                        {
+                            User = user
+                        };
 
-                        _settingsService.Save(id, settings, true);
+                        settings = _settingsService.Save(settings, true);
                     }
                 }
             }

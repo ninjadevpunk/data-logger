@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace Data_Logger_1._3.Services
 {
-    public class SettingsService
+    internal class SettingsService
     {
 #if DEBUG
         public static readonly string BasePath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
@@ -19,16 +19,15 @@ namespace Data_Logger_1._3.Services
 
         public SettingsService(IAuthService authService)
         {
-            _userId = authService.GetUser().UserId;
+            _userId = authService.GetUser().Id;
         }
 
         /// <summary>
-        /// Creates a settings file. Throws an <see cref="InvalidOperationException"/> if the settings path is invalid.
+        /// Creates a settings directory.
         /// </summary>
         /// <param name="userId">The logged-in user's ID.</param>
         /// <returns>Returns whether the operation was successful or not.</returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public bool CreateSettingsFile()
+        public bool CreateSettingsDir()
         {
             try
             {
@@ -67,18 +66,18 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        public Settings? Load(int userId)
+        public Settings? Load()
         {
             try
             {
                 var path = GetUserFilePath();
 
                 if (!File.Exists(path))
-                    return Save(userId, new Settings());
+                    return null;
 
                 var json = File.ReadAllText(path);
 
-                return JsonConvert.DeserializeObject<Settings>(json) ?? new Settings();
+                return JsonConvert.DeserializeObject<Settings>(json);
             }
             catch (Exception ex)
             {
@@ -87,15 +86,10 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        public Settings? Save(int userId, Settings settings)
+        public Settings? Save(Settings settings)
         {
             try
             {
-                if (Load(userId) == null)
-                {
-                    throw new InvalidOperationException("No settings!");
-                }
-
                 var path = GetUserFilePath();
                 
                 var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -113,15 +107,10 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        public Settings? Save(int userId, Settings settings, bool isNewAccount)
+        public Settings? Save(Settings settings, bool isNewAccount)
         {
             try
             {
-                if (Load(userId) == null)
-                {
-                    throw new InvalidOperationException("No settings!");
-                }
-
                 var path = GetUserFilePath();
 
                 var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
@@ -142,16 +131,16 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        public bool Delete(int userId)
+        public bool Delete()
         {
             try
             {
-                var userPath = Path.Combine(BasePath, userId.ToString());
+                var userPath = Path.Combine(BasePath, _userId.ToString());
 
                 if (!Directory.Exists(userPath))
                     return true;
 
-                Directory.Delete(userPath, recursive: true);
+                Directory.Delete(userPath, true);
 
                 return true;
             }

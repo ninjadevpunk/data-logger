@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.Identity;
 using Core.Interfaces;
 using Core.Models;
+using Core.Models.App_Models;
 using Data.Interfaces;
 using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +14,7 @@ namespace Data.Services
     {
         private readonly IServiceProvider _serviceProvider;
 
-        private UserDTO Account { get; set; } = null!;
+        private UserSettings Account { get; set; } = null!;
 
 
         public AuthService(IServiceProvider serviceProvider)
@@ -24,8 +25,8 @@ namespace Data.Services
         /// <summary>
         /// Retrieve the logged in user.
         /// </summary>
-        /// <returns>A UserDTO</returns>
-        public UserDTO GetUser() => Account != null ? Account : throw new ArgumentNullException(nameof(Account), "GetUser() returned null!");
+        /// <returns>User settings</returns>
+        public UserSettings GetUser() => Account ?? throw new ArgumentNullException(nameof(Account), "GetUser() returned null!");
 
         /// <summary>
         /// Validates a user's email before processing
@@ -115,12 +116,16 @@ namespace Data.Services
 
                 if (userIsActive)
                 {
-                    Account = new UserDTO
+                    Account = new UserSettings
                     {
-                        UserId = userId,
+                        Id = userId,
                         Name = displayName,
                         Surname = surname,
-                        Email = email
+                        Email = email,
+                        IsCompanyEmployee = isEmployee,
+                        CompanyName = companyName,
+                        CompanyAddress = companyAddress,
+                        CompanyLogo = companyLogo,
                     };
                     bool currentUserSet = await dataService.SetCurrentUserAsync(userId);
 
@@ -134,6 +139,7 @@ namespace Data.Services
                             PublicMessageType = Result.MessageType.Warning
                         };
                     }
+
 
                     return new Result { Success = currentUserSet };
                 }
@@ -226,13 +232,27 @@ namespace Data.Services
 
                 try
                 {
-                    var (userFound, temporaryAccount) = await dataService.SignInUserAsync(email, password);
+                    var (userFound, userDTO) = await dataService.SignInUserAsync(email, password);
+
 
                     if (!userFound)
                         return new Result();
 
-                    if (temporaryAccount == null)
-                        throw new ArgumentNullException("Account is null!");
+                    if (userDTO == null)
+                        throw new ArgumentNullException(null, "Account is null!");
+
+                    var temporaryAccount = new UserSettings
+                    {
+                        Id = userDTO.UserId,
+                        Name = userDTO.Name,
+                        Surname = userDTO.Surname,
+                        Email = userDTO.Email,
+                        ProfilePic = userDTO.ProfilePic,
+                        IsCompanyEmployee = userDTO.IsEmployee,
+                        CompanyName = userDTO.CompanyName,
+                        CompanyAddress = userDTO.CompanyAddress,
+                        CompanyLogo = userDTO.CompanyLogo
+                    };
 
 
                     Account = temporaryAccount;
@@ -352,7 +372,7 @@ namespace Data.Services
                 {
                     try
                     {
-                        accountDeleted = await dataService.DeleteAccountByIDAsync(Account.UserId);
+                        accountDeleted = await dataService.DeleteAccountByIDAsync(Account.Id);
 
                         if (accountDeleted)
                             Account = new();

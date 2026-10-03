@@ -39,7 +39,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
 
                 var checkListDTO = new CheckListDTO
                 {
-                    UserId = user.UserId,
+                    UserId = user.Id,
                     ListSubject = _createCheckListViewModel.NoteSubject,
                     CreationDate = _createCheckListViewModel.CreationDate,
                     ModifiedDate = _createCheckListViewModel.ModifiedDate,

@@ -10,7 +10,7 @@ using Core.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels
 {
-    public class UpdaterViewModel : ViewModelBase
+    internal class UpdaterViewModel : ViewModelBase
     {
         private readonly IAuthService? _authService;
         private readonly IDataService _dataService;
@@ -31,7 +31,7 @@ namespace Data_Logger_1._3.ViewModels
             _updateInfo = updateInfo;
 
             _settingsService = settingsService;
-            _settings = _settingsService.Load(UserID ?? throw new InvalidOperationException("UserID is null!")) ?? new Settings();
+            _settings = _settingsService.Load() ?? throw new ArgumentNullException(nameof(settingsService), "Settings are null!");
 
             UpdateNowCommand = new UpdateNowCommand(dataService, velopackService, updateInfo);
             CancelUpdateCommand = new CancelUpdateCommand(dataService);
@@ -57,7 +57,7 @@ namespace Data_Logger_1._3.ViewModels
 
 
 
-        private int? UserID => _authService?.GetUser().UserId;
+        private int? UserID => _authService?.GetUser().Id;
 
         public string UpdateVersion => $"Latest: {_updateInfo.TargetFullRelease.Version}";
 
@@ -161,7 +161,7 @@ namespace Data_Logger_1._3.ViewModels
             try
             {
                 if (_settings != null)
-                    _settingsService!.Save(UserID ?? throw new InvalidOperationException("UserID is null!"), _settings);
+                    _settingsService!.Save(_settings);
             }
             catch (Exception ex)
             {

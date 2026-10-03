@@ -9,6 +9,7 @@ using Data.Interfaces;
 using Data.Services;
 using Data_Logger_1._3.Components.Subcontrols;
 using Data_Logger_1._3.Components.Subcontrols_View;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
@@ -288,12 +289,8 @@ namespace Data_Logger_1._3.Services
                 try
                 {
                     var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-
-                    if (_login != null)
-                    {
-                        _login.Close();
-                        _login = null;
-                    }
+                    _login?.Close();
+                    _login = null;
 
                     // Store the main frame reference
                     SetMainFrame(mainWindow.frame_MAINWINDOW);
@@ -304,7 +301,7 @@ namespace Data_Logger_1._3.Services
                     await dataService.SignInUserAsync();
 
                     var user = authService.GetUser();
-                    var userId = user.UserId;
+                    var userId = user.Id;
                     await _serviceProvider.GetRequiredService<StartUpService>().Initialise(userId);
                     var cachemaster = _serviceProvider.GetRequiredService<ICacheService>();
 
@@ -349,11 +346,7 @@ namespace Data_Logger_1._3.Services
 
                         await NavigateToLogCachePage(LogContext.Qt);
 
-                        _mainWindow = mainWindow;
-
-                        if (_mainWindow == null)
-                            throw new ArgumentNullException("MainWindow is null in NavigateToMainWindow!");
-
+                        _mainWindow = mainWindow ?? throw new ArgumentNullException("MainWindow is null in NavigateToMainWindow!");
                         CheckBackNavigationButton(mainWindowViewModel);
 
                         MessageBox.Show($"Click on \"Generic\" option in the menu panel please. In this alpha you will only be able to create coding logs.",
@@ -383,7 +376,9 @@ namespace Data_Logger_1._3.Services
         }
 
 
+#pragma warning disable CA1822 // Mark members as static
         public async Task<bool> NavigateToUpdaterWindowAsync(bool startUpdatingImmediately = false)
+#pragma warning restore CA1822 // Mark members as static
         {
 #if RELEASE
             try
@@ -733,8 +728,10 @@ namespace Data_Logger_1._3.Services
                             {
                                 await NavigateToPage<AScodeCreateViewModel>(loggerCreatePage, new coding_UserControl());
 
-                                var androidPage = new androidStudio_UserControl();
-                                androidPage.DataContext = _serviceProvider.GetRequiredService<AScodeCreateViewModel>();
+                                var androidPage = new androidStudio_UserControl
+                                {
+                                    DataContext = _serviceProvider.GetRequiredService<AScodeCreateViewModel>()
+                                };
                                 _AndroidStudioFrame?.Navigate(androidPage);
 
                                 break;
@@ -836,7 +833,7 @@ namespace Data_Logger_1._3.Services
                     var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
                     var loggerViewPage = uiFactory.CreatePage<ViewerPage>();
                     var auth = _serviceProvider.GetRequiredService<AuthService>();
-                    var user = auth.GetUser();
+                    var user = Extensions.UserSettingsToDTO(auth.GetUser());
                     string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
                     SetLoggerFrame(loggerViewPage.frame_VARIATIONS);
@@ -954,7 +951,7 @@ namespace Data_Logger_1._3.Services
         }
 
 
-        private string FormatLogTime(int seconds)
+        private static string FormatLogTime(int seconds)
         {
             if (seconds < 60)
             {
@@ -984,12 +981,7 @@ namespace Data_Logger_1._3.Services
             NavigationContext = NavContext.POSTIT;
 
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-            var postItPage = _serviceProvider.GetRequiredService<PostItPage>();
-            var postItPageViewModel = _serviceProvider.GetRequiredService<CreatePostItViewModel>();
-            await postItPageViewModel.AutoStartAsync(logger.ApplicationName, logger.ProjectName);
-            postItPageViewModel.ActiveEditor = postItPage.inputText_ERROR;
-            postItPage.DataContext = postItPageViewModel;
+            var postItPage = await uiFactory.CreatePostItPage(logger, logger.ApplicationName, logger.ProjectName);
 
 
             await NavigateToPage(postItPage);
@@ -1003,9 +995,7 @@ namespace Data_Logger_1._3.Services
             NavigationContext = NavContext.EDITOR_POSTIT;
 
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-            var postItPageViewModel = viewModelFactory.CreateEditPostItViewModel(logger, postItCacheDTO);
-            var postItPage = _serviceProvider.GetRequiredService<PostItPage>();
+            var postItPage = await uiFactory.CreateEditPostItPage(logger, postItCacheDTO, logger.ApplicationName, logger.ProjectName);
 
             await NavigateToPage(postItPage);
 
@@ -1040,8 +1030,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToReporter()
         {
-            if (_mainWindowFrame != null)
-                _mainWindowFrame.RemoveBackEntry();
+            _mainWindowFrame?.RemoveBackEntry();
 
             SetReporterContext();
 

@@ -305,13 +305,19 @@ namespace Data.Services
                 var account = await master.Accounts
                     .SingleAsync(a => a.Email == emailAddress);
 
-                if (account is not null && VerifyPassword(account, password))
+                if (account != null && VerifyPassword(account, password))
                 {
                     return new UserDTO
                     {
                         UserId = account.accountID,
+                        ProfilePic = account.ProfilePic,
                         Name = account.FirstName,
-                        Surname = account.LastName
+                        Surname = account.LastName,
+                        Email = account.Email,
+                        IsEmployee = account.IsEmployee,
+                        CompanyName = account.CompanyName,
+                        CompanyAddress = account.CompanyAddress,
+                        CompanyLogo = account.CompanyLogo,
                     };
                 }
 

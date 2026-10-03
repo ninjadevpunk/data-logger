@@ -16,7 +16,7 @@ namespace Core.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int accountID { get; set; }
 
-        public string? ProfilePic { get; set; }
+        public string ProfilePic { get; set; } = string.Empty;
 
 
         public string FirstName { get; set; } = "";

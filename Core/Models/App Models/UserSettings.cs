@@ -10,5 +10,6 @@
         public bool IsCompanyEmployee { get; set; } = false;
         public string? CompanyName { get; set; } = null;
         public string? CompanyAddress { get; set; } = null;
+        public string? CompanyLogo { get; set; } = null;
     }
 }

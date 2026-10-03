@@ -62,25 +62,25 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         protected override async Task LoadProjects()
         {
-            Projects = (await _dataService.InitialiseProjectsLISTAsync(Category)).ToHashSet();
+            Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Category))];
         }
 
         protected override async Task LoadApplications()
         {
             ApplicationName = Constants.VisualStudio;
-            Applications = (await _dataService.InitialiseApplicationsLISTAsync(Category)).ToHashSet();
+            Applications = [.. (await _dataService.InitialiseApplicationsLISTAsync(Category))];
         }
 
         protected override async Task LoadOutputs()
         {
             Output = "C# Application (*.exe)";
-            Outputs = (await _dataService.ListOutputsAsync(LOG.CATEGORY.CODING)).ToHashSet();
+            Outputs = [.. (await _dataService.ListOutputsAsync(LOG.CATEGORY.CODING))];
         }
 
         protected override async Task LoadTypes()
         {
             Type = "Exception";
-            Types = (await _dataService.ListTypesAsync(LOG.CATEGORY.CODING)).ToHashSet();
+            Types = [.. (await _dataService.ListTypesAsync(LOG.CATEGORY.CODING))];
         }
     }
 }

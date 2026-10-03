@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 {
-    internal class qtEditViewModel : CodingLoggerEditViewModel
+    internal sealed class qtEditViewModel : CodingLoggerEditViewModel
     {
         private readonly CodingQtViewModel _codingQtViewModel;
         private readonly QtCacheDTO _qtCacheDTO;

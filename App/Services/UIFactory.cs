@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Core.DTOs.Cache;
 
 namespace Data_Logger_1._3.Services
 {
@@ -54,8 +55,23 @@ namespace Data_Logger_1._3.Services
             return page;
         }
 
-        public PostItPage CreatePostItPage() => CreatePage<PostItPage, CreatePostItViewModel>();
-        public PostItPage CreateEditPostItPage() => CreatePage<PostItPage, EditPostItViewModel>();
+        public async Task<PostItPage> CreatePostItPage(LoggerViewModel loggerViewModel, string appName, string projectName)
+        {
+            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+            var postItViewModel = viewModelFactory.CreatePostItViewModel(loggerViewModel);
+            await postItViewModel.AutoStartAsync(appName, projectName);
+
+            return ActivatorUtilities.CreateInstance<PostItPage>(_serviceProvider, postItViewModel); ;
+        }
+
+        public async Task<PostItPage> CreateEditPostItPage(LoggerViewModel loggerViewModel, PostItCacheDTO postItCacheDTO, string appName, string projectName)
+        {
+            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+            var postItViewModel = viewModelFactory.CreateEditPostItViewModel(loggerViewModel, postItCacheDTO);
+            await postItViewModel.AutoStartAsync(appName, projectName);
+
+            return ActivatorUtilities.CreateInstance<PostItPage>(_serviceProvider, postItViewModel); ;
+        }
 
     }
 }

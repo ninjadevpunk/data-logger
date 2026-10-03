@@ -9,7 +9,7 @@ namespace Data_Logger_1._3.Views.Account
     /// <summary>
     /// Interaction logic for SettingsPage.xaml
     /// </summary>
-    public partial class SettingsPage : Page
+    internal partial class SettingsPage : Page
     {
         private readonly Storyboard _open;
         private readonly Storyboard _passwordOpen;

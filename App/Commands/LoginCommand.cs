@@ -37,17 +37,14 @@ namespace Data_Logger_1._3.Commands
                     {
                         case MessageType.Info:
                             {
-                                // TODO: Show message box
-                                break;
-                            }
-                        case MessageType.Warning:
-                            {
-                                // TODO: Show message box
+                                if(result.HasMessage)
+                                    MessageBoxService.Show(result, "Success");
                                 break;
                             }
                         case MessageType.Error:
                             {
-                                // TODO: Show message box
+                                if (result.HasMessage)
+                                    MessageBoxService.Show(result, "Error");
                                 break;
                             }
                     }

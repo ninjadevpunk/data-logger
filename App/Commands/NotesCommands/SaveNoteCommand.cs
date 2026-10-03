@@ -43,7 +43,7 @@ namespace Data_Logger_1._3.Commands.NotesCommands
                     var user = _authService.GetUser();
                     var noteDTO = new NoteDTO
                     {
-                        UserId = user.UserId,
+                        UserId = user.Id,
                         Subject = _createNoteViewModel.NoteSubject,
                         NoteContent = _createNoteViewModel.NoteContent,
                         CreationDate = _createNoteViewModel.CreationDate,

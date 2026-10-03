@@ -14,7 +14,7 @@ namespace Data_Logger_1._3.ViewModels
         private readonly IAuthService _authService;
         private readonly NavigationService _navigationService;
         
-        private static readonly Brush EnabledColor = Extensions.TryParseBrush("iconColourAccent02");
+        private static readonly Brush EnabledColor = Extensions.TryParseBrush("iconCOLOURAccent02");
         private static readonly Brush DisabledColor = Extensions.TryParseBrush("AccentColour");
 
 

@@ -25,10 +25,9 @@ namespace Installer.Views.Pages
         private readonly DbMigrationService _databaseMigration;
 
         public readonly string _programDataPath;
-        string installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        private readonly string installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Data Logger");
         const int APP_SIZE = 300;
-        public bool ShortcutIsCreated { get; set; } = false;
         private readonly bool _isReinstall;
 
         public SetupPage(MainWindow mainWindow, bool isReinstall = false)
@@ -47,9 +46,8 @@ namespace Installer.Views.Pages
 #else
             _programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
 #endif
-
-            this.textBlock_INSTALL_LOCATION.Text = installPath;
-            this.textBlock_APP_SIZE.Text = $"{APP_SIZE}MB";
+            textBlock_INSTALL_LOCATION.Text = installPath;
+            textBlock_APP_SIZE.Text = $"{APP_SIZE}MB";
         }
 
 
@@ -135,12 +133,9 @@ namespace Installer.Views.Pages
 
             using Stream? resource = Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream(Assembly.GetExecutingAssembly().GetManifestResourceNames()
-                        .First(name => name.EndsWith("dls_icon.ico", StringComparison.OrdinalIgnoreCase)));
-
-            if (resource == null)
-                throw new InvalidOperationException("Embedded dls_icon.ico was not found.");
-
-            using FileStream file = new FileStream(iconPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                        .First(name => name.EndsWith("dls_icon.ico", StringComparison.OrdinalIgnoreCase)))
+                ?? throw new InvalidOperationException("Embedded dls_icon.ico was not found.");
+            using FileStream file = new(iconPath, FileMode.Create, FileAccess.Write, FileShare.None);
 
             resource.CopyTo(file);
 
@@ -201,7 +196,7 @@ namespace Installer.Views.Pages
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        private void NotifyFileAssociationChanged()
+        private static void NotifyFileAssociationChanged()
         {
             const uint SHCNE_ASSOCCHANGED = 0x08000000;
             const uint SHCNF_IDLIST = 0x0000;
@@ -235,26 +230,24 @@ namespace Installer.Views.Pages
         }
 
 
-
-
-        private string ExtractSetup()
+        private static string ExtractSetup()
         {
             string resourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames()
                 .First(name => name.EndsWith("Setup.exe", StringComparison.OrdinalIgnoreCase));
 
             string setupPath = Path.Combine(Path.GetTempPath(), "Setup.exe");
 
-            using Stream? resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
-
-            if (resource == null)
-                throw new InvalidOperationException("Embedded Setup.exe was not found.");
-
-            using FileStream file = new FileStream(setupPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            using Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
+                ?? throw new InvalidOperationException("Embedded Setup.exe was not found.");
+            using FileStream file = new(setupPath, FileMode.Create, FileAccess.Write, FileShare.None);
 
             resource.CopyTo(file);
 
             return setupPath;
         }
+
+
+
 
         private async void on_INSTALL_ClickedAsync(object sender, RoutedEventArgs e)
         {
@@ -263,7 +256,7 @@ namespace Installer.Views.Pages
             try
             {
                 // Ensure Disk Space is Sufficient
-                DriveInfo drive = new DriveInfo("C:");
+                DriveInfo drive = new("C:");
                 if (drive.AvailableFreeSpace < APP_SIZE * 1024 * 1024)
                 {
                     _mainWindow.ShowFailedPage("Insufficient storage space available.");
@@ -271,8 +264,8 @@ namespace Installer.Views.Pages
                 }
 
                 // Create ProgramData and Resources folder
-                bool programDataCreated = _fileService.Exists(_programDataPath);
                 bool resourcesCreated = _fileService.ResourcesCreated();
+                bool programDataCreated = _fileService.Exists(_programDataPath);
 
                 if (!programDataCreated || !resourcesCreated)
                 {
@@ -304,19 +297,14 @@ namespace Installer.Views.Pages
 
                 string setupPath = ExtractSetup();
 
-                ProcessStartInfo processInfo = new ProcessStartInfo
+                ProcessStartInfo processInfo = new()
                 {
                     FileName = setupPath,
                     Arguments = $"--silent --installto \"{installPath}\"",
                     UseShellExecute = true
                 };
 
-                Process? process = Process.Start(processInfo);
-
-                if (process == null)
-                    throw new InvalidOperationException("Process failed to start.");
-
-
+                Process? process = Process.Start(processInfo) ?? throw new InvalidOperationException("Process failed to start.");
                 using (process)
                 {
                     await process.WaitForExitAsync();

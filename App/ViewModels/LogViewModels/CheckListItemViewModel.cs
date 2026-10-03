@@ -3,7 +3,7 @@ using MVVMEssentials.ViewModels;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    public class CheckListItemViewModel : ViewModelBase
+    public sealed class CheckListItemViewModel : ViewModelBase
     {
 		private readonly CheckListItem _CheckListItem;
 

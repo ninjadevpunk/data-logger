@@ -27,7 +27,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
-using System.IO;
 #if RELEASE
 using System.Security.Cryptography;
 using System.Text;
@@ -106,7 +105,7 @@ namespace Data_Logger_1._3
                     service.AddTransient<VelopackUpdaterWindow>();
 
 
-                    service.AddTransient<ReporterEditPage>();
+                    service.AddTransient<LoggerUpdatePage>();
 
                     service.AddTransient<LoginViewModel>();
                     service.AddTransient<ForgotPasswordViewModel>();
@@ -202,30 +201,29 @@ namespace Data_Logger_1._3
                     var connection = master.Database.GetDbConnection();
                     await connection.OpenAsync();
 
-                    using (var command = connection.CreateCommand())
-                    {
-                        // Enable WAL Mode
-                        command.CommandText = "PRAGMA journal_mode=WAL;";
-                        await command.ExecuteNonQueryAsync();
-                    }
+                    using var command = connection.CreateCommand();
+                    // Enable WAL Mode
+                    command.CommandText = "PRAGMA journal_mode=WAL;";
+                    await command.ExecuteNonQueryAsync();
                 }
                 catch (Exception ex)
                 {
+                    Debug.WriteLine($"An error occurred in OnStartUp: {ex.Message}");
+#if RELEASE
                     try
                     {
-                        File.WriteAllText("error.txt", $"An error occurred in OnStartUp: {ex.ToString()}");
+                        File.WriteAllText("error.txt", $"An error occurred in OnStartUp: {ex.Message}");
                     }
                     catch
                     {
                         MessageBox.Show("An error occurred", "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
                     }
+#endif
                 }
             }
 
             await AnimateProgressBar(splash.progressBar_splashscreen, 100, splash.text_progress);
-
             await navigationService.NavigateToLogin();
-
             splash.Close();
 
             base.OnStartup(e);
@@ -236,7 +234,7 @@ namespace Data_Logger_1._3
 
 
 
-        private async Task AnimateProgressBar(ProgressBar progressBar, double targetValue, TextBlock textBlock)
+        private static async Task AnimateProgressBar(ProgressBar progressBar, double targetValue, TextBlock textBlock)
         {
             var duration = TimeSpan.FromSeconds(1);
             var animation = new DoubleAnimation(targetValue, duration);
@@ -248,7 +246,7 @@ namespace Data_Logger_1._3
             progressBar.BeginAnimation(ProgressBar.ValueProperty, animation);
 
             var currentValue = progressBar.Value;
-            var stepValue = (targetValue - currentValue) / (duration.TotalMilliseconds / 100);
+            var stepValue = (targetValue - currentValue) / (duration.TotalMilliseconds / 50);
 
             for (var i = currentValue; i <= targetValue; i += stepValue)
             {

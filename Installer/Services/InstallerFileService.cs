@@ -118,7 +118,6 @@ namespace Installer.Services
                 // Base Folder
                 if (!Directory.Exists(MainFolder))
                 {
-                    folder ??= string.Empty;
                     Directory.CreateDirectory(folder);
                     GrantFolderPermissions(folder);
                 }
@@ -132,7 +131,7 @@ namespace Installer.Services
                 // Depository
                 if (!Directory.Exists(DepositoryPath))
                 {
-                    folder = DepositoryPath ?? string.Empty;
+                    folder = DepositoryPath;
                     Directory.CreateDirectory(folder);
 
                     // Hide Depository
@@ -143,7 +142,7 @@ namespace Installer.Services
                 // Respurces Folder
                 if (!Directory.Exists(ResourceDirectory))
                 {
-                    folder = ResourceDirectory ?? string.Empty;
+                    folder = ResourceDirectory;
                     Directory.CreateDirectory(folder);
 
                     // Main Index File

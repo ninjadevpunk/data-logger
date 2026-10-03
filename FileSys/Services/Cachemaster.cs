@@ -18,7 +18,7 @@ namespace FileSys.Services
         public List<string> Identifiers { get; set; } = [];
         public StreamWriter? Writer { get; set; }
 
-        JsonSerializerSettings settings = new JsonSerializerSettings
+        private readonly JsonSerializerSettings settings = new()
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
@@ -53,6 +53,7 @@ namespace FileSys.Services
             DepositoryPath = Path.Combine(MainFolder, "Depository");
             ResourceDirectory = Path.Combine(DepositoryPath, "res");
             IdentifiersPath = Path.Combine(ResourceDirectory, "_identifiers.index");
+            IdentifiersLoaded();
         }
 
 
@@ -267,23 +268,16 @@ namespace FileSys.Services
 
         public string LogCacheExtension(LogContext context)
         {
-            switch (context)
+            return context switch
             {
-                case LogContext.Qt:
-                    return "qtcache";
-                case LogContext.AndroidStudio:
-                    return "ascache";
-                case LogContext.Coding:
-                    return "cdecache";
-                case LogContext.Graphics:
-                    return "gpscache";
-                case LogContext.Film:
-                    return "flmcache";
-                case LogContext.Flexi:
-                    return "flxcache";
-                default:
-                    return string.Empty;
-            }
+                LogContext.Qt => "qtcache",
+                LogContext.AndroidStudio => "ascache",
+                LogContext.Coding => "cdecache",
+                LogContext.Graphics => "gpscache",
+                LogContext.Film => "flmcache",
+                LogContext.Flexi => "flxcache",
+                _ => string.Empty,
+            };
         }
 
 
@@ -437,7 +431,7 @@ namespace FileSys.Services
                 try
                 {
                     string extenstion = LogCacheExtension(LogContext.Qt);
-                    string root = $@"{ResourceDirectory}\{userId}";
+                    string root = $@"{ResourceDirectory}\{userId}\";
                     List<QtCacheDTO> list = [];
 
                     foreach (string id in Identifiers)
@@ -477,7 +471,7 @@ namespace FileSys.Services
                 try
                 {
                     const string extenstion = "cdecache";
-                    string root = $@"{ResourceDirectory}\{userId}";
+                    string root = $@"{ResourceDirectory}\{userId}\";
                     List<CodingCacheDTO> list = [];
 
                     foreach (string id in Identifiers)
@@ -515,7 +509,7 @@ namespace FileSys.Services
                 try
                 {
                     string extenstion = LogCacheExtension(LogContext.AndroidStudio);
-                    string root = $@"{ResourceDirectory}\{userId}";
+                    string root = $@"{ResourceDirectory}\{userId}\";
                     List<AndroidCacheDTO> list = [];
 
                     foreach (string id in Identifiers)

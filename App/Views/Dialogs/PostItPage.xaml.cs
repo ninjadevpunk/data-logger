@@ -14,6 +14,8 @@ namespace Data_Logger_1._3.Views.Dialogs
         {
             InitializeComponent();
             _postItViewModel = postItViewModel;
+            DataContext = _postItViewModel;
+            _postItViewModel.ActiveEditor = inputText_ERROR;
         }
 
 
@@ -23,16 +25,16 @@ namespace Data_Logger_1._3.Views.Dialogs
             switch (this.tab_POSTIT.SelectedIndex)
             {
                 case 0:
-                    _postItViewModel.ActiveEditor = this.inputText_ERROR;
+                    _postItViewModel.ActiveEditor = inputText_ERROR;
                     break;
                 case 1:
-                    _postItViewModel.ActiveEditor = this.inputText_SOLUTION;
+                    _postItViewModel.ActiveEditor = inputText_SOLUTION;
                     break;
                 case 2:
-                    _postItViewModel.ActiveEditor = this.inputText_SUGGESTION;
+                    _postItViewModel.ActiveEditor = inputText_SUGGESTION;
                     break;
                 case 3:
-                    _postItViewModel.ActiveEditor = this.inputText_COMMENT;
+                    _postItViewModel.ActiveEditor = inputText_COMMENT;
                     break;
             }
         }

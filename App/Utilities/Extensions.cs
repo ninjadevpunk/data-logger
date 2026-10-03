@@ -1,4 +1,6 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Identity;
+using Core.Models;
+using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -10,6 +12,27 @@ namespace Data_Logger_1._3.Utilities
 {
     internal static class Extensions
     {
+        /// <summary>
+        /// Turns user settings into a UserDTO.
+        /// </summary>
+        /// <param name="userSettings">The current user settings</param>
+        /// <returns>A UserDTO</returns>
+        internal static UserDTO UserSettingsToDTO(UserSettings userSettings)
+        {
+            return new UserDTO
+            {
+                UserId = userSettings.Id,
+                ProfilePic = userSettings.ProfilePic,
+                Name = userSettings.Name,
+                Surname = userSettings.Surname,
+                Email = userSettings.Email,
+                IsEmployee = userSettings.IsCompanyEmployee,
+                CompanyName = userSettings.CompanyName,
+                CompanyAddress = userSettings.CompanyAddress,
+                CompanyLogo = userSettings.CompanyLogo,
+            };
+        }
+
         /// <summary>
         /// Indicates a green colour for positive status messages.
         /// </summary>
@@ -33,7 +56,7 @@ namespace Data_Logger_1._3.Utilities
             }
             catch (ResourceReferenceKeyNotFoundException rex)
             {
-                Debug.WriteLine($"{Constants.ExceptionPrefix} TryParseBrush: {rex.Message}");
+                Debug.WriteLine($"ResourceReferenceKeyNotFoundException occurred in TryParseBrush: {rex.Message}");
             }
             catch (Exception ex)
             {

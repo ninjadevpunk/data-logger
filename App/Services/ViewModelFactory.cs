@@ -6,6 +6,7 @@ using Core.Interfaces;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Updater;
@@ -26,7 +27,7 @@ namespace Data_Logger_1._3.Services
         private readonly ICacheService _cacheService;
 
 
-        internal ViewModelFactory(IServiceProvider serviceProvider)
+        public ViewModelFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
             _navigationService = _serviceProvider.GetRequiredService<NavigationService>();
@@ -53,6 +54,8 @@ namespace Data_Logger_1._3.Services
 
 
         // PostIt
+
+        internal CreatePostItViewModel CreatePostItViewModel(LoggerViewModel loggerViewModel) => new(_navigationService, _dataService, loggerViewModel);
 
         internal EditPostItViewModel CreateEditPostItViewModel(LoggerViewModel loggerViewModel, PostItCacheDTO postItCacheDTO) =>
             new(_navigationService, _dataService, loggerViewModel, postItCacheDTO);

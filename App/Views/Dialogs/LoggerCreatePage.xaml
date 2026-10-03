@@ -84,7 +84,7 @@
                                   Visibility="{Binding DisplayPicVisibility}" />
 
                                 <TextBlock x:Name="text_AUTHOR" Grid.Column="1" Style="{DynamicResource text_Placeholder}"
-                                       Text="{Binding Author, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                       Text="{Binding Author}"
                                        Foreground="{DynamicResource BLACK}"
                                        HorizontalAlignment="Left" />
                             </Grid>
@@ -103,7 +103,7 @@
 
                         <!-- APPLICATION -->
                         <components:ComboBoxInputField x:Name="inputText_APP"
-                                                       Enabled="{Binding AppFieldEnabled, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                       Enabled="{Binding AppFieldEnabled}"
                                                        PlaceholderText="Application Name"
                                                        UserTextBoxStyle="{DynamicResource inputText_APP}"
                                                        UserTextBlockStyle="{DynamicResource text_APP_Placeholder}"

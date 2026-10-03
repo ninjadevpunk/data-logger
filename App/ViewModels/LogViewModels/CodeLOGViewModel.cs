@@ -7,7 +7,7 @@ using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    internal class CodeLOGViewModel : LOGViewModel
+    internal sealed class CodeLOGViewModel : LOGViewModel
     {
         private readonly CodingCacheDTO _codingCacheDTO;
 

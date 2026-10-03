@@ -59,7 +59,7 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                                 var qtCreator = (qtCreateViewModel)_loggerCreateViewModel;
                                 _cachemaster.SaveLOGFile(new QtCacheDTO
                                 {
-                                    UserId = user.UserId,
+                                    UserId = user.Id,
                                     ProjectName = qtCreator.ProjectName,
                                     Start = qtCreator.StartDate,
                                     End = qtCreator.EndDate,
@@ -96,7 +96,7 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                             var androidStudio = (AScodeCreateViewModel)_loggerCreateViewModel;
                             _cachemaster.SaveLOGFile(new AndroidCacheDTO
                             {
-                                UserId = user.UserId,
+                                UserId = user.Id,
                                 ProjectName = androidStudio.ProjectName,
                                 Start = androidStudio.StartDate,
                                 End = androidStudio.EndDate,
@@ -141,7 +141,7 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                             var codingCreator = (codeCreateViewModel)_loggerCreateViewModel;
                             _cachemaster.SaveLOGFile(new CodingCacheDTO
                             {
-                                UserId = user.UserId,
+                                UserId = user.Id,
                                 ProjectName = codingCreator.ProjectName,
                                 ApplicationName = codingCreator.ApplicationName,
                                 Start = codingCreator.StartDate,

@@ -35,7 +35,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                     if(File.Exists(user.ProfilePic))
                         File.Delete(user.ProfilePic);
 
-                    _settingsService.Delete(user.UserId);
+                    _settingsService.Delete();
 
                     var accountDeleted = await _authService.DeleteAccountAsync();
 

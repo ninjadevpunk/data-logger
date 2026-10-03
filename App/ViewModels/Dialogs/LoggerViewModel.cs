@@ -6,6 +6,7 @@ using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
 using Data_Logger_1._3.Commands.PostItCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using MVVMEssentials.ViewModels;
 using System.Collections.ObjectModel;
@@ -39,7 +40,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
             _authService = authService ?? throw new ArgumentNullException(nameof(authService), "LoggerViewModel");
             _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService), "LoggerViewModel");
 
-            _userDTO = authService.GetUser();
+            _userDTO = Extensions.UserSettingsToDTO(authService.GetUser());
 
             ProjectName = string.Empty;
             ApplicationName = string.Empty;
@@ -77,13 +78,13 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         public string TypeToolTip { get; set; } = "Please select from this list. Options cannot be modified.";
 
 
-        protected HashSet<string> Projects { get; set; } = [];
+        public HashSet<string> Projects { get; set; } = [];
 
-        protected HashSet<string> Applications { get; set; } = [];
+        public HashSet<string> Applications { get; set; } = [];
 
-        protected HashSet<string> Outputs { get; set; } = [];
+        public HashSet<string> Outputs { get; set; } = [];
 
-        protected HashSet<string> Types { get; set; } = [];
+        public HashSet<string> Types { get; set; } = [];
 
 
 

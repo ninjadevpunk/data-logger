@@ -8,7 +8,7 @@ using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    internal sealed class AndroidLOGViewModel : CodeLOGViewModel
+    internal sealed class AndroidLOGViewModel : LOGViewModel
     {
 
         #region Constructors

@@ -31,7 +31,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
         public bool IsDisposed { get; set; } = false;
 
-        private Timer? _timer;
+        private readonly Timer? _timer;
 
         public ICommand EditCommand { get; set; } = null!;
 
@@ -78,14 +78,11 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                 //NotaryContent = _logCacheDTO.Content;
                 TimeRemaining /= 2;
 
-                _cacheMaster = cacheService ?? throw new ArgumentNullException(nameof(cacheService), "LOGViewModel");
+                _cacheMaster = cacheService;
             }
 
-            StartCountdown();
-
-
+            _timer = new Timer(TimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             Setup(dataService, cacheService, logCacheDTO);
-
         }
 
 
@@ -220,41 +217,28 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-
-
-
-        private void StartCountdown()
-        {
-            _timer = new Timer(TimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-        }
-
         private void TimerCallback(object? state)
         {
             try
             {
-                if (Application.Current != null)
-                {
-                    Application.Current.Dispatcher.Invoke(() =>
+                Application.Current?.Dispatcher.Invoke(() =>
                     {
                         if (!IsDisposed)
                         {
                             if (TimeRemaining == 0)
                             {
                                 DeleteCacheItem();
-                                if(_timer != null)
-                                    _timer.Dispose();
+                                _timer?.Dispose();
                                 IsDisposed = true;
                             }
                             else
                                 TimeRemaining--;
                         }
                     });
-                }
             }
             catch (TaskCanceledException tex)
             {
-                if(_timer != null)
-                    _timer.Dispose();
+                _timer?.Dispose();
 
                 _dataService.HandleExceptionAsync(tex);
             }
@@ -262,7 +246,6 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             {
                 _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"Exception found near TimerCallback(): {ex.Message}");
-
             }
         }
 

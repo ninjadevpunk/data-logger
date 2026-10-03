@@ -44,7 +44,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
         {
             try
             {
-                var userId = _authService.GetUser().UserId;
+                var userId = _authService.GetUser().Id;
 
 
                 switch (_context)

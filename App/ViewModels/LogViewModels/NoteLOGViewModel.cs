@@ -9,7 +9,7 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
-    internal class NoteLOGViewModel : ViewModelBase
+    internal sealed class NoteLOGViewModel : ViewModelBase
     {
         private readonly CheckListDataDTO? _checkListDataDTO;
         private readonly NoteDataDTO? _noteDataDTO;

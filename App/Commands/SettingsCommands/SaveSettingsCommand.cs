@@ -42,7 +42,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             UserSettings? oldUserSettings = null;
             string currentProfilePic = string.Empty;
             UserSettings? currentUserSettings = null;
-            Settings? savedSettings = _settingsService.Load(_settings.User.Id);
+            Settings? savedSettings = _settingsService.Load();
             bool IsNewProfilePic = false;
 
             try
@@ -113,7 +113,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
 
                 // Save new settings to JSON Permanently
-                _settingsService.Save(_settings.User.Id, _settings);
+                _settingsService.Save(_settings);
 
 
                 if (IsNewProfilePic)

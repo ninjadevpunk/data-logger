@@ -40,10 +40,10 @@ namespace Data_Logger_1._3.ViewModels
         public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, ICacheService cacheService, 
             SettingsService settingsService, MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService)
         {
-            var id = authService.GetUser().UserId;
+            var id = authService.GetUser().Id;
             _cacheService = cacheService;
             _settingsService = settingsService;
-            _settings = _settingsService.Load(id) ?? throw new ArgumentNullException(nameof(settingsService), "Settings are null!");
+            _settings = _settingsService.Load() ?? throw new ArgumentNullException(nameof(settingsService), "Settings are null!");
 
             var author = _settings.User;
             author.Id = id;

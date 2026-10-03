@@ -11,7 +11,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
     /// <summary>
     /// LOG ViewModel class for a log cached in the log cache. Specialised for Qt logs.
     /// </summary>
-    internal sealed class QtLOGViewModel : CodeLOGViewModel
+    internal sealed class QtLOGViewModel : LOGViewModel
     {
 
         #region Constructors

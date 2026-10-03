@@ -39,7 +39,7 @@ namespace Data.Services
         {
             var user = _authService.GetUser();
 
-            await UseWriterAsync(writer => writer.SetCurrentUserAsync(user.UserId));
+            await UseWriterAsync(writer => writer.SetCurrentUserAsync(user.Id));
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Data.Services
             if (user == null)
                 return false;
 
-            return await UseWriterAsync(writer => writer.UnsetCurrentUserAsync(user.UserId));
+            return await UseWriterAsync(writer => writer.UnsetCurrentUserAsync(user.Id));
         }
 
 
@@ -92,7 +92,7 @@ namespace Data.Services
 
 
 
-        private async Task<UserDTO> EnsureValidUserAsync()
+        private async Task<UserSettings> EnsureValidUserAsync()
         {
             var user = _authService.GetUser();
 
@@ -123,7 +123,7 @@ namespace Data.Services
 
             return await UseReaderAsync(async reader =>
             {
-                var collection = await reader.ListProjects(user.UserId);
+                var collection = await reader.ListProjects(user.Id);
 
                 foreach (var pro in collection)
                 {
@@ -152,7 +152,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListProjects(appName, user.UserId);
+                var collection = await reader.ListProjects(appName, user.Id);
 
                 foreach (var pro in collection)
                 {
@@ -177,7 +177,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListProjects(category, user.UserId);
+                var collection = await reader.ListProjects(category, user.Id);
 
                 foreach (var pro in collection)
                 {
@@ -204,7 +204,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListApplications(user.UserId);
+                var collection = await reader.ListApplications(user.Id);
 
                 foreach (var app in collection)
                 {
@@ -231,7 +231,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListApplications(category, user.UserId);
+                var collection = await reader.ListApplications(category, user.Id);
 
                 foreach (var app in collection)
                 {
@@ -258,7 +258,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListSubjects(category, user.UserId);
+                var collection = await reader.ListSubjects(category, user.Id);
 
                 foreach (var subject in collection)
                 {
@@ -284,7 +284,7 @@ namespace Data.Services
 
             return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
             {
-                var collection = await reader.ListSubjects(project, user.UserId);
+                var collection = await reader.ListSubjects(project, user.Id);
 
                 foreach (var subject in collection)
                 {
@@ -306,14 +306,14 @@ namespace Data.Services
 
             List<string> SQLITE_SUBJECTS = [];
 
-            var project = await FindProjectAsync(user.UserId, projectName, appName);
+            var project = await FindProjectAsync(user.Id, projectName, appName);
 
             return await UseReaderAsync(async reader =>
             {
                 if (project == null)
                     return [];
 
-                var collection = await reader.ListSubjects(project, user.UserId);
+                var collection = await reader.ListSubjects(project, user.Id);
 
                 foreach (var subject in collection)
                 {
@@ -348,7 +348,7 @@ namespace Data.Services
                 {
                     var user = await EnsureValidUserAsync();
                     var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
-                    return await reader.ListSubjects(project, user.UserId);
+                    return await reader.ListSubjects(project, user.Id);
                 }
                 catch (InvalidOperationException invex)
                 {
@@ -364,7 +364,7 @@ namespace Data.Services
                 Debug.WriteLine($"An error occurred: {ex.Message}");
             }
 
-            return new List<SubjectClass>();
+            return [];
         }
 
         /// <summary>
@@ -777,7 +777,7 @@ namespace Data.Services
         public async Task<SubjectClass?> FindSubjectAsync(string subject, LOG.CATEGORY category, int appID, int projectID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FindSubject(subject, category, user.UserId, appID, projectID));
+            return await UseReaderAsync(reader => reader.FindSubject(subject, category, user.Id, appID, projectID));
         }
 
         /// <summary>
@@ -786,7 +786,7 @@ namespace Data.Services
         public async Task<int> FindSubjectIDAsync(SubjectClass subject)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FindSubjectID(subject, user.UserId));
+            return await UseReaderAsync(reader => reader.FindSubjectID(subject, user.Id));
         }
 
 
@@ -817,7 +817,7 @@ namespace Data.Services
         public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO)
         {
             var user = await EnsureValidUserAsync();
-            return await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO, user.UserId));
+            return await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO, user.Id));
         }
 
         /// <summary>
@@ -828,7 +828,7 @@ namespace Data.Services
         public async Task<(bool Success, NoteDataDTO? NoteDataDTO)> CreateNoteAsync(NoteDTO noteDTO)
         {
             var user = await EnsureValidUserAsync();
-            return await UseWriterAsync(writer => writer.CreateNoteAsync(noteDTO, user.UserId));
+            return await UseWriterAsync(writer => writer.CreateNoteAsync(noteDTO, user.Id));
         }
 
         /// <summary>
@@ -839,7 +839,7 @@ namespace Data.Services
         public async Task<(bool Success, CheckListDataDTO? CheckListDataDTO)> CreateCheckListAsync(CheckListDTO checkListDTO)
         {
             var user = await EnsureValidUserAsync();
-            return await UseWriterAsync(writer => writer.CreateCheckListAsync(checkListDTO, user.UserId));
+            return await UseWriterAsync(writer => writer.CreateCheckListAsync(checkListDTO, user.Id));
         }
 
         /// <summary>
@@ -875,7 +875,7 @@ namespace Data.Services
         public async Task<IEnumerable<LOG>> RetrieveLogsAsync(LogContext context)
         {
             var user = await EnsureValidUserAsync();
-            int id = user.UserId;
+            int id = user.Id;
 
             return await UseReaderAsync<IEnumerable<LOG>>(async reader =>
             {
@@ -887,7 +887,7 @@ namespace Data.Services
                     LogContext.Graphics => await reader.RetrieveGraphicsLogsAsync(id),
                     LogContext.Film => await reader.RetrieveFilmLogsAsync(id),
                     LogContext.Flexi => await reader.RetrieveFlexiNotesLogsAsync(id),
-                    _ => Enumerable.Empty<LOG>()
+                    _ => []
                 };
             });
 
@@ -924,7 +924,7 @@ namespace Data.Services
         public async Task<int> LogCountAsync(LOG.CATEGORY category)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.LogCountAsync(category, user.UserId));
+            return await UseReaderAsync(reader => reader.LogCountAsync(category, user.Id));
         }
 
         /// <summary>
@@ -934,7 +934,7 @@ namespace Data.Services
         public async Task<int> QtLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.QtLogCountAsync(user.UserId));
+            return await UseReaderAsync(reader => reader.QtLogCountAsync(user.Id));
         }
 
         /// <summary>
@@ -944,7 +944,7 @@ namespace Data.Services
         public async Task<int> ASLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.ASLogCountAsync(user.UserId));
+            return await UseReaderAsync(reader => reader.ASLogCountAsync(user.Id));
         }
 
         /// <summary>
@@ -954,7 +954,7 @@ namespace Data.Services
         public async Task<int> FlexiLogCountAsync()
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.FlexiNotesLogCountAsync(user.UserId));
+            return await UseReaderAsync(reader => reader.FlexiNotesLogCountAsync(user.Id));
         }
 
 
@@ -996,7 +996,7 @@ namespace Data.Services
         public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.UserId));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.Id));
         }
         /// <summary>
         /// Searches coding logs within a specific project.
@@ -1004,7 +1004,7 @@ namespace Data.Services
         public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, projectID, user.UserId));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, projectID, user.Id));
         }
 
         /// <summary>
@@ -1013,7 +1013,7 @@ namespace Data.Services
         public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID)
         {
             var user = await EnsureValidUserAsync();
-            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.UserId, projectID, appID));
+            return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.Id, projectID, appID));
         }
 
 

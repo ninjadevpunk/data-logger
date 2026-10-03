@@ -1,5 +1,5 @@
-﻿using Core.DTOs.Identity;
-using Core.Models;
+﻿using Core.Models;
+using Core.Models.App_Models;
 
 namespace Core.Interfaces
 {
@@ -8,8 +8,8 @@ namespace Core.Interfaces
         /// <summary>
         /// Retrieve the logged in user.
         /// </summary>
-        /// <returns>A UserDTO</returns>
-        UserDTO GetUser();
+        /// <returns>User settings</returns>
+        UserSettings GetUser();
 
         /// <summary>
         /// Signs up a user. Throws a <see cref="FormatException"/> if the user enters an invalid email and an

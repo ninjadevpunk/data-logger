@@ -6,7 +6,7 @@ namespace Data_Logger_1._3.Views.ReportPages
     /// <summary>
     /// Interaction logic for ReporterDashboard.xaml
     /// </summary>
-    public partial class ReporterDashboard : Page
+    internal partial class ReporterDashboard : Page
     {
         private readonly ReportDeskViewModel _reportDeskViewModel;
 
