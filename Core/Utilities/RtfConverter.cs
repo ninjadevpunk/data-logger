@@ -2,6 +2,7 @@
 using ReasonableRTF.Enums;
 using ReasonableRTF.Models;
 using System.Diagnostics;
+using System.Text;
 
 namespace Core.Utilities
 {
@@ -14,7 +15,11 @@ namespace Core.Utilities
 
             try
             {
-                RtfResult result = ConvertRtf.ToText(rtfContent);
+                var converter = new RtfToTextConverter();
+
+                byte[] rtfBytes = Encoding.Default.GetBytes(rtfContent);
+
+                RtfResult result = converter.Convert(rtfBytes);
 
                 if (result.Error == RtfError.OK)
                     return (result.Text, null);
@@ -23,7 +28,9 @@ namespace Core.Utilities
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"{Constants.ExceptionPrefix} ToPlainText: {ex.Message}");
+                Debug.WriteLine(
+                    $"{Constants.ExceptionPrefix} ToPlainText: {ex}");
+
                 return (string.Empty, ex);
             }
         }

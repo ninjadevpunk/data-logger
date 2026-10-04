@@ -15,6 +15,7 @@ using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using Data_Logger_1._3.ViewModels.ViewerViewModels;
 using Data_Logger_1._3.Views;
@@ -990,12 +991,15 @@ namespace Data_Logger_1._3.Services
             CheckBackNavigationButton(window);
         }
 
-        public async Task NavigateToPostItEditor(LoggerViewModel logger, PostItCacheDTO postItCacheDTO)
+        public async Task NavigateToPostItEditor(LoggerViewModel logger, CacheStickyPostItViewModel cacheStickyPostItViewModel)
         {
-            NavigationContext = NavContext.EDITOR_POSTIT;
+            if(NavigationContext == NavContext.LOGGER)
+                NavigationContext = NavContext.POSTIT;
+            else if(NavigationContext == NavContext.EDITOR)
+                NavigationContext = NavContext.EDITOR_POSTIT;
 
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-            var postItPage = await uiFactory.CreateEditPostItPage(logger, postItCacheDTO, logger.ApplicationName, logger.ProjectName);
+            var postItPage = await uiFactory.CreateEditPostItPage(logger, cacheStickyPostItViewModel, logger.ApplicationName, logger.ProjectName);
 
             await NavigateToPage(postItPage);
 

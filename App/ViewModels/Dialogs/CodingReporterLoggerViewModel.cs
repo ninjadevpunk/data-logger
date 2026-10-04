@@ -11,7 +11,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
     /// </summary>
     internal abstract class CodingReporterLoggerViewModel : CodingLoggerViewModel
     {
-        public override ICommand AddPostItCommand => new AddDataPostItCommand(_navigationService, _dataService, this);
+        public override ICommand AddPostItCommand => new AddDataPostItCommand(_navigationService, this);
 
         /// <summary>
         /// Updates a log in the database.

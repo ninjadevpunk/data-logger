@@ -23,6 +23,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt
             : base(navigationService, dataService, loggerCreateViewModel)
         {
             _postItCacheDTO = postItCacheDTO;
+            RtfPostIt = postItCacheDTO;
 
             Subject = _postItCacheDTO.Subject;
             DisplayError = RtfConverter.ToPlainText(_postItCacheDTO.Error).Text;
@@ -30,11 +31,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt
             DisplaySuggestion = RtfConverter.ToPlainText(_postItCacheDTO.Suggestion).Text;
             DisplayComment = RtfConverter.ToPlainText(_postItCacheDTO.Comment).Text;
 
-            EditPostItCommand = new EditCachedPostItCommand(_navigationService, _dataService, _loggerCreateViewModel,
-            _postItCacheDTO);
+            EditPostItCommand = new EditPostItCommand(_navigationService, _loggerCreateViewModel, this);
             DeletePostItCommand = new DeletePostItCommand(_loggerCreateViewModel);
         }
 
-        public PostItCacheDTO RtfPostIt => _postItCacheDTO;
+        public PostItCacheDTO RtfPostIt { get; }
     }
 }

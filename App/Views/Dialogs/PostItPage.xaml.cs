@@ -1,5 +1,6 @@
 ﻿using Data_Logger_1._3.ViewModels.Dialogs;
 using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace Data_Logger_1._3.Views.Dialogs
 {
@@ -16,6 +17,10 @@ namespace Data_Logger_1._3.Views.Dialogs
             _postItViewModel = postItViewModel;
             DataContext = _postItViewModel;
             _postItViewModel.ActiveEditor = inputText_ERROR;
+            inputText_ERROR.Document.FontFamily = new FontFamily("Red Hat Display");
+            inputText_SOLUTION.Document.FontFamily = new FontFamily("Red Hat Display");
+            inputText_SUGGESTION.Document.FontFamily = new FontFamily("Red Hat Display");
+            inputText_COMMENT.Document.FontFamily = new FontFamily("Red Hat Display");
         }
 
 

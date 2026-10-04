@@ -57,8 +57,7 @@ namespace Data_Logger_1._3.Services
 
         internal CreatePostItViewModel CreatePostItViewModel(LoggerViewModel loggerViewModel) => new(_navigationService, _dataService, loggerViewModel);
 
-        internal EditPostItViewModel CreateEditPostItViewModel(LoggerViewModel loggerViewModel, PostItCacheDTO postItCacheDTO) =>
-            new(_navigationService, _dataService, loggerViewModel, postItCacheDTO);
+        internal EditPostItViewModel CreateEditPostItViewModel(LoggerViewModel loggerViewModel, CacheStickyPostItViewModel cacheStickyPostItViewModel) => new(_navigationService, _dataService, loggerViewModel, cacheStickyPostItViewModel);
 
 
 

@@ -933,7 +933,7 @@
                     <Button x:Name="button_POSTIT" Style="{DynamicResource PRIMARY}"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Center"
-                            Command="{Binding PostCommand}" >
+                            Command="{Binding PostItCommand}" >
 
                         <TextBlock Style="{DynamicResource text_button01}"
                                    Text="Post" />

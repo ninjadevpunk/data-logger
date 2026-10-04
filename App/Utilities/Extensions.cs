@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Identity;
+﻿using Core.DTOs.Cache;
+using Core.DTOs.Identity;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
@@ -32,6 +33,12 @@ namespace Data_Logger_1._3.Utilities
                 CompanyLogo = userSettings.CompanyLogo,
             };
         }
+
+
+        #region App.xaml
+
+
+
 
         /// <summary>
         /// Indicates a green colour for positive status messages.
@@ -89,6 +96,115 @@ namespace Data_Logger_1._3.Utilities
             return null;
         }
 
+
+
+
+        #endregion
+
+
+
+
+        #region PostIts
+
+
+
+
+        /// <summary>
+        /// Validates PostIt input before a PostIt is created or edited.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <returns>
+        /// <see langword="true"/> when the subject is provided and at least one content
+        /// field contains readable text; otherwise, <see langword="false"/>.
+        /// </returns>
+        internal static bool ValidatePostIt(string subject, string error, string solution, string suggestion, string comment)
+        {
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                MessageBox.Show("Please add a subject.", "No Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            bool allAreEmpty = !RtfConverter.HasContent(error) && !RtfConverter.HasContent(solution) && !RtfConverter.HasContent(suggestion) 
+                && !RtfConverter.HasContent(comment);
+
+            if (allAreEmpty)
+            {
+                MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", 
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PostItCacheDTO"/> from the supplied PostIt data,
+        /// converting the relevant RTF content to plain text and assigning capture times.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <returns>A populated <see cref="PostItCacheDTO"/> containing the PostIt data.</returns>
+        /// <exception cref="Exception">Thrown when the error or solution RTF cannot be converted to plain text.</exception>
+        internal static PostItCacheDTO BuildPostItCacheDTO(string subject, string error, string solution, string suggestion, string comment)
+        {
+            var (errorPlaintext, errorException) = RtfConverter.ToPlainText(error);
+            var (solutionPlaintext, solutionException) = RtfConverter.ToPlainText(solution);
+
+            if (errorException != null)
+                throw errorException;
+
+            if (solutionException != null)
+                throw solutionException;
+
+            return new PostItCacheDTO
+            {
+                Subject = subject,
+                Error = ValidatePostItRtf(error),
+                Solution = ValidatePostItRtf(solution),
+                Suggestion = ValidatePostItRtf(suggestion),
+                Comment = ValidatePostItRtf(comment),
+                ERCaptureTime = IsEmpty(errorPlaintext) ? default : DateTime.Now,
+                SOCaptureTime = IsEmpty(solutionPlaintext) ? default : DateTime.Now
+            };
+        }
+
+
+        /// <summary>
+        /// Takes normal RTF, checks if it has content and returns it if it not white space. Useful for removing 
+        /// formatting marks and other artifacts left over in plain text.
+        /// </summary>
+        /// <param name="rtf">Raw RTF</param>
+        /// <returns>RTF if it has content; otherwise empty <see cref="string"/></returns>
+        internal static string ValidatePostItRtf(string rtf) => RtfConverter.HasContent(rtf) ? rtf : string.Empty;
+
+        /// <summary>
+        /// Checks if plain text is white space or not.
+        /// </summary>
+        /// <param name="fieldText">Plain text</param>
+        /// <returns>False if the field is null or white space; otherwise true</returns>
+        internal static bool IsEmpty(string fieldText) => string.IsNullOrWhiteSpace(fieldText);
+
+
+
+
+        #endregion
+
+
+
+
+
+        #region Notes
+
+
+
         internal static string NoteDateTimeNow() => DateTime.Now.ToString("d MMMM yyyy HH:mm");
 
         internal static string CreatedAndModifiedDate(string creationDate, string modified)
@@ -97,7 +213,25 @@ namespace Data_Logger_1._3.Utilities
             return $"Created on {creationDate}{modified}";
         }
 
+
+
+        #endregion
+
+
+
+        #region Cache
+
+
+
         internal static string CreateCacheIdentifier(DateTime logCacheStartTime) => logCacheStartTime.ToString("yyyyMMdd_HHmmss");
+
+
+
+
+        #endregion
+
+
+
 
         /// <summary>
         /// Gets the number of coding logs in the cache list.

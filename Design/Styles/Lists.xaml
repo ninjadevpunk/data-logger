@@ -694,7 +694,7 @@
                                         HorizontalAlignment="Stretch" >
 
                                     <!-- ERROR -->
-                                    <Border Padding="0 5" Visibility="{Binding ErrorVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" >
+                                    <Border Padding="0 5" Visibility="{Binding ErrorVisible}" >
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -714,7 +714,7 @@
 
 
                                     <!-- SOLUTION -->
-                                    <Border Padding="0 5" Visibility="{Binding SolutionVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding SolutionVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -734,7 +734,7 @@
 
 
                                     <!-- SUGGESTION -->
-                                    <Border Padding="0 5" Visibility="{Binding SuggestionVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding SuggestionVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -754,7 +754,7 @@
 
 
                                     <!-- COMMENT -->
-                                    <Border Padding="0 5" Visibility="{Binding CommentVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding CommentVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -785,7 +785,7 @@
                     <!-- Context Menu -->
                     <ControlTemplate.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
-                            <MenuItem Header="Edit" Command="{Binding EditCommand}" 
+                            <MenuItem Header="Edit" Command="{Binding EditPostItCommand}" 
                                       CommandParameter="{Binding}" />
                         </ContextMenu>
                     </ControlTemplate.Resources>
