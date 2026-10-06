@@ -7,6 +7,7 @@ using Data_Logger_1._3.Commands.EditCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using System.Windows;
 using System.Windows.Input;
@@ -16,23 +17,61 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
     internal sealed class AScodeEditViewModel : CodingLoggerEditViewModel
     {
         private readonly CodingAndroidViewModel _codingAndroidViewModel;
-        private readonly AndroidCacheDTO _androidCacheDTO;
         public override bool AppFieldEnabled => false;
 
         public override ICommand SaveCommand { get; }
         public override ICommand CacheEditCommand { get; }
 
         public AScodeEditViewModel(NavigationService navigationService, CodingAndroidViewModel codingAndroidViewModel, IAuthService authService,
-            IDataService dataService, ICacheService cacheService, AndroidCacheDTO androidCacheDTO, Timer timer)
+            IDataService dataService, ICacheService cacheService, AndroidCacheDTO androidCacheDTO, LOGViewModel logViewModel, int timeRemaining)
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingAndroidViewModel = codingAndroidViewModel;
-            _androidCacheDTO = androidCacheDTO;
-            ApplicationName = Constants.Android;
+            Extensions.InitialiseCodingEditViewModel(_navigationService, _dataService, this, androidCacheDTO);
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
 
+            IsSimple = androidCacheDTO.Scope;
+            IsConsidered = androidCacheDTO.IsConsidered;
+            SyncTime = DateTime.Parse(androidCacheDTO.Sync.ToLongDateString());
+            SyncHours = androidCacheDTO.Sync.Hour;
+            SyncMinutes = androidCacheDTO.Sync.Minute;
+            SyncSeconds = androidCacheDTO.Sync.Second;
+            SyncMilliseconds = androidCacheDTO.Sync.Millisecond;
+
+            GradleDaemonTime = DateTime.Parse(androidCacheDTO.StartingGradleDaemon.ToLongDateString());
+            GradleDaemonHours = androidCacheDTO.StartingGradleDaemon.Hour;
+            GradleDaemonMinutes = androidCacheDTO.StartingGradleDaemon.Minute;
+            GradleDaemonSeconds = androidCacheDTO.StartingGradleDaemon.Second;
+            GradleDaemonMilliseconds = androidCacheDTO.StartingGradleDaemon.Millisecond;
+
+            RunBuildTime = DateTime.Parse(androidCacheDTO.RunBuild.ToLongDateString());
+            RunBuildHours = androidCacheDTO.RunBuild.Hour;
+            RunBuildMinutes = androidCacheDTO.RunBuild.Minute;
+            RunBuildSeconds = androidCacheDTO.RunBuild.Second;
+            RunBuildMilliseconds = androidCacheDTO.RunBuild.Millisecond;
+
+            LoadBuildTime = DateTime.Parse(androidCacheDTO.LoadBuild.ToLongDateString());
+            LoadBuildHours = androidCacheDTO.LoadBuild.Hour;
+            LoadBuildMinutes = androidCacheDTO.LoadBuild.Minute;
+            LoadBuildSeconds = androidCacheDTO.LoadBuild.Second;
+            LoadBuildMilliseconds = androidCacheDTO.LoadBuild.Millisecond;
+
+            ConfigureBuildTime = DateTime.Parse(androidCacheDTO.ConfigureBuild.ToLongDateString());
+            ConfigureBuildHours = androidCacheDTO.ConfigureBuild.Hour;
+            ConfigureBuildMinutes = androidCacheDTO.ConfigureBuild.Minute;
+            ConfigureBuildSeconds = androidCacheDTO.ConfigureBuild.Second;
+            ConfigureBuildMilliseconds = androidCacheDTO.ConfigureBuild.Millisecond;
+
+            AllProjectsTime = DateTime.Parse(androidCacheDTO.AllProjects.ToLongDateString());
+            AllProjectsHours = androidCacheDTO.AllProjects.Hour;
+            AllProjectsMinutes = androidCacheDTO.AllProjects.Minute;
+            AllProjectsSeconds = androidCacheDTO.AllProjects.Second;
+            AllProjectsMilliseconds = androidCacheDTO.AllProjects.Millisecond;
+
+
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, _androidCacheDTO, timer);
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, _cacheService, this, codingAndroidViewModel, 
+                logViewModel, androidCacheDTO, timeRemaining);
         }
 
 

@@ -23,9 +23,12 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         protected CodingLoggerViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService) 
             : base(navigationService, authService, dataService)
         {
+            ApplicationName = Constants.VisualStudio;
+            Output = "C# Application (*.exe)";
+            Type = "Exception";
         }
 
-        
+
 
 
         private int bugsFound;
@@ -67,19 +70,16 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         protected override async Task LoadApplicationsAsync()
         {
-            ApplicationName = Constants.VisualStudio;
             Applications = [.. (await _dataService.InitialiseApplicationsLISTAsync(Category))];
         }
 
         protected override async Task LoadOutputsAsync()
         {
-            Output = "C# Application (*.exe)";
             Outputs = [.. (await _dataService.ListOutputsAsync(LOG.CATEGORY.CODING))];
         }
 
         protected override async Task LoadTypesAsync()
         {
-            Type = "Exception";
             Types = [.. (await _dataService.ListTypesAsync(LOG.CATEGORY.CODING))];
         }
     }

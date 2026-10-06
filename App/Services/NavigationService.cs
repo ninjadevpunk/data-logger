@@ -14,8 +14,8 @@ using Data_Logger_1._3.ViewModels;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using Data_Logger_1._3.ViewModels.ViewerViewModels;
 using Data_Logger_1._3.Views;
@@ -93,6 +93,16 @@ namespace Data_Logger_1._3.Services
         public void SetMainFrame(Frame frame) => _mainWindowFrame = frame;
 
         /// <summary>
+        /// Event triggered when navigating back from the editor page.
+        /// </summary>
+        public event Action<Timer>? BackFromEditor;
+
+        /// <summary>
+        /// The specific instance of Timer belonging to the log cache item requesting the editor.
+        /// </summary>
+        private Timer? _editorTimer;
+
+        /// <summary>
         /// Navigate back in the main frame's history - if possible.
         /// </summary>
         /// <param name="isPostItPage">Specifies if the user is on the PostIt page</param>
@@ -100,8 +110,10 @@ namespace Data_Logger_1._3.Services
         {
             var mainWindowViewModel = _serviceProvider.GetRequiredService<MainWindowViewModel>();
 
-            if (_mainWindowFrame != null && _mainWindowFrame.CanGoBack)
+            if (_mainWindowFrame.CanGoBack)
             {
+                var contextBeforeBack = NavigationContext;
+
                 if (!isPostItPage)
                 {
                     if (NavigationContext == NavContext.POSTIT || NavigationContext == NavContext.EDITOR_POSTIT)
@@ -127,8 +139,7 @@ namespace Data_Logger_1._3.Services
                     }
                     else if (NavigationContext == NavContext.LOGGER || NavigationContext == NavContext.EDITOR)
                     {
-                        var result = MessageBox.Show(
-                            "Your log will not be saved. Are you sure you would like to go back to the dashboard?",
+                        var result = MessageBox.Show("Your log will not be saved. Are you sure you would like to go back to the dashboard?",
                             "You Sure?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
                         if (result == MessageBoxResult.No)
@@ -137,6 +148,15 @@ namespace Data_Logger_1._3.Services
                 }
 
                 _mainWindowFrame.GoBack();
+
+                if (contextBeforeBack == NavContext.EDITOR)
+                {
+                    if (_editorTimer != null)
+                    {
+                        BackFromEditor?.Invoke(_editorTimer);
+                        _editorTimer = null;
+                    }
+                }
             }
 
             NavigationContext = NavigationContext switch
@@ -763,7 +783,7 @@ namespace Data_Logger_1._3.Services
 
         }
 
-        public async Task NavigateToLoggerEditor(LogCacheDTO logCacheDTO, Timer timer)
+        public async Task NavigateToLoggerEditor(LOGViewModel logViewModel, LogCacheDTO logCacheDTO, Timer timer, int timeRemaining)
         {
             try
             {
@@ -772,6 +792,7 @@ namespace Data_Logger_1._3.Services
 
                 try
                 {
+                    _editorTimer = timer;
                     NavigationContext = NavContext.EDITOR;
 
                     var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
@@ -795,7 +816,8 @@ namespace Data_Logger_1._3.Services
 
                                 var codingCacheDTO = (CodingCacheDTO)logCacheDTO;
                                 var codingViewModel = _serviceProvider.GetRequiredService<CodingViewModel>();
-                                var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingViewModel, codingCacheDTO, timer);
+                                var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingViewModel, codingCacheDTO, logViewModel,
+                                    timeRemaining);
 
                                 await NavigateToPage(loggerEditPage, codingEditor, new coding_UserControl());
 

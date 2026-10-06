@@ -47,7 +47,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             _logCacheDTO = logCacheDTO;
 
 #if DEBUG
-            TimeRemaining = 30;
+            TimeRemaining = 90;
 #else
             TimeRemaining = 1200;
 #endif
@@ -60,11 +60,21 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                 TimeRemaining /= 2;
 
             _timer = new Timer(TimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-            DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true, _timer);
-            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, false, _timer);
+
+            // Resume timer when returning from the editor
+            _navigationService.BackFromEditor += OnBackFromEditor;
+
+            DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true);
+            QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, false);
         }
 
-
+        private void OnBackFromEditor(Timer timer)
+        {
+            if (ReferenceEquals(timer, _timer))
+            {
+                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            }
+        }
 
 
 
@@ -190,7 +200,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                         if (!IsDisposed)
                         {
                             if (TimeRemaining == 0)
-                                DeleteCacheItem();
+                                AutoDeleteLogCacheItem();
                             else
                                 TimeRemaining--;
                         }
@@ -212,13 +222,27 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-        protected virtual void DeleteCacheItem()
+        protected abstract void AutoDeleteLogCacheItem();
+
+        protected void CleanUp()
         {
+            _navigationService.BackFromEditor -= OnBackFromEditor;
+
             if (IsDisposed)
                 return;
 
             _timer.Dispose();
             IsDisposed = true;
+        }
+
+        /// <summary>
+        /// Deletes the cache item that has been edited, disposes its timer and unsubscribes Actions.
+        /// </summary>
+        public override void Dispose()
+        {
+            base.Dispose();
+            CleanUp();
+            _cacheMaster.DeleteCacheFile(_logCacheDTO.UserId, startDateCacheId, _logCacheDTO.Context);
         }
 
 

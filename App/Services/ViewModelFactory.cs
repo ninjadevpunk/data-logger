@@ -42,8 +42,9 @@ namespace Data_Logger_1._3.Services
         internal CodeLOGViewModel Create(CodingCacheDTO codingCacheDTO, CodingViewModel codingViewModel, bool isCacheSave = true) =>
             new(_navigationService, codingCacheDTO, codingViewModel, _dataService, _cacheService, isCacheSave);
 
-        internal codeEditViewModel CreateCodeEditViewModel(CodingViewModel codingViewModel, CodingCacheDTO codingCacheDTO, Timer timer) =>
-            new(_navigationService, codingViewModel, _dataService, codingCacheDTO, _authService, _cacheService, timer);
+        internal codeEditViewModel CreateCodeEditViewModel(CodingViewModel codingViewModel, CodingCacheDTO codingCacheDTO, 
+            LOGViewModel logViewModel, int timeRemaining) =>
+            new(_navigationService, codingViewModel, _dataService, codingCacheDTO, _authService, _cacheService, logViewModel, timeRemaining);
 
         internal codeUpdateViewModel CreateCodeUpdateViewModel(CodeReportDeskViewModel codeReportDeskViewModel, CodingDataDTO codingDataDTO)
             => new(_navigationService, _authService, _dataService, codeReportDeskViewModel, codingDataDTO);
