@@ -240,7 +240,7 @@ namespace Data_Logger_1._3.Utilities
         /// <param name="dataService">DataService dependency</param>
         /// <param name="codingViewModel">Cache list ViewModel</param>
         /// <returns>Count of coding logs</returns>
-        public static async Task<string> GetLogCountAsync(IDataService dataService, CodingViewModel codingViewModel)
+        internal static async Task<string> GetLogCountAsync(IDataService dataService, CodingViewModel codingViewModel)
         {
             var count = await dataService.LogCountAsync(LOG.CATEGORY.CODING);
             codingViewModel.LogCount = $"{codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
@@ -250,12 +250,25 @@ namespace Data_Logger_1._3.Utilities
 
 
         /// <summary>
+        /// Gets the number of Qt logs in the cache list.
+        /// </summary>
+        /// <param name="dataService">DataService dependency</param>
+        /// <param name="codingQtViewModel">Qt cache list ViewModel</param>
+        /// <returns>Count of <see cref="QtLOGViewModel"/></returns>
+        internal static async Task<string> GetQtLogCountAsync(IDataService dataService, CodingQtViewModel codingQtViewModel)
+        {
+            var count = await dataService.QtLogCountAsync();
+            codingQtViewModel.LogCount = $"{codingQtViewModel.CacheItems.Count} qt logs cached | {count} total logs";
+            return $"{codingQtViewModel.CacheItems.Count} Logs Cached";
+        }
+
+        /// <summary>
         /// Gets the number of Android Studio logs in the cache list.
         /// </summary>
         /// <param name="dataService">DataService dependency</param>
         /// <param name="codingAndroidViewModel">Android Studio cache list ViewModel</param>
-        /// <returns>Count of Android Studio coding logs</returns>
-        public static async Task<string> GetAndroidLogCountAsync(IDataService dataService, CodingAndroidViewModel codingAndroidViewModel)
+        /// <returns>Count of <see cref="AndroidLOGViewModel"/></returns>
+        internal static async Task<string> GetAndroidLogCountAsync(IDataService dataService, CodingAndroidViewModel codingAndroidViewModel)
         {
             var count = await dataService.ASLogCountAsync();
             codingAndroidViewModel.LogCount = $"{codingAndroidViewModel.CacheItems.Count} android logs cached | {count} total logs";

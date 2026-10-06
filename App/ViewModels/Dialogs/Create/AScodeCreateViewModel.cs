@@ -87,18 +87,18 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
        
-        protected override async Task LoadProjects() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Android)).ToHashSet();
+        protected override async Task LoadProjectsAsync() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Android)).ToHashSet();
 
-        protected override async Task LoadApplications() => Applications = [];
+        protected override async Task LoadApplicationsAsync() => Applications = [];
 
-        protected override async Task LoadOutputs()
+        protected override async Task LoadOutputsAsync()
         {
             Output = "APK (*.apk)";
             Outputs = (await _dataService.ListASOutputsAsync()).ToHashSet();
         }
 
 
-        protected override async Task LoadTypes()
+        protected override async Task LoadTypesAsync()
         {
             Type = "Sync";
             Types = (await _dataService.ListASTypesAsync()).ToHashSet();
@@ -117,7 +117,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
 
-        public override async Task UpdateLogCount()
+        public override async Task UpdateLogCountAsync()
         {
             LogCount = await Extensions.GetAndroidLogCountAsync(_dataService, _codingAndroidViewModel);
         }

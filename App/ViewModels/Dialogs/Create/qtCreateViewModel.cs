@@ -5,6 +5,7 @@ using Data.Interfaces;
 using Data_Logger_1._3.Commands.CacheCommands;
 using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using FileSys.Interfaces;
 using System.Windows.Input;
@@ -14,7 +15,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
     internal sealed class qtCreateViewModel : CodingLoggerCreateViewModel
     {
         public override LogContext Context => LogContext.Qt;
-        private readonly CodingQtViewModel _qtviewModel;
+        private readonly CodingQtViewModel _codingQtViewModel;
         public override bool AppFieldEnabled => false;
         public override ICommand SaveCommand { get; }
         public override ICommand AnnotateCommand { get; }
@@ -23,41 +24,39 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
             IDataService dataService, ICacheService cacheService) 
             : base(navigationService, authService, dataService, cacheService)
         {
-            _qtviewModel = codingQtViewModel;
+            _codingQtViewModel = codingQtViewModel;
 
             ApplicationName = Constants.Qt;
             ApplicationToolTip = "This field cannot be changed. Only Qt logs are allowed in this tab.";
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            AnnotateCommand = new AnnotateCommand(_navigationService, this, _qtviewModel, _authService, _dataService,
+            AnnotateCommand = new AnnotateCommand(_navigationService, this, _codingQtViewModel, _authService, _dataService,
             _cacheService, Context);
         }
 
 
-        protected override async Task LoadProjects() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Qt)).ToHashSet();
+        protected override async Task LoadProjectsAsync() => Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Constants.Qt))];
 
-        protected override async Task LoadApplications() => Applications = [];
+        protected override async Task LoadApplicationsAsync() => Applications = [];
 
-        protected override async Task LoadOutputs()
+        protected override async Task LoadOutputsAsync()
         {
             Output = "QtQuick Application";
-            Outputs = (await _dataService.ListQtOutputsAsync()).ToHashSet();
+            Outputs = [.. (await _dataService.ListQtOutputsAsync())];
         }
 
 
-        protected override async Task LoadTypes()
+        protected override async Task LoadTypesAsync()
         {
             Type = "Build";
-            Types = (await _dataService.ListQtTypesAsync()).ToHashSet();
+            Types = [.. (await _dataService.ListQtTypesAsync())];
         }
 
 
         #region Log Count
 
-        public override async Task UpdateLogCount()
+        public override async Task UpdateLogCountAsync()
         {
-            var count = await _dataService.QtLogCountAsync();
-            LogCount = $"{_qtviewModel.CacheItems.Count} Logs Cached";
-            _qtviewModel.LogCount = $"{_qtviewModel.CacheItems.Count} qt logs cached | {count} total logs";
+            LogCount = await Extensions.GetQtLogCountAsync(_dataService, _codingQtViewModel);
         }
 
         #endregion

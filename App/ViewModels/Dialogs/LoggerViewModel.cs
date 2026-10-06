@@ -437,35 +437,35 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         /// Loads the list of projects from the database asynchronously.
         /// </summary>
         /// <returns></returns>
-        protected abstract Task LoadProjects();
+        protected abstract Task LoadProjectsAsync();
 
 
         /// <summary>
         /// Loads the list of applications from the database asynchronously.
         /// </summary>
         /// <returns></returns>
-        protected abstract Task LoadApplications();
+        protected abstract Task LoadApplicationsAsync();
 
 
         /// <summary>
         /// Loads the list of outputs from the database asynchronously.
         /// </summary>
         /// <returns></returns>
-        protected abstract Task LoadOutputs();
+        protected abstract Task LoadOutputsAsync();
 
 
         /// <summary>
         /// Loads the list of types from the database asynchronously.
         /// </summary>
         /// <returns></returns>
-        protected abstract Task LoadTypes();
+        protected abstract Task LoadTypesAsync();
 
 
         /// <summary>
         /// Updates the log count asynchronously. This is used to display the number of logs in the cache/database.
         /// </summary>
         /// <returns></returns>
-        public abstract Task UpdateLogCount();
+        public abstract Task UpdateLogCountAsync();
 
 
 

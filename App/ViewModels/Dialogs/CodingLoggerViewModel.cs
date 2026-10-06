@@ -53,31 +53,31 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         internal override async Task AutoStartAsync()
         {
-            await LoadProjects();
-            await LoadApplications();
-            await LoadOutputs();
-            await LoadTypes();
-            await UpdateLogCount();
+            await LoadProjectsAsync();
+            await LoadApplicationsAsync();
+            await LoadOutputsAsync();
+            await LoadTypesAsync();
+            await UpdateLogCountAsync();
         }
 
-        protected override async Task LoadProjects()
+        protected override async Task LoadProjectsAsync()
         {
             Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Category))];
         }
 
-        protected override async Task LoadApplications()
+        protected override async Task LoadApplicationsAsync()
         {
             ApplicationName = Constants.VisualStudio;
             Applications = [.. (await _dataService.InitialiseApplicationsLISTAsync(Category))];
         }
 
-        protected override async Task LoadOutputs()
+        protected override async Task LoadOutputsAsync()
         {
             Output = "C# Application (*.exe)";
             Outputs = [.. (await _dataService.ListOutputsAsync(LOG.CATEGORY.CODING))];
         }
 
-        protected override async Task LoadTypes()
+        protected override async Task LoadTypesAsync()
         {
             Type = "Exception";
             Types = [.. (await _dataService.ListTypesAsync(LOG.CATEGORY.CODING))];
