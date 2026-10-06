@@ -763,7 +763,7 @@ namespace Data_Logger_1._3.Services
 
         }
 
-        public async Task NavigateToLoggerEditor(LogCacheDTO logCacheDTO)
+        public async Task NavigateToLoggerEditor(LogCacheDTO logCacheDTO, Timer timer)
         {
             try
             {
@@ -795,7 +795,7 @@ namespace Data_Logger_1._3.Services
 
                                 var codingCacheDTO = (CodingCacheDTO)logCacheDTO;
                                 var codingViewModel = _serviceProvider.GetRequiredService<CodingViewModel>();
-                                var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingViewModel, codingCacheDTO);
+                                var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingViewModel, codingCacheDTO, timer);
 
                                 await NavigateToPage(loggerEditPage, codingEditor, new coding_UserControl());
 

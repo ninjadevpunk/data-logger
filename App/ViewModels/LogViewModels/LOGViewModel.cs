@@ -24,6 +24,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         protected readonly IDataService _dataService;
         protected readonly ICacheService _cacheMaster;
         protected readonly bool _isCacheSave;
+        protected readonly Timer _timer;
 
         public bool IsDisposed { get; set; } = false;
 
@@ -35,7 +36,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
 
 
-        public LOGViewModel(NavigationService navigationService, LogCacheDTO logCacheDTO, LogCacheViewModel logCacheViewModel, 
+        public LOGViewModel(NavigationService navigationService, LogCacheDTO logCacheDTO, LogCacheViewModel logCacheViewModel,
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
         {
             _isCacheSave = isCacheSave;

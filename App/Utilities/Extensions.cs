@@ -5,6 +5,7 @@ using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;

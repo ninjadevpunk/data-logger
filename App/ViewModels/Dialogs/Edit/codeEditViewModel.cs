@@ -20,7 +20,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
         private readonly CodingViewModel _codingViewModel;
 
         public codeEditViewModel(NavigationService navigationService, CodingViewModel codingViewModel, IDataService dataService,
-            CodingCacheDTO codingCacheDTO, IAuthService authService, ICacheService cacheService)
+            CodingCacheDTO codingCacheDTO, IAuthService authService, ICacheService cacheService, Timer timer)
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingViewModel = codingViewModel;
@@ -50,7 +50,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
             ApplicationOpened = codingCacheDTO.Success;
 
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, codingCacheDTO);
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, codingCacheDTO, timer);
 
         }
 

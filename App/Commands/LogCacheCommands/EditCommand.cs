@@ -1,5 +1,4 @@
 ﻿using Core.DTOs.Cache;
-using Core.Enums;
 using Core.Utilities;
 using Data_Logger_1._3.Services;
 using MVVMEssentials.Commands;
@@ -11,18 +10,22 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
     {
         private readonly LogCacheDTO _logCacheDTO;
         private readonly NavigationService _navigationService;
+        private readonly Timer _timer;
 
-        public EditCommand(LogContext logContext, NavigationService navigationService, LogCacheDTO logCacheDTO)
+        public EditCommand(NavigationService navigationService, LogCacheDTO logCacheDTO, Timer timer)
         {
             _logCacheDTO = logCacheDTO;
             _navigationService = navigationService;
+            _timer = timer;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                await _navigationService.NavigateToLoggerEditor(_logCacheDTO);
+                if (!_timer.Change(Timeout.Infinite, Timeout.Infinite))
+                    throw new InvalidOperationException("Timer not paused!");
+                await _navigationService.NavigateToLoggerEditor(_logCacheDTO, _timer);
             }
             catch (Exception ex)
             {

@@ -15,15 +15,17 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
         private readonly IDataService _dataService;
         private readonly LoggerViewModel _loggerCreateViewModel;
         private readonly LogCacheDTO _logCacheDTO;
+        private readonly Timer _timer;
 
 
         public EditAnnotateCommand(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel,
-            LogCacheDTO logCacheDTO)
+            LogCacheDTO logCacheDTO, Timer timer)
         {
             _navigationService = navigationService;
             _dataService = dataService;
             _loggerCreateViewModel = loggerCreateViewModel;
             _logCacheDTO = logCacheDTO;
+            _timer = timer;
         }
 
 
@@ -31,7 +33,9 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
         {
             try
             {
-                // TODO: Implement editing a cached log. CreateViewerViewModel a DTO from the logger UI and replace the old DTO with it by creating a
+                if (!_timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1)))
+                    throw new InvalidOperationException("Timer not resumed!");
+                // TODO: Implement editing a cached log. Create a DTO from the logger UI and replace the old DTO with it by creating a
                 // new LOGViewModel containing the new edited DTO.
 
                 await _navigationService.NavigateToLogCachePage(_logCacheDTO.Context);

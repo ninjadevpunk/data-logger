@@ -12,11 +12,11 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
     /// </summary>
     internal sealed class AndroidLOGViewModel : LOGViewModel
     {
-        public AndroidLOGViewModel(NavigationService navigationService, AndroidCacheDTO androidCacheDTO, CodingAndroidViewModel codingAndroidViewModel, 
-            IDataService dataService, ICacheService cacheService, bool isCacheSave = true) 
+        public AndroidLOGViewModel(NavigationService navigationService, AndroidCacheDTO androidCacheDTO, CodingAndroidViewModel codingAndroidViewModel,
+            IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
             : base(navigationService, androidCacheDTO, codingAndroidViewModel, dataService, cacheService, isCacheSave)
         {
-            EditCommand = new EditCommand(LogContext.AndroidStudio, navigationService, androidCacheDTO);
+            EditCommand = new EditCommand(navigationService, androidCacheDTO, _timer);
             ViewCommand = new ViewCommand(_navigationService, androidCacheDTO);
 
             if (_isCacheSave)

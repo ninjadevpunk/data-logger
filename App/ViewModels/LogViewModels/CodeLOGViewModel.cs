@@ -12,18 +12,16 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
     /// </summary>
     internal sealed class CodeLOGViewModel : LOGViewModel
     {
-        public CodeLOGViewModel(NavigationService navigationService, CodingCacheDTO codingCacheDTO, CodingViewModel codingViewModel, 
+        public CodeLOGViewModel(NavigationService navigationService, CodingCacheDTO codingCacheDTO, CodingViewModel codingViewModel,
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
             : base(navigationService, codingCacheDTO, codingViewModel, dataService, cacheService, isCacheSave)
         {
-            _codingCacheDTO = codingCacheDTO;
-
-            EditCommand = new EditCommand(LOGViewModelContext, navigationService, _codingCacheDTO);
+            EditCommand = new EditCommand(navigationService, codingCacheDTO, _timer);
             ViewCommand = new ViewCommand(_navigationService, codingCacheDTO);
-            
+
             if (_isCacheSave)
                 _cacheMaster.SaveCodeCache(codingCacheDTO);
-            }
+        }
 
         protected override async void DeleteCacheItem()
         {

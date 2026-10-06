@@ -22,8 +22,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
         public override ICommand SaveCommand { get; }
         public override ICommand CacheEditCommand { get; }
 
-        public AScodeEditViewModel(NavigationService navigationService, CodingAndroidViewModel codingAndroidViewModel, IAuthService authService, 
-            IDataService dataService, ICacheService cacheService, AndroidCacheDTO androidCacheDTO) 
+        public AScodeEditViewModel(NavigationService navigationService, CodingAndroidViewModel codingAndroidViewModel, IAuthService authService,
+            IDataService dataService, ICacheService cacheService, AndroidCacheDTO androidCacheDTO, Timer timer)
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingAndroidViewModel = codingAndroidViewModel;
@@ -32,7 +32,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
             ApplicationToolTip = "This field cannot be changed. Only Android Studio logs are allowed in this tab.";
 
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, _androidCacheDTO);
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, _androidCacheDTO, timer);
         }
 
 
