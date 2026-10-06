@@ -4,11 +4,10 @@ using Data.Interfaces;
 using Data_Logger_1._3.Commands.DLSFileCommands;
 using Data_Logger_1._3.Commands.EditCacheCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
-using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
-using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
-using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
@@ -20,38 +19,14 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
         private readonly CodingViewModel _codingViewModel;
 
         public codeEditViewModel(NavigationService navigationService, CodingViewModel codingViewModel, IDataService dataService,
-            CodingCacheDTO codingCacheDTO, IAuthService authService, ICacheService cacheService, Timer timer)
+            CodingCacheDTO codingCacheDTO, IAuthService authService, ICacheService cacheService, LOGViewModel logViewModel, int timeRemaining)
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingViewModel = codingViewModel;
-            ProjectName = codingCacheDTO.ProjectName;
-            ApplicationName = codingCacheDTO.ApplicationName;
-
-            StartDate = codingCacheDTO.Start;
-            StartHours = StartDate.Hour;
-            StartMinutes = StartDate.Minute;
-            StartSeconds = StartDate.Second;
-            StartMilliseconds = StartDate.Millisecond;
-
-            EndDate = codingCacheDTO.End;
-            EndHours = EndDate.Hour;
-            EndMinutes = EndDate.Minute;
-            EndSeconds = EndDate.Second;
-            EndMilliseconds = EndDate.Millisecond;
-
-            Output = codingCacheDTO.OutputName;
-            Type = codingCacheDTO.TypeName;
-            PostIts = new ObservableCollection<StickyPostItViewModel>(codingCacheDTO.PostIts.Select(p =>
-            {
-                var postIt = (PostItCacheDTO)p;
-                return new CacheStickyPostItViewModel(_navigationService, _dataService, this, postIt);
-            }));
-            BugsFound = codingCacheDTO.Bugs;
-            ApplicationOpened = codingCacheDTO.Success;
-
+            Extensions.InitialiseCodingEditViewModel(_navigationService, _dataService, this, codingCacheDTO);
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, codingCacheDTO, timer);
-
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, _cacheService, this, codingViewModel, logViewModel, 
+                codingCacheDTO, timeRemaining);
         }
 
 
@@ -70,8 +45,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
         #endregion
-
-
 
     }
 }

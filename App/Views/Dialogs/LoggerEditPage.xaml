@@ -238,7 +238,7 @@
 
                     <Button x:Name="button_EDIT" Style="{DynamicResource PRIMARY}"
                             HorizontalAlignment="Right" 
-                            Command="{Binding EditCommand}" >
+                            Command="{Binding CacheEditCommand}" >
 
                         <TextBlock Style="{DynamicResource text_button01}"
                                    Text="Edit" />

@@ -62,10 +62,9 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 End = qtCreateViewModel.EndDate,
                                 OutputName = qtCreateViewModel.Output,
                                 TypeName = qtCreateViewModel.Type,
-                                Bugs = qtCreateViewModel.BugsFound,
-                                Success = qtCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
+                                    UserId = userId,
                                     Subject = postIt.Subject,
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
@@ -73,7 +72,9 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                     Comment = postIt.RtfPostIt.Comment,
                                     ERCaptureTime = postIt.RtfPostIt.ERCaptureTime,
                                     SOCaptureTime = postIt.RtfPostIt.SOCaptureTime
-                                }).ToList()
+                                }).ToList(),
+                                Bugs = qtCreateViewModel.BugsFound,
+                                Success = qtCreateViewModel.ApplicationOpened,
                             };
 
                             var qtCodingViewModel = (CodingQtViewModel)_dashboard;
@@ -97,10 +98,9 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 End = androidCreateViewModel.EndDate,
                                 OutputName = androidCreateViewModel.Output,
                                 TypeName = androidCreateViewModel.Type,
-                                Bugs = androidCreateViewModel.BugsFound,
-                                Success = androidCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
+                                    UserId = userId,
                                     Subject = postIt.Subject,
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
@@ -109,7 +109,10 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                     ERCaptureTime = postIt.RtfPostIt.ERCaptureTime,
                                     SOCaptureTime = postIt.RtfPostIt.SOCaptureTime
                                 }).ToList(),
+                                Bugs = androidCreateViewModel.BugsFound,
+                                Success = androidCreateViewModel.ApplicationOpened,
                                 Scope = androidCreateViewModel.IsSimple,
+                                IsConsidered = androidCreateViewModel.IsConsidered,
                                 Sync = androidCreateViewModel.SyncTime,
                                 StartingGradleDaemon = androidCreateViewModel.GradleDaemonTime,
                                 RunBuild = androidCreateViewModel.RunBuildTime,
@@ -143,6 +146,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 Success = codeCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
+                                    UserId = userId,
                                     Subject = postIt.Subject,
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,

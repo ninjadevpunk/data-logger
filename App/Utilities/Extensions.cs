@@ -1,11 +1,16 @@
-﻿using Core.DTOs.Cache;
+using Core.DTOs.Cache;
 using Core.DTOs.Identity;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Interfaces;
+using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.Dialogs;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Media;
@@ -233,6 +238,58 @@ namespace Data_Logger_1._3.Utilities
 
 
 
+        internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService, 
+            CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
+        {
+            IReadOnlyList<PostItCacheDTO> postIts = [.. codingCacheDTO.PostIts.Cast<PostItCacheDTO>()];
+
+            codingLoggerViewModel.ProjectName = codingCacheDTO.ProjectName;
+            codingLoggerViewModel.ApplicationName = codingCacheDTO.ApplicationName;
+
+            codingLoggerViewModel.StartTime = DateTime.Parse(codingCacheDTO.Start.Hour + ":" + codingCacheDTO.Start.Minute + ":" + codingCacheDTO.Start.Second + "." + codingCacheDTO.Start.Millisecond);
+            codingLoggerViewModel.StartHours = codingCacheDTO.Start.Hour;
+            codingLoggerViewModel.StartMinutes = codingCacheDTO.Start.Minute;
+            codingLoggerViewModel.StartSeconds = codingCacheDTO.Start.Second;
+            codingLoggerViewModel.StartMilliseconds = codingCacheDTO.Start.Millisecond;
+            codingLoggerViewModel.StartDate = DateTime.Parse(codingCacheDTO.Start.ToLongDateString());
+
+            codingLoggerViewModel.EndTime = DateTime.Parse(codingCacheDTO.End.Hour + ":" + codingCacheDTO.End.Minute + ":" + codingCacheDTO.End.Second + "." + codingCacheDTO.End.Millisecond);
+            codingLoggerViewModel.EndHours = codingCacheDTO.End.Hour;
+            codingLoggerViewModel.EndMinutes = codingCacheDTO.End.Minute;
+            codingLoggerViewModel.EndSeconds = codingCacheDTO.End.Second;
+            codingLoggerViewModel.EndMilliseconds = codingCacheDTO.End.Millisecond;
+            codingLoggerViewModel.EndDate = DateTime.Parse(codingCacheDTO.End.ToLongDateString());
+
+            codingLoggerViewModel.Output = codingCacheDTO.OutputName;
+            codingLoggerViewModel.Type = codingCacheDTO.TypeName;
+            codingLoggerViewModel.PostIts = new ObservableCollection<StickyPostItViewModel>(postIts.Select(postIt =>
+            new CacheStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt)));
+
+            codingLoggerViewModel.BugsFound = codingCacheDTO.Bugs;
+            codingLoggerViewModel.ApplicationOpened = codingCacheDTO.Success;
+        }
+
+        internal static void InitialiseCodingUpdateViewModel(NavigationService navigationService, IDataService dataService,
+            CodingLoggerViewModel codingLoggerViewModel, CodingDataDTO codingDataDTO)
+            {
+                var postIt = new PostItCacheDTO
+                {
+                    UserId = p.UserId,
+                    Subject = p.Subject,
+                    Error = p.Error,
+                    Solution = p.Solution,
+                    Suggestion = p.Suggestion,
+                    Comment = p.Comment,
+                    ERCaptureTime = p.ERCaptureTime,
+                    SOCaptureTime = p.SOCaptureTime
+                };
+
+                return new CacheStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt);
+            }));
+
+            codingLoggerViewModel.BugsFound = codingCacheDTO.Bugs;
+            codingLoggerViewModel.ApplicationOpened = codingCacheDTO.Success;
+        }
 
         /// <summary>
         /// Gets the number of coding logs in the cache list.

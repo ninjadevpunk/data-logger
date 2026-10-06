@@ -117,6 +117,7 @@ namespace Data_Logger_1._3.Commands.DLSFileCommands
                                 Bugs = androidStudio.BugsFound,
                                 Success = androidStudio.ApplicationOpened,
                                 Scope = androidStudio.IsSimple,
+                                IsConsidered = androidStudio.IsConsidered,
                                 Sync = androidStudio.SyncTime,
                                 StartingGradleDaemon = androidStudio.GradleDaemonTime,
                                 RunBuild = androidStudio.RunBuildTime,

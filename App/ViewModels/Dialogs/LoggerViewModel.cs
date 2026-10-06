@@ -469,12 +469,12 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
 
 
-        private void UpdateDateControl()
+        protected void UpdateDateControl()
         {
             StartDate = DateTime.Parse(StartDate.Date.ToLongDateString() + " " + StartHours + ":" + StartMinutes + ":" + StartSeconds + "." + StartMilliseconds);
         }
 
-        private void UpdateEndDateControl()
+        protected void UpdateEndDateControl()
         {
             EndDate = DateTime.Parse(EndDate.Date.ToLongDateString() + " " + EndHours + ":" + EndMinutes + ":" + EndSeconds + "." + EndMilliseconds);
         }

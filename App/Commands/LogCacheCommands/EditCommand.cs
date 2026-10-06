@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.Cache;
 using Core.Utilities;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using MVVMEssentials.Commands;
 using System.Diagnostics;
 
@@ -25,7 +26,9 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
             {
                 if (!_timer.Change(Timeout.Infinite, Timeout.Infinite))
                     throw new InvalidOperationException("Timer not paused!");
-                await _navigationService.NavigateToLoggerEditor(_logCacheDTO, _timer);
+
+                if(parameter is LOGViewModel logViewModel)
+                    await _navigationService.NavigateToLoggerEditor(logViewModel, _logCacheDTO, _timer, (int)logViewModel.TimeRemaining);
             }
             catch (Exception ex)
             {

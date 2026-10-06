@@ -24,9 +24,9 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         }
 
 
-        protected override async void DeleteCacheItem()
+        protected override async void AutoDeleteLogCacheItem()
         {
-            base.DeleteCacheItem();
+            CleanUp();
             DeleteCacheItemCommand.Execute(this);
         }
     }

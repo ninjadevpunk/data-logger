@@ -7,6 +7,7 @@ using Data_Logger_1._3.Commands.EditCacheCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using System.Windows.Input;
 
@@ -15,7 +16,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
     internal sealed class qtEditViewModel : CodingLoggerEditViewModel
     {
         private readonly CodingQtViewModel _codingQtViewModel;
-        private readonly QtCacheDTO _qtCacheDTO;
         public override bool AppFieldEnabled => false;
 
         public override ICommand CacheEditCommand { get; }
@@ -23,17 +23,17 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
         public qtEditViewModel(NavigationService navigationService, CodingQtViewModel codingQtViewModel, IAuthService authService, IDataService dataService, 
-            ICacheService cacheService, QtCacheDTO qtCacheDTO, Timer timer) 
+            ICacheService cacheService, QtCacheDTO qtCacheDTO, LOGViewModel logViewModel, int timeRemaining) 
             : base(navigationService, authService, dataService, cacheService)
         {
             _codingQtViewModel = codingQtViewModel;
-            _qtCacheDTO = qtCacheDTO;
+            Extensions.InitialiseCodingEditViewModel(_navigationService, _dataService, this, qtCacheDTO);
 
-            ApplicationName = Constants.Qt;
             ApplicationToolTip = "This field cannot be changed. Only Qt logs are allowed in this tab.";
 
             SaveCommand = new SaveCommand(this, _authService, _dataService, _cacheService);
-            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, this, _qtCacheDTO, timer);
+            CacheEditCommand = new EditAnnotateCommand(_navigationService, _dataService, _cacheService, this, codingQtViewModel, logViewModel, 
+                qtCacheDTO, timeRemaining);
         }
 
 
