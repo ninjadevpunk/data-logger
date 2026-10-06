@@ -33,66 +33,10 @@ namespace Core.Models.App_Models
 
 
 
-
         public ProjectClass()
         {
         }
 
-        public ProjectClass(string projectName)
-        {
-            Name = projectName;
-        }
-
-        public ProjectClass(string projectName, ApplicationClass app)
-        {
-            Name = projectName;
-            Application = app;
-        }
-
-        public ProjectClass(ACCOUNT user, string name, ApplicationClass application)
-        {
-            accountID = user.accountID;
-            Name = name;
-            Application = application;
-        }
-
-        public ProjectClass(int projectID, string name, ApplicationClass application)
-        {
-            this.projectID = projectID;
-            Name = name;
-            Application = application;
-            Category = LOG.CATEGORY.CODING;
-        }
-
-
-
-        public ProjectClass(int projectID, ACCOUNT user, string name, ApplicationClass application, LOG.CATEGORY category)
-        {
-            this.projectID = projectID;
-            User = user;
-            Name = name;
-            Application = application;
-            Category = category;
-        }
-
-        public ProjectClass(int projectID, ACCOUNT user, string name, ApplicationClass application, LOG.CATEGORY category, bool isDefault)
-        {
-            this.projectID = projectID;
-            User = user;
-            Name = name;
-            Application = application;
-            Category = category;
-            IsDefault = isDefault;
-        }
-        
-        public ProjectClass(ACCOUNT user, string name, ApplicationClass application, LOG.CATEGORY category, bool isDefault)
-        {
-            User = user;
-            Name = name;
-            Application = application;
-            Category = category;
-            IsDefault = isDefault;
-        }
 
         public override bool Equals(object? obj)
         {

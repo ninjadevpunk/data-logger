@@ -20,7 +20,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
         {
         }
 
-        public override Task UpdateLogCount()
+        public override Task UpdateLogCountAsync()
         {
             throw new NotImplementedException();
         }

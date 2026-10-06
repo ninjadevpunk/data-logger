@@ -1,11 +1,15 @@
 ﻿using Core.Enums;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.LogViewModels;
 
 
 namespace Data_Logger_1._3.ViewModels.Dashboard
 {
-    internal class CodingAndroidViewModel : CodingViewModel
+    /// <summary>
+    /// Represents UI managing Android log cache.
+    /// </summary>
+    internal class CodingAndroidViewModel : LogCacheViewModel
     {
         public override LogContext Context => LogContext.AndroidStudio;
 
@@ -14,28 +18,19 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
             CacheItems = [];
         }
 
-        public CodingAndroidViewModel(string logCount, NavigationService navigationService, IDataService dataService) : base(navigationService, dataService)
+
+        internal override async Task UpdateLogCount()
         {
-
-            LogCount = logCount;
-
+            var count = await _dataService.ASLogCountAsync();
+            if (count == -1)
+                throw new InvalidOperationException($"Count failed in {LogContext.Coding} UpdateLogCount");
+            LogCount = $"{CacheItems.Count} android logs cached | {count} total logs";
         }
 
-
-        public async Task AutoStart()
-        {
-            if (CacheItems is not null)
-                await UpdateLogCount();
-        }
-
-        public override async Task UpdateLogCount()
-        {
-            if (CacheItems is not null)
-            {
-                var count = await _dataService.ASLogCountAsync();
-                LogCount = $"{CacheItems.Count} android logs cached | {count} total logs";
-            }
-        }
+        /// <summary>
+        /// Retrieves Android log cache as read-only list.
+        /// </summary>
+        public IReadOnlyList<AndroidLOGViewModel> CodingCacheItems => [.. CacheItems.Cast<AndroidLOGViewModel>()];
 
     }
 }

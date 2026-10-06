@@ -61,10 +61,10 @@ namespace Data.Interfaces
 
 
         /// <summary>
-        /// Inserts a log cache DTO into the database.
+        /// Creates a log entity in the database from data in a DTO.
         /// </summary>
-        /// <param name="logCacheDTO">The log DTO to insert.</param>
-        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
+        /// <param name="logCacheDTO">The log DTO for log info</param>
+        /// <returns>Returns true if the log was successfully created; otherwise false.</returns>
         Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO);
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace Data.Interfaces
         Task<int> FlexiLogCountAsync();
 
         Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText);
-        Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID);
-        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID);
+        Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, string projectName);
+        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName);
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText);
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID);
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID);

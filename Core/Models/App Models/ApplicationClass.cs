@@ -30,61 +30,6 @@ namespace Core.Models.App_Models
         {
         }
 
-        public ApplicationClass(string applicationName)
-        {
-            Name = applicationName;
-        }
-
-        public ApplicationClass(int appID, string name)
-        {
-            this.appID = appID;
-            Name = name;
-        }
-
-        public ApplicationClass(ACCOUNT user, string name)
-        {
-            accountID = user.accountID;
-            Name = name;
-        }
-
-        public ApplicationClass(int appID, string name, LOG.CATEGORY category)
-        {
-            this.appID = appID;
-            Name = name;
-            Category = category;
-        }
-
-        public ApplicationClass(int appID, ACCOUNT user, string name, bool isDefault)
-        {
-            this.appID = appID;
-            Name = name;
-            IsDefault = isDefault;
-        }
-
-        public ApplicationClass(int appID, ACCOUNT user, string name, LOG.CATEGORY category)
-        {
-            this.appID = appID;
-            User = user;
-            Name = name;
-            Category = category;
-        }
-
-        public ApplicationClass(int appID, ACCOUNT user, string name, LOG.CATEGORY category, bool isDefault)
-        {
-            this.appID = appID;
-            User = user;
-            Name = name;
-            Category = category;
-            IsDefault = isDefault;
-        }
-
-        public ApplicationClass(ACCOUNT user, string name, LOG.CATEGORY category, bool isDefault)
-        {
-            User = user;
-            Name = name;
-            Category = category;
-            IsDefault = isDefault;
-        }
 
         public override bool Equals(object? obj)
         {

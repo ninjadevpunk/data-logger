@@ -213,10 +213,10 @@ namespace Data_Logger_1._3.Services
                         NoteItemId = note.ID,
                         CreationDate = note.Start.ToLongDateString(),
                         ModifiedDate = note.End.ToLongDateString(),
-                        NoteContent = note.Content,
+                        NoteContent = note.NoteContent,
                     },
                     Subject = note.Subject,
-                    Content = note.Content,
+                    Content = note.NoteContent,
                     CreationDate = note.Start.ToLongDateString()
                 }));
             }

@@ -7,17 +7,11 @@ using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
+    /// <summary>
+    /// LOG ViewModel class for a log cached in the log cache. Specialised for coding logs.
+    /// </summary>
     internal sealed class CodeLOGViewModel : LOGViewModel
     {
-        private readonly CodingCacheDTO _codingCacheDTO;
-
-
-
-
-        #region Constructors
-
-
-
         public CodeLOGViewModel(NavigationService navigationService, CodingCacheDTO codingCacheDTO, CodingViewModel codingViewModel, 
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true)
             : base(navigationService, codingCacheDTO, codingViewModel, dataService, cacheService, isCacheSave)
@@ -27,43 +21,14 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             EditCommand = new EditCommand(LOGViewModelContext, navigationService, _codingCacheDTO);
             ViewCommand = new ViewCommand(_navigationService, codingCacheDTO);
             
-
-            if(_isCacheSave)
-            {
+            if (_isCacheSave)
                 _cacheMaster.SaveCodeCache(codingCacheDTO);
             }
 
-        }
-
-
-
-
-        #endregion
-
-
-
-
-
-        #region Member Functions
-
-
-
-        protected override void DeleteCacheItem()
+        protected override async void DeleteCacheItem()
         {
-            DeleteCacheFile(StartAsCacheID, LOGViewModelContext);
+            base.DeleteCacheItem();
             DeleteCacheItemCommand.Execute(this);
         }
-
-
-
-
-
-        #endregion
-
-
-
-
-
-
     }
 }

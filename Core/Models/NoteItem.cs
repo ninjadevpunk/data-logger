@@ -53,37 +53,6 @@ namespace Core.Models
         {
         }
 
-        // For Generic Notes
-        public NoteItem(string subject, string genericNote)
-        {
-            Subject = subject;
-            Content = genericNote;
-        }
-
-        // For Checklists
-        public NoteItem(string subject, string genericNote, CheckList items)
-        {
-            Subject = subject;
-            Content = genericNote;
-            Checklist = items;
-        }
-
-        public NoteItem(int id, ACCOUNT author, ProjectClass projectName, ApplicationClass applicationName, DateTime startTime, DateTime endTime,
-            OutputClass output, TypeClass type, List<PostIt> postItList,
-            string subject, string genericNote) : base(id, author, projectName, applicationName, startTime, endTime, output, type, postItList)
-        {
-            Subject = subject;
-            Content = genericNote;
-        }
-
-        public NoteItem(int id, ACCOUNT author, ProjectClass projectName, ApplicationClass applicationName, DateTime startTime, DateTime endTime,
-            OutputClass output, TypeClass type, List<PostIt> postItList,
-            string subject, string genericNote, CheckList items) : base(id, author, projectName, applicationName, startTime, endTime, output, type, postItList)
-        {
-            Subject = subject;
-            Content = genericNote;
-            Checklist = items;
-        }
 
 
         /* OVERLOADS */
@@ -105,7 +74,7 @@ namespace Core.Models
                    PostItList.Equals(item.PostItList) &&
                    notelogtype == item.notelogtype &&
                    Subject == item.Subject &&
-                   Content == item.Content &&
+                   NoteContent == item.NoteContent &&
                    Checklist == item.Checklist;
         }
 
@@ -124,7 +93,7 @@ namespace Core.Models
             hash.Add(PostItList);
             hash.Add(notelogtype);
             hash.Add(Subject);
-            hash.Add(Content);
+            hash.Add(NoteContent);
             hash.Add(Checklist);
             return hash.ToHashCode();
         }

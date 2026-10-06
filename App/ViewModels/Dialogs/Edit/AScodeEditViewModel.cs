@@ -85,21 +85,21 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
 
-        protected override async Task LoadProjects() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Android)).ToHashSet();
+        protected override async Task LoadProjectsAsync() => Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Constants.Android))];
 
-        protected override async Task LoadApplications() => Applications = [];
+        protected override async Task LoadApplicationsAsync() => Applications = [];
 
-        protected override async Task LoadOutputs()
+        protected override async Task LoadOutputsAsync()
         {
             Output = "APK (*.apk)";
-            Outputs = (await _dataService.ListASOutputsAsync()).ToHashSet();
+            Outputs = [.. (await _dataService.ListASOutputsAsync())];
         }
 
 
-        protected override async Task LoadTypes()
+        protected override async Task LoadTypesAsync()
         {
             Type = "Sync";
-            Types = (await _dataService.ListASTypesAsync()).ToHashSet();
+            Types = [.. (await _dataService.ListASTypesAsync())];
         }
 
 
@@ -110,22 +110,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
 
-
-
-        #region Log Count
-
-
-
-        public override async Task UpdateLogCount()
+        public override async Task UpdateLogCountAsync()
         {
             LogCount = await Extensions.GetAndroidLogCountAsync(_dataService, _codingAndroidViewModel);
         }
-
-
-
-        #endregion
-
-
 
 
 
@@ -152,9 +140,9 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
 
-        private void UpdateTime(ref DateTime timeField, int hours, int minutes, int seconds, int milliseconds)
+        private static void UpdateTime(ref DateTime timeField, int hours, int minutes, int seconds, int milliseconds)
         {
-            timeField = DateTime.Parse($"{DateTime.Now.ToLongDateString()} {hours}:{minutes}:{seconds}.{milliseconds}");
+            timeField = DateTime.Parse($"{DateTime.Now:D} {hours}:{minutes}:{seconds}.{milliseconds}");
         }
 
         private void SetAndNotify(ref DateTime field, DateTime value, string propertyName)

@@ -45,8 +45,6 @@ namespace FileSys.Interfaces
 
 
         void DeleteCacheFile(int userId, string fileName, LogContext cacheContext);
-        void DeleteLogCache(int userId, string logID, LogContext cacheContext);
-
 
 
         /// <summary>

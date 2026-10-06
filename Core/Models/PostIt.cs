@@ -41,7 +41,7 @@ namespace Core.Models
         /// The PostIt's subject. Gives context to the PostIt's content.
         /// </summary>
         [ForeignKey("subjectID")]
-        public SubjectClass? Subject { get; set; }
+        public SubjectClass Subject { get; set; } = null!;
         public int subjectID { get; set; }
 
         /// <summary>

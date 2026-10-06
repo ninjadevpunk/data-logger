@@ -810,15 +810,11 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Inserts a log cache DTO into the database.
+        /// Creates a log entity in the database from data in a DTO.
         /// </summary>
-        /// <param name="logCacheDTO">The log DTO to insert.</param>
-        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
-        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO)
-        {
-            var user = await EnsureValidUserAsync();
-            return await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO, user.Id));
-        }
+        /// <param name="logCacheDTO">The log DTO for log info</param>
+        /// <returns>Returns true if the log was successfully created; otherwise false.</returns>
+        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO) => await UseWriterAsync(writer => writer.CreateLOGAsync(logCacheDTO));
 
         /// <summary>
         /// Inserts a note DTO into the database.
@@ -978,14 +974,14 @@ namespace Data.Services
         /// <summary>
         /// Searches Qt logs within a specific project.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, int projectID) =>
-            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectID));
+        public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, string projectName) =>
+            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectName));
 
         /// <summary>
         /// Searches Qt logs within a specific project and application.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID) =>
-            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectID, appID));
+        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName) =>
+            UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectName, appName));
 
 
         // ---------------- Coding Logs ----------------

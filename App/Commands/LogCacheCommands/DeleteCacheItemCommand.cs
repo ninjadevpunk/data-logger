@@ -5,6 +5,7 @@ using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
+using System.Collections.ObjectModel;
 
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
@@ -15,10 +16,10 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         private readonly IDataService _dataService;
         private readonly ICacheService _cacheService;
         private readonly bool _timeUp;
-        private readonly Timer? _timer;
+        private readonly Timer _timer;
 
         public DeleteCacheItemCommand(LogCacheViewModel logCacheViewModel, IDataService dataService, ICacheService cacheService,
-            LogCacheDTO logCacheDTO, bool timeIsUp, Timer? timer)
+            LogCacheDTO logCacheDTO, bool timeIsUp, Timer timer)
         {
             _logCacheViewModel = logCacheViewModel;
             _dataService = dataService;
@@ -33,7 +34,7 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
             try
             {
                 var logViewModel = (LOGViewModel)parameter ?? throw new ArgumentNullException("logViewModel", "DeleteCacheItemCommand");
-                await HandleCodingCacheItem(logViewModel);
+                await SendCodingCacheToDatabase(logViewModel);
             }
             catch (Exception ex)
             {
@@ -42,11 +43,9 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         }
 
 
-        private async Task HandleCodingCacheItem(LOGViewModel item)
+        private async Task SendCodingCacheToDatabase(LOGViewModel item)
         {
             var cachedDashboardItems = _logCacheViewModel.CacheItems;
-            var context = _logCacheDTO.Context;
-            var startDate = _logCacheDTO.Start;
 
             switch (_logCacheDTO.Context)
             {
@@ -59,21 +58,19 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 
                             if (isLogged)
                             {
-                                cachedDashboardItems.Remove(item);
-                                _logCacheViewModel.CacheItems = cachedDashboardItems;
-                                await _logCacheViewModel.UpdateLogCount();
-
+                                _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"),
+                                    _logCacheDTO.Context);
+                                await UpdateDashboard(cachedDashboardItems, item);
                             }
                         }
                         else
                         {
-
-                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
-
-                            cachedDashboardItems.Remove(item);
-                            _logCacheViewModel.CacheItems = cachedDashboardItems;
-                            await _logCacheViewModel.UpdateLogCount();
+                            StopTimer(item);
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"),
+                                    _logCacheDTO.Context);
+                            await UpdateDashboard(cachedDashboardItems, item);
                         }
+
 
                         break;
                     }
@@ -86,20 +83,17 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 
                             if (isLogged)
                             {
-                                cachedDashboardItems.Remove(item);
-                                _logCacheViewModel.CacheItems = cachedDashboardItems;
-                                await _logCacheViewModel.UpdateLogCount();
-
+                                _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"),
+                                    _logCacheDTO.Context);
+                                await UpdateDashboard(cachedDashboardItems, item);
                             }
                         }
                         else
                         {
-
-                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
-
-                            cachedDashboardItems.Remove(item);
-                            _logCacheViewModel.CacheItems = cachedDashboardItems;
-                            await _logCacheViewModel.UpdateLogCount();
+                            StopTimer(item);
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"),
+                                    _logCacheDTO.Context);
+                            await UpdateDashboard(cachedDashboardItems, item);
                         }
 
                         break;
@@ -113,27 +107,42 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
 
                             if (isLogged)
                             {
-                                cachedDashboardItems.Remove(item);
-                                _logCacheViewModel.CacheItems = cachedDashboardItems;
-                                await _logCacheViewModel.UpdateLogCount();
-
+                                _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"), 
+                                    _logCacheDTO.Context);
+                                await UpdateDashboard(cachedDashboardItems, item);
                             }
                         }
                         else
                         {
-
-                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, startDate.ToString("yyyyMMdd_HHmmss"), context);
-
-                            cachedDashboardItems.Remove(item);
-                            _logCacheViewModel.CacheItems = cachedDashboardItems;
-                            await _logCacheViewModel.UpdateLogCount();
+                            StopTimer(item);
+                            _cacheService.DeleteCacheFile(_logCacheDTO.UserId, _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss"),
+                                    _logCacheDTO.Context);
+                            await UpdateDashboard(cachedDashboardItems, item);
                         }
 
                         break;
                     }
             }
+
         }
 
+
+        private void StopTimer(LOGViewModel item)
+        {
+            if (item.IsDisposed)
+                return;
+
+            _timer?.Dispose();
+            item.IsDisposed = true;
+        }
+
+
+        private async Task UpdateDashboard(ObservableCollection<LOGViewModel> logViewModels, LOGViewModel itemLogViewModel)
+        {
+            logViewModels.Remove(itemLogViewModel);
+            _logCacheViewModel.CacheItems = logViewModels;
+            await _logCacheViewModel.UpdateLogCount();
+        }
 
 
     }

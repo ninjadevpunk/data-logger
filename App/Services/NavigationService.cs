@@ -128,7 +128,7 @@ namespace Data_Logger_1._3.Services
                     else if (NavigationContext == NavContext.LOGGER || NavigationContext == NavContext.EDITOR)
                     {
                         var result = MessageBox.Show(
-                            "Your logCacheDTO will not be saved. Are you sure you would like to go back to the dashboard?",
+                            "Your log will not be saved. Are you sure you would like to go back to the dashboard?",
                             "You Sure?", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 
                         if (result == MessageBoxResult.No)
@@ -1151,6 +1151,8 @@ namespace Data_Logger_1._3.Services
             try
             {
                 _serviceProvider.GetRequiredService<CodingViewModel>().OnLogOut();
+                _serviceProvider.GetRequiredService<CodingAndroidViewModel>().OnLogOut();
+                _serviceProvider.GetRequiredService<CodingQtViewModel>().OnLogOut();
                 _serviceProvider.GetRequiredService<NOTESDashboardViewModel>().OnLogOut();
                 await _serviceProvider.GetRequiredService<AuthService>().SignOutAsync();
             }

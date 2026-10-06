@@ -60,7 +60,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit
 
 
 
-        public override async Task UpdateLogCount()
+        public override async Task UpdateLogCountAsync()
         {
             var count = await _dataService.LogCountAsync(Category);
             LogCount = $"{_codingViewModel.CacheItems.Count} Logs Cached";

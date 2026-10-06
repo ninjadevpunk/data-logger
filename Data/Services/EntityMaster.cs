@@ -140,7 +140,7 @@ namespace Data.Services
                     FirstName = "admin",
                     LastName = "",
                     Email = "support@datalogger.space",
-                    Password = "pcsx2024",
+                    Password = "",
                     IsEmployee = false,
                     CompanyName = "",
                     CompanyAddress = "",
@@ -186,14 +186,14 @@ namespace Data.Services
                 );
         }
 
-        private void AddProjects(ModelBuilder modelBuilder)
+        private static void AddProjects(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ProjectClass>().HasData(
                 new ProjectClass { projectID = 1, accountID = 1, appID = 3, Category = LOG.CATEGORY.CODING, Name = "Unnamed Project", IsDefault = true }
             );
         }
 
-        private void AddOutputs(ModelBuilder modelBuilder)
+        private static void AddOutputs(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<OutputClass>().HasData(
                 new OutputClass { outputID = 1, accountID = 1, Category = LOG.CATEGORY.CODING, appID = 1, Name = "Console Application" },
@@ -254,7 +254,7 @@ namespace Data.Services
             );
         }
 
-        private void AddTypes(ModelBuilder modelBuilder)
+        private static void AddTypes(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<TypeClass>().HasData(
                 new TypeClass { typeID = 1, accountID = 1, Name = "NONE", Category = LOG.CATEGORY.CODING },
@@ -304,7 +304,7 @@ namespace Data.Services
             );
         }
 
-        private void AddSubjects(ModelBuilder modelBuilder)
+        private static void AddSubjects(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<SubjectClass>().HasData(
                 new SubjectClass
@@ -319,7 +319,7 @@ namespace Data.Services
             );
         }
 
-        private void AddMediums(ModelBuilder modelBuilder)
+        private static void AddMediums(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MediumClass>().HasData(
                 new MediumClass
@@ -409,7 +409,7 @@ namespace Data.Services
             );
         }
 
-        private void AddFormats(ModelBuilder modelBuilder)
+        private static void AddFormats(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FormatClass>().HasData(
                 new FormatClass { formatID = 1, accountID = 1, Format = "Paper", Category = LOG.CATEGORY.GRAPHICS },
@@ -428,7 +428,7 @@ namespace Data.Services
             );
         }
 
-        private void AddUnits(ModelBuilder modelBuilder)
+        private static void AddUnits(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MeasuringUnitClass>().HasData(
                 new MeasuringUnitClass { unitID = 1, Unit = "cm" },

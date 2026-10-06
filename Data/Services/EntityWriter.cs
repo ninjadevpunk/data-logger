@@ -1,5 +1,4 @@
-﻿using Core.DTOs;
-using Core.DTOs.Cache;
+﻿using Core.DTOs.Cache;
 using Core.DTOs.Data;
 using Core.DTOs.Notes;
 using Core.Enums;
@@ -12,7 +11,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using static Core.Models.FeedbackMessage;
 
 namespace Data.Services
@@ -126,11 +124,11 @@ namespace Data.Services
 
             try
             {
-                if (account is null)
-                    throw new ArgumentNullException($"\"{nameof(account)}\" - Account not initialised. Operation aborted.");
+                if (account == null)
+                    throw new ArgumentNullException(nameof(account), "Account is null!");
 
 
-                if (await reader.EmailExists(scope, account.Email))
+                if (await EntityReader.EmailExists(scope, account.Email))
                     throw new EmailConflictException("Email exists!");
 
                 account.IsOnline = false;
@@ -180,12 +178,11 @@ namespace Data.Services
 
 
         /// <summary>
-        /// Creates a log cache DTO in the database.
+        /// Creates a log entity in the database from data in a DTO.
         /// </summary>
-        /// <param name="logCacheDTO">The log DTO being stored.</param>
-        /// <param name="id">The user ID of logged in user.</param>
-        /// <returns>Returns true if the log DTO was successfully created; otherwise false.</returns>
-        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO, int id)
+        /// <param name="logCacheDTO">The log DTO for log info</param>
+        /// <returns>Returns true if the log was successfully created; otherwise false.</returns>
+        public async Task<bool> CreateLOGAsync(LogCacheDTO logCacheDTO)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -195,24 +192,17 @@ namespace Data.Services
             {
                 await using var transaction = await master.Database.BeginTransactionAsync();
 
-                await PrepareLogDetailsAsync(logCacheDTO, scope, master, id);
-                await PreparePostItDetailsAsync(logCacheDTO, scope, master, id);
+                var log = EntityLogService.Create(logCacheDTO);
 
-                await InsertSubLogDetails(logCacheDTO, scope, master);
+                await PrepareLogDetailsAsync(log, scope, master);
+                await PreparePostItDetailsAsync(log, scope, master);
+
+                await InsertSubLogDetails(log, logCacheDTO.Context, master);
 
                 await master.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return true;
-            }
-            catch (InvalidCastException castx)
-            {
-                await HandleExceptionAsync(castx);
-            }
-            catch (OperationCanceledException opex)
-            {
-                await HandleExceptionAsync(opex);
-
             }
             catch (Exception ex)
             {
@@ -223,53 +213,92 @@ namespace Data.Services
         }
 
 
-        private async Task PrepareLogDetailsAsync(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master, int userId)
+        private static async Task PrepareLogDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master)
         {
             var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 
-            var onlineUser = await reader.FindAccountByID(scope, master, userId) ?? throw new InvalidOperationException("No user logged in!");
+            var user = await EntityReader.FindAccountByID(scope, master, log.accountID) ?? throw new InvalidOperationException("No user logged in!");
+            var userId = user.accountID;
+            log.Author = user;
 
-            // TODO: Create entity with CacheDTO and use EntityCodingService
+            // Resolve Application
+            var existingApp = await EntityReader.FindApplication(scope, master, userId, log.Application.Name);
 
-        }
-
-
-        private string ValidateString(string input)
-        {
-            string pattern = @"[\s\S]+";
-            Regex regex = new Regex(pattern);
-            return regex.IsMatch(input) ? input : string.Empty;
-        }
-
-        private async Task PreparePostItDetailsAsync(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master, int id)
-        {
-            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
-
-            // TODO: Prepare PostIts
-
-            //logCacheDTO.PostIts.Select(postIt =>
-            //{
-            //    //
-            //});
-        }
-
-        private async Task InsertSubLogDetails(LogCacheDTO logCacheDTO, AsyncServiceScope scope, EntityMaster master)
-        {
-
-            switch (logCacheDTO.Context)
+            if (existingApp != null)
+                log.Application = existingApp;
+            else
             {
-                case LogContext.Qt when logCacheDTO is QtCacheDTO qtCacheDTO:
-                    {
+                log.Application.User = user;
+            }
 
+            // Resolve Project
+            var existingProject = await EntityReader.FindProject(scope, master, userId, log.Project.Name, log.Application.appID);
+
+            if (existingProject != null)
+                log.Project = existingProject;
+            else
+            {
+                log.Project.User = user;
+                log.Project.Application = log.Application;
+            }
+
+            // Resolve Output
+            var existingOutput = await EntityReader.FindOutput(scope, log.Output.Name, log.Category) ?? throw new ArgumentNullException(null, "Output not found!");
+            log.Output = existingOutput;
+
+            // Resolve Type
+            var existingType = await EntityReader.FindType(scope, log.Type.Name, log.Category) ?? throw new ArgumentNullException(null, "Type not found!");
+            log.Type = existingType;
+        }
+
+
+
+        private static async Task PreparePostItDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master)
+        {
+            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
+            var user = log.Author;
+            var userId = user.accountID;
+
+            // Resolve PostIts
+            foreach (var postIt in log.PostItList)
+            {
+                postIt.Author = user;
+
+                var existingSubject = await EntityReader.FindSubject(scope, master, postIt.Subject.Subject, log.Category, userId, log.Application.appID,
+                        log.Project.projectID);
+
+                if (existingSubject != null)
+                {
+                    postIt.Subject = existingSubject;
+                }
+                else
+                {
+                    postIt.Subject.User = user;
+                    postIt.Subject.Application = log.Application;
+                    postIt.Subject.Project = log.Project;
+                }
+            }
+        }
+
+        private static async Task InsertSubLogDetails(LOG log, LogContext context, EntityMaster master)
+        {
+
+            switch (context)
+            {
+                case LogContext.Qt when log is QtLOG qtLog:
+                    {
+                        await master.CodingLogs.AddAsync(qtLog);
                         break;
                     }
-                case LogContext.AndroidStudio when logCacheDTO is AndroidCacheDTO androidCacheDTO:
+                case LogContext.AndroidStudio when log is AndroidCodingLOG androidCodingLog:
                     {
-
+                        await master.AndroidCodingLogs.AddAsync(androidCodingLog);
                         break;
                     }
                 default:
                     {
+                        if (log is CodingLOG codingLog)
+                            await master.CodingLogs.AddAsync(codingLog);
                         break;
                     }
             }
@@ -362,24 +391,18 @@ namespace Data.Services
 
         public static string SaltedSHA256Hash(string value, string accountID)
         {
-            using (SHA256 hash = SHA256.Create())
+            Encoding enc = Encoding.UTF8;
+
+            string input = value + accountID;
+            byte[] result = SHA256.HashData(enc.GetBytes(input));
+
+            StringBuilder hashedStringBuilder = new StringBuilder();
+            foreach (byte b in result)
             {
-                Encoding enc = Encoding.UTF8;
-
-                // The account ID is the salt. 
-                // So 2 users with the same password have different hashes. 
-                // For example, if someone knows their own hash, they can't see who has the same password.
-                string input = value + accountID;
-                byte[] result = hash.ComputeHash(enc.GetBytes(input));
-
-                StringBuilder hashedStringBuilder = new StringBuilder();
-                foreach (byte b in result)
-                {
-                    hashedStringBuilder.Append(b.ToString("x2"));
-                }
-
-                return hashedStringBuilder.ToString();
+                hashedStringBuilder.Append(b.ToString("x2"));
             }
+
+            return hashedStringBuilder.ToString();
         }
 
 

@@ -1,7 +1,6 @@
 ﻿using Core.Models.App_Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.RegularExpressions;
 
 namespace Core.Models
 {
@@ -26,10 +25,6 @@ namespace Core.Models
 
 
         /* PROPERTIES */
-
-
-
-
 
 
         public CATEGORY Category { get; protected set; }
@@ -109,15 +104,10 @@ namespace Core.Models
 
 
 
-
-        public string Content { get; set; } = string.Empty;
-
-
-
         /** CONSTRUCTOR */
         public LOG()
         {
-            // Blank
+
         }
 
         protected LOG(CATEGORY category, ACCOUNT author, ProjectClass projectName, ApplicationClass applicationName, DateTime startTime, DateTime endTime, OutputClass output, TypeClass type, List<PostIt> postItList)
@@ -147,104 +137,8 @@ namespace Core.Models
             PostItList = postItList;
         }
 
-        protected LOG(ACCOUNT author, ProjectClass projectName, ApplicationClass applicationName, DateTime startTime, DateTime endTime, OutputClass output, TypeClass type, List<PostIt> postItList, string content)
-        {
-            Author = author;
-            Project = projectName;
-            Application = applicationName;
-            Start = startTime;
-            End = endTime;
-            Output = output;
-            Type = type;
-            PostItList = postItList;
-        }
-
-        protected LOG(int id, ACCOUNT author, ProjectClass projectName, ApplicationClass applicationName, DateTime startTime, DateTime endTime, OutputClass output, TypeClass type, List<PostIt> postItList, string content)
-        {
-            ID = id;
-            Author = author;
-            Project = projectName;
-            Application = applicationName;
-            Start = startTime;
-            End = endTime;
-            Output = output;
-            Type = type;
-            PostItList = postItList;
-        }
 
 
-
-        /* COUNT */
-
-        /** Helper function **/
-        public int helper(string type)
-        {
-            int count = 0;
-            string pattern = "[A-Za-z]{5}[0-9]{0}";
-            Regex xp = new Regex(pattern);
-
-            foreach (PostIt n in PostItList)
-            {
-                switch (type)
-                {
-                    case "error":
-                        {
-                            if (xp.IsMatch(n.Error))
-                                ++count;
-                        }
-                        break;
-                    case "solution":
-                        {
-                            if (xp.IsMatch(n.Solution))
-                                ++count;
-                        }
-                        break;
-                    case "suggestion":
-                        {
-                            if (xp.IsMatch(n.Suggestion))
-                                ++count;
-                        }
-                        break;
-                    case "comment":
-                        {
-                            if (xp.IsMatch(n.Comment))
-                                ++count;
-                        }
-                        break;
-                }
-            }
-
-            return count;
-        }
-
-
-        /** Count how many errors there are
-         */
-        public int ErrorCount()
-        {
-            return helper("error");
-        }
-
-        /** Count how many solutions there are
-         */
-        public int SolutionCount()
-        {
-            return helper("solution");
-        }
-
-        /** Count how many suggestions there are
-         */
-        public int SuggestionCount()
-        {
-            return helper("suggestion");
-        }
-
-        /** Count how many comments there are
-         */
-        public int CommentCount()
-        {
-            return helper("comment");
-        }
 
         public override bool Equals(object? obj)
         {
@@ -258,8 +152,7 @@ namespace Core.Models
                    End == lOG.End &&
                    Output == lOG.Output &&
                    Type == lOG.Type &&
-                   EqualityComparer<List<PostIt>>.Default.Equals(PostItList, lOG.PostItList) &&
-                   Content == lOG.Content;
+                   EqualityComparer<List<PostIt>>.Default.Equals(PostItList, lOG.PostItList);
         }
 
         public override int GetHashCode()
@@ -275,7 +168,6 @@ namespace Core.Models
             hash.Add(Output);
             hash.Add(Type);
             hash.Add(PostItList);
-            hash.Add(Content);
             return hash.ToHashCode();
         }
 

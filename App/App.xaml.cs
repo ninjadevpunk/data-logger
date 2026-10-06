@@ -18,18 +18,13 @@ using Data_Logger_1._3.Views.LogPages;
 using Data_Logger_1._3.Views.ReportPages;
 using FileSys;
 using FileSys.Interfaces;
-
-#if DEBUG
-using DotNetEnv;
-#endif
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
 #if RELEASE
-using System.Security.Cryptography;
-using System.Text;
+using System.IO;
 #endif
 using System.Windows;
 using System.Windows.Controls;
@@ -51,10 +46,6 @@ namespace Data_Logger_1._3
 
         public App()
         {
-#if DEBUG
-            Env.Load();
-#endif
-
             SQLitePCL.Batteries_V2.Init();
             var host = Host.CreateDefaultBuilder()
                 .ConfigureAppConfiguration((hostingContext, config) =>
@@ -155,7 +146,7 @@ namespace Data_Logger_1._3
                     service.AddTransient<CreateCheckListViewModel>();
                     service.AddTransient<CreateChecklistItemViewModel>();
 
-                    
+
 
 
                     // Account

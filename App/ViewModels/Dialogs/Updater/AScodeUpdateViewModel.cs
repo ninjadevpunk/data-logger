@@ -85,24 +85,24 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 
 
 
-        protected override Task LoadProjects()
+        protected override Task LoadProjectsAsync()
         {
-            return base.LoadProjects();
+            return base.LoadProjectsAsync();
         }
 
-        protected override Task LoadApplications()
+        protected override Task LoadApplicationsAsync()
         {
-            return base.LoadApplications();
+            return base.LoadApplicationsAsync();
         }
 
-        protected override Task LoadOutputs()
+        protected override Task LoadOutputsAsync()
         {
-            return base.LoadOutputs();
+            return base.LoadOutputsAsync();
         }
 
-        protected override Task LoadTypes()
+        protected override Task LoadTypesAsync()
         {
-            return base.LoadTypes();
+            return base.LoadTypesAsync();
         }
 
 
@@ -133,7 +133,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
 
 
 
-        public override async Task UpdateLogCount()
+        public override async Task UpdateLogCountAsync()
         {
             var count = await _dataService.ASLogCountAsync();
             LogCount = $"{_ASviewModel.Logs.Count} Logs Cached";

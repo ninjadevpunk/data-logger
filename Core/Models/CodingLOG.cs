@@ -8,8 +8,7 @@ namespace Core.Models
 
     /// <summary>
     /// The primary LOG sub class. The Coding class has the most Data Logger support 
-    /// and is used for coding projects in any coding app - 
-    /// especially Qt Creator and Android Studio.
+    /// and is used for coding projects in any coding app.
     /// </summary>
     [Table("CodingLOG")]
     public class CodingLOG : LOG

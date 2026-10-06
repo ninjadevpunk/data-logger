@@ -3,7 +3,6 @@ using Data_Logger_1._3.ViewModels.Dashboard;
 using Data.Interfaces;
 using FileSys.Interfaces;
 using Data_Logger_1._3.Services;
-using Core.Enums;
 using Core.DTOs.Cache;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
@@ -13,12 +12,6 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
     /// </summary>
     internal sealed class QtLOGViewModel : LOGViewModel
     {
-
-        #region Constructors
-
-
-
-
         public QtLOGViewModel(NavigationService navigationService, QtCacheDTO qtCodingCacheDTO, CodingQtViewModel codingQtViewModel, 
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true) :
             base(navigationService, qtCodingCacheDTO, codingQtViewModel, dataService, cacheService, isCacheSave)
@@ -26,48 +19,15 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             EditCommand = new EditCommand(LOGViewModelContext, navigationService, qtCodingCacheDTO);
             ViewCommand = new ViewCommand(navigationService, qtCodingCacheDTO);
 
-            if(_isCacheSave)
-                cacheService.SaveQtCodeCache(qtCodingCacheDTO);
+            if (_isCacheSave)
+                _cacheMaster.SaveQtCodeCache(qtCodingCacheDTO);
         }
 
 
-
-        #endregion
-
-
-
-        #region Properties
-
-
-
-
-
-
-
-        #endregion
-
-
-
-        #region Member Functions
-
-
-
-        protected override void DeleteCacheItem()
+        protected override async void DeleteCacheItem()
         {
-            DeleteCacheFile(StartAsCacheID, LOGViewModelContext);
+            base.DeleteCacheItem();
             DeleteCacheItemCommand.Execute(this);
         }
-
-
-
-
-
-        #endregion
-
-
-
-
-
-
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Core.DTOs.Cache;
-using Core.Enums;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.LogCacheCommands;
@@ -24,28 +23,15 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         protected readonly NavigationService _navigationService;
         protected readonly IDataService _dataService;
         protected readonly ICacheService _cacheMaster;
-        protected LogContext LOGViewModelContext => _logCacheDTO.Context;
         protected readonly bool _isCacheSave;
-
-
 
         public bool IsDisposed { get; set; } = false;
 
-        private readonly Timer? _timer;
 
         public ICommand EditCommand { get; set; } = null!;
-
         public ICommand ViewCommand { get; set; } = null!;
-
         public ICommand DeleteCacheItemCommand { get; set; } = null!;
-
         public ICommand QuickDeleteCacheItemCommand { get; set; } = null!;
-
-
-
-
-
-        #region Constructors
 
 
 
@@ -59,46 +45,23 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
             _logCacheDTO = logCacheDTO;
 
+#if DEBUG
+            TimeRemaining = 30;
+#else
             TimeRemaining = 1200;
+#endif
 
+            _cacheMaster = cacheService;
 
             if (isCacheSave)
-            {
-                // TODO: Do not store content on model - UI concern only. See if Core.Utilities Rtf converter can do this for UI directly
-                // and use DTO to obtain UI PostIt content.
-                //NotaryContent = PostItContent(createPostItViewModels);
-                //_logCacheDTO.Content = NotaryContent;
-
-                _cacheMaster = cacheService;
                 _cacheMaster.AddLogCacheIdentifier(Extensions.CreateCacheIdentifier(_logCacheDTO.Start));
-            }
             else
-            { 
-                // TODO: Same as above
-                //NotaryContent = _logCacheDTO.Content;
                 TimeRemaining /= 2;
 
-                _cacheMaster = cacheService;
-            }
-
             _timer = new Timer(TimerCallback, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-            Setup(dataService, cacheService, logCacheDTO);
-        }
-
-
-        private void Setup(IDataService dataService, ICacheService cacheService, LogCacheDTO logCacheDTO)
-        {
             DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true, _timer);
             QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, false, _timer);
         }
-
-
-
-        #endregion
-
-
-
-
 
 
 
@@ -119,7 +82,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         /// <summary>
         /// ID for log cache item
         /// </summary>
-        public string StartAsCacheID => _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss");
+        public string startDateCacheId => _logCacheDTO.Start.ToString("yyyyMMdd_HHmmss");
 
         /// <summary>
         /// How many errors are in the log
@@ -141,8 +104,8 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         /// <summary>
         /// Formatted start and end Date.
         /// </summary>
-        public string StartEndDate => $"{_logCacheDTO.Start.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")} - " +
-            $"{_logCacheDTO.End.ToString("dddd, d MMMM yyyy HH:mm:ss.fff")}";
+        public string StartEndDate => $"{_logCacheDTO.Start:dddd, d MMMM yyyy HH:mm:ss.fff} - " +
+            $"{_logCacheDTO.End:dddd, d MMMM yyyy HH:mm:ss.fff}";
 
         /// <summary>
         /// Store the first occurence of a note with acceptable input only.
@@ -226,11 +189,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
                         if (!IsDisposed)
                         {
                             if (TimeRemaining == 0)
-                            {
                                 DeleteCacheItem();
-                                _timer?.Dispose();
-                                IsDisposed = true;
-                            }
                             else
                                 TimeRemaining--;
                         }
@@ -244,32 +203,27 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             }
             catch (Exception ex)
             {
+                _timer?.Dispose();
                 _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"Exception found near TimerCallback(): {ex.Message}");
             }
         }
 
 
-        protected abstract void DeleteCacheItem();
 
-        public void DeleteCacheFile(string id, LogContext logContext)
+        protected virtual void DeleteCacheItem()
         {
-            _cacheMaster.DeleteLogCache(_logCacheDTO.UserId, id, logContext);
+            if (IsDisposed)
+                return;
+
+            _timer.Dispose();
+            IsDisposed = true;
         }
 
 
 
 
-
-
-
         #endregion
-
-
-
-
-
-
 
 
 

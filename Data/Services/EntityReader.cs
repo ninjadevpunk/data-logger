@@ -49,13 +49,6 @@ namespace Data.Services
             return scope;
         }
 
-        public async Task SaveChangesAsync(AsyncServiceScope scope)
-        {
-            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-
-            await master.SaveChangesAsync();
-        }
-
         /// <summary>
         /// Retrieve a profile pic from on an account with the matching email address.
         /// </summary>
@@ -70,7 +63,6 @@ namespace Data.Services
                 .Where(a => a.Email == emailAddress)
                 .Select(a => a.ProfilePic)
                 .FirstOrDefaultAsync() ?? string.Empty;
-
         }
 
 
@@ -226,7 +218,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "GetOnlineAccountIDAsync");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return 0;
@@ -236,7 +228,7 @@ namespace Data.Services
         /// Find the account ID of the user who's online.
         /// </summary>
         /// <returns>Returns a single account ID</returns>
-        public async Task<int?> GetOnlineAccountIDAsync(AsyncServiceScope scope, EntityMaster master, int userId)
+        public static async Task<int?> GetOnlineAccountIDAsync(AsyncServiceScope scope, EntityMaster master, int userId)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -249,7 +241,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "GetOnlineAccountIDAsync");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -276,7 +268,7 @@ namespace Data.Services
             }
         }
 
-        public async Task<ACCOUNT?> FindAccountByID(AsyncServiceScope scope, EntityMaster master, int id)
+        public static async Task<ACCOUNT?> FindAccountByID(AsyncServiceScope scope, EntityMaster master, int id)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -347,7 +339,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -362,7 +354,7 @@ namespace Data.Services
             try
             {
                 if (ID == null)
-                    throw new ArgumentNullException("ID is needed to find application's from Data Logger or user!");
+                    throw new ArgumentNullException(nameof(ID), "ID is needed to find application's from Data Logger or user!");
 
                 var application = await master.Applications
                     .Where(app => app.accountID == ID || app.accountID == 1)
@@ -372,20 +364,20 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        public async Task<ApplicationClass?> FindApplication(AsyncServiceScope scope, EntityMaster master, int? ID, string name)
+        public static async Task<ApplicationClass?> FindApplication(AsyncServiceScope scope, EntityMaster master, int? ID, string name)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
             try
             {
                 if (ID == null)
-                    throw new ArgumentNullException("ID is needed to find application's from Data Logger or user!");
+                    throw new ArgumentNullException(nameof(ID), "ID is needed to find application's from Data Logger or user!");
 
                 var application = await master.Applications
                     .Where(app => (app.accountID == ID || app.accountID == 1) && app.Name == name)
@@ -395,7 +387,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplicationAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -417,7 +409,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindApplicationByIDAsync(appID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -432,7 +424,7 @@ namespace Data.Services
             try
             {
                 if (userID == null)
-                    throw new ArgumentNullException("userID is required to find a user's projects!");
+                    throw new ArgumentNullException(nameof(userID), "userID is required to find a user's projects!");
 
                 var project = await master.Projects
                     .Where(p => (p.accountID == userID || p.accountID == 1)
@@ -444,13 +436,13 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        
+
         public async Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, string appName)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -460,7 +452,7 @@ namespace Data.Services
             try
             {
                 if (userID == null)
-                    throw new ArgumentNullException("userID is required to find a user's projects!");
+                    throw new ArgumentNullException(nameof(userID), "userID is required to find a user's projects!");
 
                 var project = await master.Projects
                     .Where(p => (p.accountID == userID || p.accountID == 1)
@@ -472,20 +464,18 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        public async Task<ProjectClass?> FindProject(AsyncServiceScope scope, EntityMaster master, int? userID, string projectName, int appID)
+        public static async Task<ProjectClass?> FindProject(AsyncServiceScope scope, EntityMaster master, int? userID, string projectName, int appID)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
             try
             {
-                if (userID == null)
-                    throw new ArgumentNullException("userID is required to find a user's projects!");
 
                 var project = await master.Projects
                     .Where(p => (p.accountID == userID || p.accountID == 1)
@@ -497,7 +487,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectAsync(projectName, appID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -519,7 +509,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindProjectByIDAsync(projectID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -539,13 +529,33 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutputAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        public async Task<OutputClass?> FindOutput(AsyncServiceScope scope, EntityMaster master, string name)
+        public static async Task<OutputClass?> FindOutput(AsyncServiceScope scope, string name, LOG.CATEGORY category = LOG.CATEGORY.CODING)
+        {
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                return await master.Outputs
+                    .Where(o => o.accountID == 1 && o.Name == name)
+                    .Where(o => o.Category == category)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex);
+            }
+
+            return null;
+        }
+
+        public static async Task<OutputClass?> FindOutput(AsyncServiceScope scope, EntityMaster master, string name)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -557,7 +567,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutputAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -578,7 +588,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindOutputByIDAsync(outputID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -598,13 +608,33 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        public async Task<TypeClass?> FindType(AsyncServiceScope scope, EntityMaster master, string name)
+        public static async Task<TypeClass?> FindType(AsyncServiceScope scope, string name, LOG.CATEGORY category = LOG.CATEGORY.CODING)
+        {
+            var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                return await master.Types
+                    .Where(t => t.accountID == 1 && t.Name == name)
+                    .Where(t => t.Category == category)
+                    .FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex);
+            }
+
+            return null;
+        }
+
+        public static async Task<TypeClass?> FindType(AsyncServiceScope scope, EntityMaster master, string name)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -616,7 +646,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -637,7 +667,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeByIDAsync(typeID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -647,7 +677,7 @@ namespace Data.Services
 
 
 
-        private bool VerifyPassword(ACCOUNT account, string password)
+        private static bool VerifyPassword(ACCOUNT account, string password)
         {
             try
             {
@@ -710,7 +740,7 @@ namespace Data.Services
         /// <param name="email">The email provided by the user signing up.</param>
         /// <returns>Returns whether the email exists or not. Will throw an ExmailConflictException if the email exists.</returns>
         /// <exception cref="EmailConflictException"></exception>
-        public async Task<bool> EmailExists(AsyncServiceScope scope, string email)
+        public static async Task<bool> EmailExists(AsyncServiceScope scope, string email)
         {
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
@@ -896,21 +926,21 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
         }
 
-        public async Task<SubjectClass?> FindSubject(AsyncServiceScope scope, EntityMaster master, string name, LOG.CATEGORY category,
-            int id, int appID, int projectID)
+        public static async Task<SubjectClass?> FindSubject(AsyncServiceScope scope, EntityMaster master, string name, LOG.CATEGORY category,
+            int userId, int appID, int projectID)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
             try
             {
                 return await master.Subjects
-                    .Where(s => new[] { 1, id }.Contains(s.accountID))
+                    .Where(s => new[] { 1, userId }.Contains(s.accountID))
                     .Where(s => s.Subject == name)
                     .Where(s => s.Category == category)
                     .Where(s => s.appID == appID)
@@ -919,7 +949,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindTypeAsync(name)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return null;
@@ -958,7 +988,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "FindSubjectIDAsync(subject)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return subjectKey;
@@ -1004,7 +1034,7 @@ namespace Data.Services
                 return await master.Logs
                     .Where(l => l.accountID == id)
                     .Where(l => l.Category == category)
-                    .Where(l => !new[] {1, 2}.Contains(l.appID))
+                    .Where(l => !new[] { 1, 2 }.Contains(l.appID))
                     .CountAsync();
             }
             catch (Exception ex)
@@ -1069,10 +1099,9 @@ namespace Data.Services
             {
                 await writer.HandleExceptionAsync(ex);
                 Debug.WriteLine($"Exception occurred near ASLogCountAsync: {ex.Message}");
-                return -1;
             }
 
-
+            return -1;
         }
 
         /// <summary>
@@ -1317,7 +1346,7 @@ namespace Data.Services
                 return await master.Projects
                     .Where(p => new[] { 1, id }.Contains(p.accountID))
                     .Where(p => p.Category == category)
-                    .Where(p => !new[] {1, 2}.Contains(p.Application.appID) && !new[] { Constants.Qt, Constants.Android }.Contains(p.Application.Name))
+                    .Where(p => !new[] { 1, 2 }.Contains(p.Application.appID) && !new[] { Constants.Qt, Constants.Android }.Contains(p.Application.Name))
                     .Include(p => p.User)
                     .Include(p => p.Application)
                     .ToListAsync();
@@ -1354,7 +1383,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "ListProjects(app)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return [];
@@ -1386,7 +1415,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "ListProjects(app)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return [];
@@ -1641,12 +1670,12 @@ namespace Data.Services
         {
             return null;
         }
-        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID)
+        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName)
         {
             return null;
         }
 
-        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, int projectID, int appID)
+        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName)
         {
             return null;
         }

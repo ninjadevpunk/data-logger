@@ -1,5 +1,4 @@
 ﻿using Core.DTOs.Cache;
-using Core.Enums;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.LogCacheCommands;
 using Data_Logger_1._3.Services;
@@ -8,13 +7,11 @@ using FileSys.Interfaces;
 
 namespace Data_Logger_1._3.ViewModels.LogViewModels
 {
+    /// <summary>
+    /// LOG ViewModel class for a log cached in the log cache. Specialised for Android logs.
+    /// </summary>
     internal sealed class AndroidLOGViewModel : LOGViewModel
     {
-
-        #region Constructors
-
-
-
         public AndroidLOGViewModel(NavigationService navigationService, AndroidCacheDTO androidCacheDTO, CodingAndroidViewModel codingAndroidViewModel, 
             IDataService dataService, ICacheService cacheService, bool isCacheSave = true) 
             : base(navigationService, androidCacheDTO, codingAndroidViewModel, dataService, cacheService, isCacheSave)
@@ -22,35 +19,15 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             EditCommand = new EditCommand(LogContext.AndroidStudio, navigationService, androidCacheDTO);
             ViewCommand = new ViewCommand(_navigationService, androidCacheDTO);
 
-            if(_isCacheSave)
+            if (_isCacheSave)
                 _cacheMaster.SaveAndroidCodeCache(androidCacheDTO);
         }
 
 
-
-        #endregion
-
-
-
-
-
-
-
-        #region Member Functions
-
-
-
-
-        protected override void DeleteCacheItem()
+        protected override async void DeleteCacheItem()
         {
-            DeleteCacheFile(StartAsCacheID, LOGViewModelContext);
+            base.DeleteCacheItem();
             DeleteCacheItemCommand.Execute(this);
         }
-
-
-
-
-
-        #endregion
     }
 }

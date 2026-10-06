@@ -85,7 +85,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="DotNetEnv" Version="3.2.0" />
 		<PackageReference Include="Extended.Wpf.Toolkit" Version="5.1.2" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.22" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.22">
@@ -101,7 +100,7 @@
 		<PackageReference Include="MVVMEssentials.WPF" Version="1.0.3" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11" />
-		<PackageReference Include="Svg.Skia" Version="5.2.1" />
+		<PackageReference Include="Svg.Skia" Version="5.2.3" />
 		<PackageReference Include="Syncfusion.Licensing" Version="34.2.4" />
 		<PackageReference Include="Syncfusion.Pdf.Wpf" Version="34.2.4" />
 		<PackageReference Include="System.Drawing.Common" Version="8.0.22" />

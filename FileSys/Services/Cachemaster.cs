@@ -87,7 +87,7 @@ namespace FileSys.Services
             return false;
         }
 
-        
+
 
         /// <summary>
         /// Adds a log cache's cache ID to the identifiers file.
@@ -210,7 +210,43 @@ namespace FileSys.Services
 
         public void DeleteCacheFile(int userId, string fileName, LogContext cacheContext)
         {
-            DeleteLogCache(userId, fileName, cacheContext);
+            if (Identifiers == null || !Identifiers.Contains(fileName))
+                return;
+
+            try
+            {
+                var filePath = $@"{ResourceDirectory}\{userId}\{fileName}.{LogCacheExtension(cacheContext)}";
+
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+
+                // Remove logID from IDENTIFIERS
+                Identifiers.Remove(fileName);
+
+                if (File.Exists(IdentifiersPath))
+                    File.Delete(IdentifiersPath);
+
+                // Create new IDENTIFIERS file with updated list
+                using var fileStream = new FileStream(IdentifiersPath!, FileMode.Create);
+                fileStream.Close();
+
+                // Write IDENTIFIERS to new file
+                using var writer = new StreamWriter(IdentifiersPath!);
+                foreach (string id in Identifiers.Order())
+                {
+                    writer.WriteLine(id);
+                }
+                writer.Close();
+            }
+            catch (IOException ioX)
+            {
+                Debug.WriteLine($"IOException found near DeleteLogCache(identifier, cacheContext): {ioX.Message}");
+            }
+            catch (Exception ex)
+            {
+                // Handle exception
+                Debug.WriteLine($"Exception found near DeleteLogCache(identifier, cacheContext): {ex.Message}");
+            }
         }
 
 
@@ -282,46 +318,6 @@ namespace FileSys.Services
 
 
 
-        public void DeleteLogCache(int userId, string identifier, LogContext cacheContext)
-        {
-            if (Identifiers is null || !Identifiers.Contains(identifier))
-                return;
-
-            try
-            {
-                var filePath = $@"{ResourceDirectory}\{userId}\{identifier}.{LogCacheExtension(cacheContext)}";
-
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-
-                // Remove logID from IDENTIFIERS
-                Identifiers.Remove(identifier);
-
-                if (File.Exists(IdentifiersPath))
-                    File.Delete(IdentifiersPath);
-
-                // Create new IDENTIFIERS file with updated list
-                using var fileStream = new FileStream(IdentifiersPath!, FileMode.Create);
-                fileStream.Close();
-
-                // Write IDENTIFIERS to new file
-                using var writer = new StreamWriter(IdentifiersPath!);
-                foreach (string id in Identifiers.Order())
-                {
-                    writer.WriteLine(id);
-                }
-                writer.Close();
-            }
-            catch (IOException ioX)
-            {
-                Debug.WriteLine($"IOException found near DeleteLogCache(identifier, cacheContext): {ioX.Message}");
-            }
-            catch (Exception ex)
-            {
-                // Handle exception
-                Debug.WriteLine($"Exception found near DeleteLogCache(identifier, cacheContext): {ex.Message}");
-            }
-        }
 
         private void SaveCache(int userId, string cacheFileName, string json, LogContext cacheContext)
         {

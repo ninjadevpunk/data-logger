@@ -52,7 +52,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     case LogContext.Qt:
                         {
                             var qtCreateViewModel = (qtCreateViewModel)_loggerCreateViewModel;
-                            IReadOnlyList<CacheStickyPostItViewModel> postIts = qtCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = [.. qtCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>()];
 
                             var input = new QtCacheDTO
                             {
@@ -60,6 +60,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 ProjectName = qtCreateViewModel.ProjectName,
                                 Start = qtCreateViewModel.StartDate,
                                 End = qtCreateViewModel.EndDate,
+                                OutputName = qtCreateViewModel.Output,
+                                TypeName = qtCreateViewModel.Type,
                                 Bugs = qtCreateViewModel.BugsFound,
                                 Success = qtCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -85,7 +87,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     case LogContext.AndroidStudio:
                         {
                             var androidCreateViewModel = (AScodeCreateViewModel)_loggerCreateViewModel;
-                            IReadOnlyList<CacheStickyPostItViewModel> postIts = androidCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = [.. androidCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>()];
 
                             var input = new AndroidCacheDTO
                             {
@@ -93,6 +95,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 ProjectName = androidCreateViewModel.ProjectName,
                                 Start = androidCreateViewModel.StartDate,
                                 End = androidCreateViewModel.EndDate,
+                                OutputName = androidCreateViewModel.Output,
+                                TypeName = androidCreateViewModel.Type,
                                 Bugs = androidCreateViewModel.BugsFound,
                                 Success = androidCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -124,7 +128,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     default:
                         {
                             var codeCreateViewModel = (codeCreateViewModel)_loggerCreateViewModel;
-                            IReadOnlyList<CacheStickyPostItViewModel> postIts = codeCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>().ToList();
+                            IReadOnlyList<CacheStickyPostItViewModel> postIts = [.. codeCreateViewModel.PostIts.Cast<CacheStickyPostItViewModel>()];
 
                             var input = new CodingCacheDTO
                             {
@@ -133,6 +137,8 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 ProjectName = codeCreateViewModel.ProjectName,
                                 Start = codeCreateViewModel.StartDate,
                                 End = codeCreateViewModel.EndDate,
+                                OutputName = codeCreateViewModel.Output,
+                                TypeName = codeCreateViewModel.Type,
                                 Bugs = codeCreateViewModel.BugsFound,
                                 Success = codeCreateViewModel.ApplicationOpened,
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
@@ -157,13 +163,14 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                         }
                 }
 
-                return;
+                await _navigationService.NavigateToLogCachePage(_context);
 
             }
             catch (TaskCanceledException taskx)
             {
                 await _dataService.HandleExceptionAsync(taskx);
                 Debug.WriteLine($"Task canceled exception found in AnnotateCommand.Execute(): {taskx.Message}");
+                _navigationService.GoBack();
             }
             catch (FormatException formx)
             {
@@ -180,6 +187,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
 
                 Debug.WriteLine($"Format exception found in AnnotateCommand.Execute(): {formx.Message}");
 
+                _navigationService.GoBack();
             }
             catch (Exception ex)
             {
@@ -188,9 +196,9 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
 
                 Debug.WriteLine($"Exception found in AnnotateCommand.Execute(): {ex.Message}");
+                _navigationService.GoBack();
             }
 
-            _navigationService.GoBack();
         }
 
     }

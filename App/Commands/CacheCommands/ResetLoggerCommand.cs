@@ -24,7 +24,6 @@ namespace Data_Logger_1._3.Commands.CacheCommands
             try
             {
                 var isQt = _loggerViewModel.ApplicationName.Equals(Constants.Qt);
-                var isAndroidStudio = _loggerViewModel.ApplicationName.Equals(Constants.Android);
                 var isVisualStudio = _loggerViewModel.ApplicationName.Equals(Constants.VisualStudio);
 
                 _loggerViewModel.ProjectName = string.Empty;
@@ -47,6 +46,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                     case LOG.CATEGORY.CODING:
                         {
                             var codingViewModel = (codeCreateViewModel)_loggerViewModel;
+                            codingViewModel.ProjectName = string.Empty;
 
                             if (isQt)
                                 codingViewModel.ApplicationName = Constants.Qt;
@@ -60,7 +60,7 @@ namespace Data_Logger_1._3.Commands.CacheCommands
 
                             if (_loggerViewModel is AScodeCreateViewModel AScodingViewModel)
                             {
-                                codingViewModel.ApplicationName = Constants.Android;
+                                AScodingViewModel.ApplicationName = Constants.Android;
                                 AScodingViewModel.IsSimple = false;
 
                                 AScodingViewModel.SyncHours = 0;

@@ -14,16 +14,18 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
     {
         protected readonly IDataService _dataService;
         protected readonly NavigationService _navigationService;
-        public abstract LogContext Context { get; } 
+        public abstract LogContext Context { get; }
 
-        public abstract ICommand CreateLogCommand { get; }
-        public abstract ICommand ReportLogCommand { get; }
+        public ICommand CreateLogCommand { get; }
+        public ICommand ReportLogCommand { get; }
 
         public LogCacheViewModel(NavigationService navigationService, IDataService dataService)
         {
             _navigationService = navigationService;
             _dataService = dataService;
 
+            CreateLogCommand = new CreateLogCommand(_navigationService, _dataService);
+            ReportLogCommand = new ReportCommand(_navigationService);
         }
 
         private string logCount = "0 logs cached | 0 total logs";
@@ -42,7 +44,7 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
 
 
         private Visibility noLogsMessageVisibility;
-        private Visibility NoLogsMessageVisibility
+        public Visibility NoLogsMessageVisibility
         {
             get
             {
@@ -76,9 +78,19 @@ namespace Data_Logger_1._3.ViewModels.Dashboard
 
 
 
+        public virtual void OnLogOut()
+        {
+            CacheItems = [];
+            LogCount = string.Empty;
+        }
 
 
-        public abstract Task UpdateLogCount();
+        internal virtual async Task AutoStartAsync()
+        {
+            await UpdateLogCount();
+        }
+
+        internal abstract Task UpdateLogCount();
 
 
     }
