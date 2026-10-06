@@ -1,21 +1,22 @@
 ﻿using Data.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Migration.Models;
 
-namespace Migration
+namespace Migration.Services
 {
     public class DbMigrationService
     {
-        private readonly string _programDataPath;
 
         public DbMigrationService()
         {
-            _programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
         }
 
 
-        public async Task MigrateAsync(string oldDbPath, string newDbPath)
+        public static async Task<MigrationResult> MigrateAsync(string oldDbPath, string newDbPath)
         {
+            var result = new MigrationResult();
+
 #if RELEASE
             string key = Data.DataDependencies.RetrieveEncryptionKey();
 
@@ -51,6 +52,17 @@ namespace Migration
             var alpha5Options = new DbContextOptionsBuilder<EntityMaster>().UseSqlite(alpha5ConnectionString).Options;
 
             await using var alpha5Db = new EntityMaster(alpha5Options);
+
+            /* INSPECT ALPHA 5 DATABASE */
+
+            // TODO: Inspect the Alpha 5 database for orphaned / invalid records.
+            //
+            // Store anything requiring attention in result.Issues.
+            //
+            // Do not modify Alpha 5.
+            //
+            // result.RequiresUserAction should become true if issues are found.
+
 
             /* DATA MIGRATION */
 
@@ -139,8 +151,18 @@ namespace Migration
             alpha6Db.AllFeedback.AddRange(alpha5Feedback.Where(x => !alpha6FeedbackIds.Contains(x.feedbackID)));
 
             await alpha6Db.SaveChangesAsync();
-        }
 
+            /* HANDLE MIGRATION ISSUES */
+
+            if (result.Issues.Count > 0)
+            {
+                // TODO: Return control to Installer so the migration page can be shown.
+                // The Installer will decide whether the user repairs the records
+                // or continues with the valid Alpha 6 database.
+            }
+
+            return result;
+        }
 
 
     }

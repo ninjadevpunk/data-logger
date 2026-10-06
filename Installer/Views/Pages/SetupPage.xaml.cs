@@ -4,7 +4,7 @@ using FileSys.Interfaces;
 using FileSys.Services;
 using Installer.Services;
 using Microsoft.Win32;
-using Migration;
+using Migration.Services;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -338,7 +338,7 @@ namespace Installer.Views.Pages
                         try
                         {
                             // Create the encrypted Alpha 6 database from the Alpha 5 backup
-                            await _databaseMigration.MigrateAsync(alpha5BackupPath, alpha6DatabasePath);
+                            await DbMigrationService.MigrateAsync(alpha5BackupPath, alpha6DatabasePath);
                         }
                         catch (Exception ex)
                         {
