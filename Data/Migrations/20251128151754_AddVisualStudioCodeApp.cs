@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace Data_Logger_1._3.Migrations
+namespace Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddVisualStudioCodeApp : Migration

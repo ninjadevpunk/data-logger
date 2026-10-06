@@ -1,7 +1,6 @@
 ﻿using Core.Interfaces;
 using Data.Interfaces;
 using Data.Services;
-using FileSys.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,23 +19,7 @@ namespace Data
         public static IServiceCollection AddDataDependencies(this IServiceCollection services, IConfiguration configuration)
         {
             // EntityMaster
-            string key = string.Empty;
-
-#if DEBUG
-            key = Environment.GetEnvironmentVariable("DevMode_SQLCipher_Key")!;
-#else
-            key = RetrieveEncryptionKey();
-#endif
-
-            if (string.IsNullOrWhiteSpace(key))
-                throw new Exception("SQLCipher key is missing!");
-
-            var connectionString = new SqliteConnectionStringBuilder
-            {
-                DataSource = configuration.GetConnectionString("DefaultConnection"),
-                Mode = SqliteOpenMode.ReadWriteCreate,
-                Password = key
-            }.ToString();
+            var connectionString = BuildConnectionString(configuration);
 
             services.AddDbContext<EntityMaster>(options =>
             {
@@ -49,11 +32,9 @@ namespace Data
             });
 
             // Internal implementation details
-            services.AddScoped(serviceProvider => new EntityReader(serviceProvider));
-            services.AddScoped(serviceProvider => new EntityWriter(serviceProvider));
-            services.AddScoped(serviceProvider => new EntityHandler(serviceProvider));
-
-            services.AddTransient<EntityCodingService>();
+            services.AddScoped<EntityReader>();
+            services.AddScoped<EntityWriter>();
+            services.AddScoped<EntityHandler>();
 
 
             // AuthService
@@ -63,6 +44,28 @@ namespace Data
             services.AddSingleton<IDataService>(services => new DataService(services.GetRequiredService<IAuthService>(), services));
 
             return services;
+        }
+
+        public static string BuildConnectionString(IConfiguration configuration)
+        {
+            string key = string.Empty;
+
+#if DEBUG
+            DotNetEnv.Env.Load();
+            key = Environment.GetEnvironmentVariable("DevMode_SQLCipher_Key")!;
+#else
+            key = RetrieveEncryptionKey();
+#endif
+
+            if (string.IsNullOrWhiteSpace(key))
+                throw new Exception("SQLCipher key is missing!");
+
+            return new SqliteConnectionStringBuilder
+            {
+                DataSource = configuration.GetConnectionString("DefaultConnection"),
+                Mode = SqliteOpenMode.ReadWriteCreate,
+                Password = key
+            }.ToString();
         }
 
 #if RELEASE

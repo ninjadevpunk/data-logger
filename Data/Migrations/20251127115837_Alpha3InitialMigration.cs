@@ -1,11 +1,10 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Data_Logger_1._3.Migrations
+namespace Data.Migrations
 {
     /// <inheritdoc />
     public partial class Alpha3InitialMigration : Migration
