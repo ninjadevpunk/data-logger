@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Data.Interfaces;
 using Core.Enums;
+using Core.DTOs.Data;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
@@ -47,12 +48,13 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         public override async Task UpdateLogsListAsync()
         {
             Logs.Clear();
-            ObservableCollection<REPORTViewModel> list = new ObservableCollection<REPORTViewModel>();
+            ObservableCollection<REPORTViewModel> list = [];
 
+            List<QtDataDTO> qtDataDTOs = [.. (await _dataService.RetrieveLogsAsync(LogContext.Qt)).Cast<QtDataDTO>()];
 
-            foreach (LOG log in await _dataService.RetrieveLogsAsync(LogContext.Qt))
+            foreach (var qtDTO in qtDataDTOs)
             {
-                
+                list.Add(new qtREPORTViewModel(_dataService, this, qtDTO));
             }
 
             Logs = list;

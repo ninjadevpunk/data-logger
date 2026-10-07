@@ -1,5 +1,7 @@
-﻿using Core.DTOs.Cache;
+﻿using Core.DTOs;
+using Core.DTOs.Cache;
 using Core.Enums;
+using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -9,6 +11,7 @@ using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
+using System.Reflection.Metadata;
 
 namespace Data_Logger_1._3.Commands.EditCacheCommands
 {
@@ -27,7 +30,7 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
         private readonly int _timeRemaining;
 
 
-        public EditAnnotateCommand(NavigationService navigationService, IDataService dataService, ICacheService cacheService, 
+        public EditAnnotateCommand(NavigationService navigationService, IDataService dataService, ICacheService cacheService,
             LoggerViewModel loggerEditViewModel, LogCacheViewModel logCacheViewModel, LOGViewModel logViewModel, LogCacheDTO logCacheDTO, int timeRemaining)
         {
             _navigationService = navigationService;
@@ -45,7 +48,9 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
         {
             try
             {
-                switch(_logCacheDTO.Context)
+                var userId = _logCacheDTO.UserId;
+
+                switch (_logCacheDTO.Context)
                 {
                     case LogContext.Qt when _logCacheDTO is QtCacheDTO qtCacheDTO:
                         {
@@ -56,7 +61,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                             qtCacheDTO = new QtCacheDTO
                             {
                                 UserId = _logCacheDTO.UserId,
-                                ProjectName = qtEditViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = qtEditViewModel.ProjectName,
+                                    ApplicationName = Constants.Qt
+                                },
                                 Start = qtEditViewModel.StartDate,
                                 End = qtEditViewModel.EndDate,
                                 OutputName = qtEditViewModel.Output,
@@ -64,7 +73,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = _logCacheDTO.UserId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,
@@ -101,7 +114,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                             androidCacheDTO = new AndroidCacheDTO
                             {
                                 UserId = _logCacheDTO.UserId,
-                                ProjectName = androidEditViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = androidEditViewModel.ProjectName,
+                                    ApplicationName = Constants.Android
+                                },
                                 Start = androidEditViewModel.StartDate,
                                 End = androidEditViewModel.EndDate,
                                 OutputName = androidEditViewModel.Output,
@@ -109,7 +126,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = _logCacheDTO.UserId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,
@@ -133,7 +154,7 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                                 throw new InvalidOperationException("The log cache view model is not a CodingAndroidViewModel.");
                             var androidCodingCache = codingAndroidViewModel.CacheItems;
                             var index = androidCodingCache.IndexOf(androidLogViewModel);
-                            var newAndroidLogViewModel = new AndroidLOGViewModel(_navigationService, androidCacheDTO, codingAndroidViewModel, 
+                            var newAndroidLogViewModel = new AndroidLOGViewModel(_navigationService, androidCacheDTO, codingAndroidViewModel,
                                 _dataService, _cacheService)
                             {
                                 TimeRemaining = _timeRemaining
@@ -155,7 +176,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                             {
                                 UserId = _logCacheDTO.UserId,
                                 ApplicationName = codeEditViewModel.ApplicationName,
-                                ProjectName = codeEditViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = codeEditViewModel.ProjectName,
+                                    ApplicationName = codeEditViewModel.ApplicationName
+                                },
                                 Start = codeEditViewModel.StartDate,
                                 End = codeEditViewModel.EndDate,
                                 OutputName = codeEditViewModel.Output,
@@ -163,7 +188,11 @@ namespace Data_Logger_1._3.Commands.EditCacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = _logCacheDTO.UserId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,

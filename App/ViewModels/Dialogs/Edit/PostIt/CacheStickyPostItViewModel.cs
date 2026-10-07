@@ -25,7 +25,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt
             _postItCacheDTO = postItCacheDTO;
             RtfPostIt = postItCacheDTO;
 
-            Subject = _postItCacheDTO.Subject;
+            Subject = _postItCacheDTO.Subject.SubjectName;
             DisplayError = RtfConverter.ToPlainText(_postItCacheDTO.Error).Text;
             DisplaySolution = RtfConverter.ToPlainText(_postItCacheDTO.Solution).Text;
             DisplaySuggestion = RtfConverter.ToPlainText(_postItCacheDTO.Suggestion).Text;

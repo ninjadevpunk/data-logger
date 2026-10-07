@@ -40,7 +40,7 @@ namespace Data.Services
             log.Author = account;
 
             BuildApp(log, account, input.ApplicationName);
-            BuildProject(log, account, log.Application, input.ProjectName);
+            BuildProject(log, account, log.Application, input.Project.ProjectName);
             log.Start = input.Start;
             log.End = input.End;
             AddProjectDetails(log, account, input.OutputName, input.TypeName);
@@ -116,7 +116,7 @@ namespace Data.Services
                     User = account,
                     Application = app,
                     Project = project,
-                    Subject = postIt.Subject
+                    Subject = postIt.Subject.SubjectName
                 },
                 Error = postIt.Error,
                 Solution = postIt.Solution,

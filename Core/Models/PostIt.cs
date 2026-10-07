@@ -152,12 +152,18 @@ namespace Core.Models
             return hash.ToHashCode();
         }
 
-        public static bool operator ==(PostIt left, PostIt right)
+        public static bool operator ==(PostIt? left, PostIt? right)
         {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left is null || right is null)
+                return false;
+
             return left.Equals(right);
         }
 
-        public static bool operator !=(PostIt left, PostIt right)
+        public static bool operator !=(PostIt? left, PostIt? right)
         {
             return !(left == right);
         }

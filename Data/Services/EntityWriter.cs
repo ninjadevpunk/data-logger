@@ -215,8 +215,6 @@ namespace Data.Services
 
         private static async Task PrepareLogDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master)
         {
-            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
-
             var user = await EntityReader.FindAccountByID(scope, master, log.accountID) ?? throw new InvalidOperationException("No user logged in!");
             var userId = user.accountID;
             log.Author = user;
@@ -255,7 +253,6 @@ namespace Data.Services
 
         private static async Task PreparePostItDetailsAsync(LOG log, AsyncServiceScope scope, EntityMaster master)
         {
-            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
             var user = log.Author;
             var userId = user.accountID;
 

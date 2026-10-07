@@ -2,8 +2,8 @@
 {
     public record PostItDataDTO : PostItDTO
     {
-        public int LogId { get; set; }
-        public int PostItId { get; set; }
-        public int SubjectId { get; set; }
+        public int LogId { get; init; }
+        public int PostItId { get; init; }
+        public int SubjectId { get; init; }
     }
 }

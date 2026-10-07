@@ -7,6 +7,7 @@ using Data.Interfaces;
 using Data_Logger_1._3.ViewModels.Reporter.Logs;
 using Core.Enums;
 using Core.Utilities;
+using Core.DTOs.Data;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
@@ -26,23 +27,9 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             SearchCommand = new SearchCommand(this, _dataService, _navigationService, Context);
             ExportCommand = new ExportCommand();
             ReturnToDashboard = new ReporterReturnCommand(_navigationService, Context);
-
         }
 
-        /// <summary>
-        /// Populate the application input bar and project input bar. Show logs based on app and project filter on start up of ReportDesk.
-        /// </summary>
-        public async Task AutoStartAsync()
-        {
-            // INITIALISE APPS
-            await InitialiseAppsAsync();
-
-            // INITIALISE PROJECTS
-            await InitialiseProjectsAsync();
-
-            // UPDATE LOGS
-            await UpdateLogsListAsync();
-        }
+        
 
         /// <summary>
         /// Initialises the dashboard's application options to filter with.
@@ -93,7 +80,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             {
                 foreach (var project in await _dataService.InitialiseProjectsLISTAsync(LOG.CATEGORY.CODING))
                 {
-                    Projects.Add(project);
+                    if(project.ApplicationName == Application || Application == "ANY")
+                        Projects.Add(project.ProjectName);
 
                     if (string.IsNullOrEmpty(Project) && Projects.Count > 2)
                         holdProjectName = Projects.ElementAt(2);
@@ -118,12 +106,16 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             {
                 Logs.Clear();
 
-                ObservableCollection<REPORTViewModel> list = new ObservableCollection<REPORTViewModel>();
-                
+                ObservableCollection<REPORTViewModel> list = [];
 
-                foreach (LOG log in await _dataService.RetrieveLogsAsync(LogContext.Coding))
+                List<CodingDataDTO> codingDataDTOs = [.. (await _dataService.RetrieveLogsAsync(LogContext.Coding)).Cast<CodingDataDTO>()];
+
+                foreach (var codingDTO in codingDataDTOs)
                 {
-                    
+                    if(codingDTO.Project.ProjectName == Project && codingDTO.ApplicationName == Application 
+                        || (Project == "ANY" && codingDTO.ApplicationName == Application)
+                        || (Project == "ANY" && Application == "ANY"))
+                        list.Add(new codeREPORTViewModel(_dataService, this, codingDTO));
                 }
 
                 Logs = list;

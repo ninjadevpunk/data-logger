@@ -4,6 +4,7 @@ using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows.Input;
 
@@ -18,7 +19,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
         private readonly CodeReportDeskViewModel _codeReportDeskViewModel;
 
 
-        public override ICommand SaveCommand => throw new NotImplementedException();
+        public override ICommand SaveCommand { get; } = null!;
         public override ICommand UpdateLogCommand { get; }
 
 
@@ -27,8 +28,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
             : base(navigationService, authService, dataService)
         {
             _codeReportDeskViewModel = codeReportDeskViewModel;
+            Extensions.InitialiseCodingUpdateViewModel(_navigationService, _dataService, this, codingDataDTO);
             ApplicationName = Constants.VisualStudio;
 
+            // TODO: SaveCommand
             UpdateLogCommand = new UpdateCommand(_navigationService, this, _codeReportDeskViewModel, _authService, _dataService, codingDataDTO, Context);
         }
 
@@ -36,7 +39,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
         public override async Task UpdateLogCountAsync()
         {
             var count = await _dataService.LogCountAsync(Category);
-            LogCount = $"{_codeReportDeskViewModel.Logs.Count} Logs";
+            LogCount = $"{count} Logs";
         }
     }
 }

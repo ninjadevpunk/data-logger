@@ -27,6 +27,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
         public ReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService)
         {
+            Logs = [];
             _navigationService = navigationService;
             _dataService = dataService;
             _pdfService = pdfService;
@@ -43,7 +44,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
 
 
-        private ObservableCollection<SearchResultViewModel> searchBarItems = new();
+        private ObservableCollection<SearchResultViewModel> searchBarItems = [];
         public ObservableCollection<SearchResultViewModel> SearchBarItems
         {
             get
@@ -59,7 +60,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
 
 
-        private ObservableCollection<REPORTViewModel> logs = new();
+        private ObservableCollection<REPORTViewModel> logs = [];
         public ObservableCollection<REPORTViewModel> Logs
         {
             get
@@ -142,7 +143,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             }
         }
 
-        private ObservableCollection<string> projects = new();
+        private ObservableCollection<string> projects = [];
         public ObservableCollection<string> Projects
         {
             get
@@ -170,7 +171,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             }
         }
 
-        private ObservableCollection<string> applications = new();
+        private ObservableCollection<string> applications = [];
         public ObservableCollection<string> Applications
         {
             get
@@ -215,6 +216,20 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
 
 
+        /// <summary>
+        /// Populate the application input bar and project input bar. Show logs based on app and project filter on start up of ReportDesk.
+        /// </summary>
+        public async Task AutoStartAsync()
+        {
+            // INITIALISE APPS
+            await InitialiseAppsAsync();
+
+            // INITIALISE PROJECTS
+            await InitialiseProjectsAsync();
+
+            // UPDATE LOGS
+            await UpdateLogsListAsync();
+        }
 
         public abstract Task UpdateLogsListAsync();
         public abstract Task InitialiseAppsAsync();

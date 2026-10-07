@@ -34,7 +34,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
         }
 
 
-        protected override async Task LoadProjectsAsync() => Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Constants.Qt))];
+        protected override async Task LoadProjectsAsync() => Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Constants.Qt))
+            .Select(pro => pro.ProjectName)];
 
         protected override async Task LoadApplicationsAsync() => Applications = [];
 

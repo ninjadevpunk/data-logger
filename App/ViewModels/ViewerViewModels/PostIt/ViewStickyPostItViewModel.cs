@@ -13,7 +13,7 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt
     {
         public ViewStickyPostItViewModel(PostItDTO dto)
         {
-            DisplaySubject = dto.Subject;
+            DisplaySubject = dto.Subject.SubjectName;
             DisplayError = RtfConverter.ToPlainText(dto.Error).Text;
             DisplaySolution = RtfConverter.ToPlainText(dto.Solution).Text;
             DisplaySuggestion = RtfConverter.ToPlainText(dto.Suggestion).Text;

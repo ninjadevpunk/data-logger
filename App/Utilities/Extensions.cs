@@ -1,5 +1,8 @@
+﻿using Core.DTOs;
 using Core.DTOs.Cache;
+using Core.DTOs.Data;
 using Core.DTOs.Identity;
+using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
@@ -9,6 +12,7 @@ using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -135,12 +139,12 @@ namespace Data_Logger_1._3.Utilities
                 return false;
             }
 
-            bool allAreEmpty = !RtfConverter.HasContent(error) && !RtfConverter.HasContent(solution) && !RtfConverter.HasContent(suggestion) 
+            bool allAreEmpty = !RtfConverter.HasContent(error) && !RtfConverter.HasContent(solution) && !RtfConverter.HasContent(suggestion)
                 && !RtfConverter.HasContent(comment);
 
             if (allAreEmpty)
             {
-                MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data", 
+                MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data",
                     MessageBoxButton.OK, MessageBoxImage.Warning);
                 return false;
             }
@@ -172,7 +176,10 @@ namespace Data_Logger_1._3.Utilities
 
             return new PostItCacheDTO
             {
-                Subject = subject,
+                Subject = new SubjectDTO
+                {
+                    SubjectName = subject
+                },
                 Error = ValidatePostItRtf(error),
                 Solution = ValidatePostItRtf(solution),
                 Suggestion = ValidatePostItRtf(suggestion),
@@ -238,12 +245,12 @@ namespace Data_Logger_1._3.Utilities
 
 
 
-        internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService, 
+        internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
         {
             IReadOnlyList<PostItCacheDTO> postIts = [.. codingCacheDTO.PostIts.Cast<PostItCacheDTO>()];
 
-            codingLoggerViewModel.ProjectName = codingCacheDTO.ProjectName;
+            codingLoggerViewModel.ProjectName = codingCacheDTO.Project.ProjectName;
             codingLoggerViewModel.ApplicationName = codingCacheDTO.ApplicationName;
 
             codingLoggerViewModel.StartTime = DateTime.Parse(codingCacheDTO.Start.Hour + ":" + codingCacheDTO.Start.Minute + ":" + codingCacheDTO.Start.Second + "." + codingCacheDTO.Start.Millisecond);
@@ -271,24 +278,33 @@ namespace Data_Logger_1._3.Utilities
 
         internal static void InitialiseCodingUpdateViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingDataDTO codingDataDTO)
-            {
-                var postIt = new PostItCacheDTO
-                {
-                    UserId = p.UserId,
-                    Subject = p.Subject,
-                    Error = p.Error,
-                    Solution = p.Solution,
-                    Suggestion = p.Suggestion,
-                    Comment = p.Comment,
-                    ERCaptureTime = p.ERCaptureTime,
-                    SOCaptureTime = p.SOCaptureTime
-                };
+        {
+            IReadOnlyList<PostItDataDTO> postIts = [.. codingDataDTO.PostIts.Cast<PostItDataDTO>()];
 
-                return new CacheStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt);
-            }));
+            codingLoggerViewModel.ProjectName = codingDataDTO.Project.ProjectName;
+            codingLoggerViewModel.ApplicationName = codingDataDTO.ApplicationName;
 
-            codingLoggerViewModel.BugsFound = codingCacheDTO.Bugs;
-            codingLoggerViewModel.ApplicationOpened = codingCacheDTO.Success;
+            codingLoggerViewModel.StartTime = DateTime.Parse(codingDataDTO.Start.Hour + ":" + codingDataDTO.Start.Minute + ":" + codingDataDTO.Start.Second + "." + codingDataDTO.Start.Millisecond);
+            codingLoggerViewModel.StartHours = codingDataDTO.Start.Hour;
+            codingLoggerViewModel.StartMinutes = codingDataDTO.Start.Minute;
+            codingLoggerViewModel.StartSeconds = codingDataDTO.Start.Second;
+            codingLoggerViewModel.StartMilliseconds = codingDataDTO.Start.Millisecond;
+            codingLoggerViewModel.StartDate = DateTime.Parse(codingDataDTO.Start.ToLongDateString());
+
+            codingLoggerViewModel.EndTime = DateTime.Parse(codingDataDTO.End.Hour + ":" + codingDataDTO.End.Minute + ":" + codingDataDTO.End.Second + "." + codingDataDTO.End.Millisecond);
+            codingLoggerViewModel.EndHours = codingDataDTO.End.Hour;
+            codingLoggerViewModel.EndMinutes = codingDataDTO.End.Minute;
+            codingLoggerViewModel.EndSeconds = codingDataDTO.End.Second;
+            codingLoggerViewModel.EndMilliseconds = codingDataDTO.End.Millisecond;
+            codingLoggerViewModel.EndDate = DateTime.Parse(codingDataDTO.End.ToLongDateString());
+
+            codingLoggerViewModel.Output = codingDataDTO.OutputName;
+            codingLoggerViewModel.Type = codingDataDTO.TypeName;
+            codingLoggerViewModel.PostIts = new ObservableCollection<StickyPostItViewModel>(postIts.Select(postIt =>
+            new DataStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt)));
+
+            codingLoggerViewModel.BugsFound = codingDataDTO.Bugs;
+            codingLoggerViewModel.ApplicationOpened = codingDataDTO.Success;
         }
 
         /// <summary>
@@ -331,5 +347,7 @@ namespace Data_Logger_1._3.Utilities
             codingAndroidViewModel.LogCount = $"{codingAndroidViewModel.CacheItems.Count} android logs cached | {count} total logs";
             return $"{codingAndroidViewModel.CacheItems.Count} Logs Cached";
         }
+
+
     }
 }

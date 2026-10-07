@@ -4,7 +4,7 @@
     {
         public int UserId { get; set; }
 
-        public string Subject { get; init; } = string.Empty;
+        public SubjectDTO Subject { get; init; } = new SubjectDTO { };
         public string Error { get; init; } = string.Empty;
         public string Solution { get; init; } = string.Empty;
         public string Suggestion { get; init; } = string.Empty;

@@ -1,6 +1,8 @@
-﻿using Core.DTOs.Cache;
+﻿using Core.DTOs;
+using Core.DTOs.Cache;
 using Core.Enums;
 using Core.Interfaces;
+using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dashboard;
@@ -57,7 +59,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                             var input = new QtCacheDTO
                             {
                                 UserId = userId,
-                                ProjectName = qtCreateViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = qtCreateViewModel.ProjectName,
+                                    ApplicationName = Constants.Qt
+                                },
                                 Start = qtCreateViewModel.StartDate,
                                 End = qtCreateViewModel.EndDate,
                                 OutputName = qtCreateViewModel.Output,
@@ -65,7 +71,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = userId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,
@@ -93,7 +103,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                             var input = new AndroidCacheDTO
                             {
                                 UserId = userId,
-                                ProjectName = androidCreateViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = androidCreateViewModel.ProjectName,
+                                    ApplicationName = Constants.Android
+                                },
                                 Start = androidCreateViewModel.StartDate,
                                 End = androidCreateViewModel.EndDate,
                                 OutputName = androidCreateViewModel.Output,
@@ -101,7 +115,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = userId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,
@@ -137,7 +155,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                             {
                                 UserId = userId,
                                 ApplicationName = codeCreateViewModel.ApplicationName,
-                                ProjectName = codeCreateViewModel.ProjectName,
+                                Project = new ProjectDTO
+                                {
+                                    ProjectName = codeCreateViewModel.ProjectName,
+                                    ApplicationName = codeCreateViewModel.ApplicationName
+                                },
                                 Start = codeCreateViewModel.StartDate,
                                 End = codeCreateViewModel.EndDate,
                                 OutputName = codeCreateViewModel.Output,
@@ -147,7 +169,11 @@ namespace Data_Logger_1._3.Commands.CacheCommands
                                 PostIts = postIts.Select(postIt => new PostItCacheDTO
                                 {
                                     UserId = userId,
-                                    Subject = postIt.Subject,
+                                    Subject = new SubjectDTO
+                                    {
+                                        UserId = userId,
+                                        SubjectName = postIt.Subject
+                                    },
                                     Error = postIt.RtfPostIt.Error,
                                     Solution = postIt.RtfPostIt.Solution,
                                     Suggestion = postIt.RtfPostIt.Suggestion,

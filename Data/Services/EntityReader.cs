@@ -1,4 +1,6 @@
-﻿using Core.DTOs.Identity;
+﻿using Core.DTOs;
+using Core.DTOs.Data;
+using Core.DTOs.Identity;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
@@ -98,13 +100,14 @@ namespace Data.Services
         /// Retrieves Coding logs.
         /// </summary>
         /// <returns>Returns a list of CodingLOG objects.</returns>
-        public async Task<List<CodingLOG>> RetrieveCodingLogsAsync(int userId)
+        public async Task<List<CodingDataDTO>> RetrieveCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
-            return await master.CodingLogs
-                .Where(c => c.accountID == userId && !new[] { 1, 2 }.Contains(c.Application!.appID))
+            var codingLogs = await master.CodingLogs
+                .Where(c => c.accountID == userId && !new[] { 1, 2 }.Contains(c.Application.appID))
+                .Where(a => a.Category == LOG.CATEGORY.CODING)
                 .Include(l => l.Author)
                 .Include(l => l.Project)
                 .Include(l => l.Application)
@@ -114,28 +117,203 @@ namespace Data.Services
                 .ThenInclude(p => p.Subject)
                 .OrderBy(c => c.Start)
                 .ToListAsync();
+
+            var codingDTOs = codingLogs.Select(l =>
+                {
+                    return new CodingDataDTO
+                    {
+                        LogId = l.ID,
+                        UserId = l.accountID,
+                        ProjectId = l.projectID,
+                        Project = new ProjectDataDTO
+                        {
+                            ProjectId = l.projectID,
+                            ProjectName = l.Project.Name,
+                            AppId = l.appID,
+                            ApplicationName = l.Application.Name
+                        },
+                        AppId = l.appID,
+                        ApplicationName = l.Application.Name,
+                        Start = l.Start,
+                        End = l.End,
+                        OutputID = l.outputID,
+                        OutputName = l.Output.Name,
+                        TypeID = l.typeID,
+                        TypeName = l.Type.Name,
+                        PostIts = [.. l.PostItList.Select(p => new PostItDataDTO
+                        {
+                            UserId = l.accountID,
+                            LogId = l.ID,
+                            PostItId = p.postItID,
+                            Subject = new SubjectDataDTO
+                            {
+                                UserId = p.accountID,
+                                SubjectId = p.subjectID,
+                                SubjectName = p.Subject.Subject,
+                                AppId = p.Subject.appID,
+                                ProjectId = p.Subject.projectID
+                            },
+                            Error = p.Error,
+                            ERCaptureTime = p.ERCaptureTime,
+                            Solution = p.Solution,
+                            SOCaptureTime = p.SOCaptureTime,
+                            Suggestion = p.Suggestion,
+                            Comment = p.Comment
+                        })],
+                        Bugs = l.Bugs,
+                        Success = l.Success
+                    };
+                }).ToList();
+
+            return codingDTOs;
         }
 
-        public async Task<List<CodingLOG>> RetrieveQtCodingLogsAsync(int userId)
+        /// <summary>
+        /// Retrieves Qt Coding logs.
+        /// </summary>
+        /// <returns>Returns a list of QtDataDTO objects.</returns>
+        public async Task<List<QtDataDTO>> RetrieveQtCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
-            return await master.CodingLogs
+            var codingLogs = await master.CodingLogs
                 .Where(qt => qt.accountID == userId && qt.Application!.appID == 1)
+                .Include(l => l.Author)
+                .Include(l => l.Project)
+                .Include(l => l.Application)
+                .Include(l => l.Output)
+                .Include(l => l.Type)
+                .Include(l => l.PostItList)
+                .ThenInclude(p => p.Subject)
                 .OrderBy(qt => qt.Start)
                 .ToListAsync();
+
+            var qtDTOs = codingLogs.Select(l =>
+            {
+                return new QtDataDTO
+                {
+                    LogId = l.ID,
+                    UserId = l.accountID,
+                    ProjectId = l.projectID,
+                    Project = new ProjectDataDTO
+                    {
+                        ProjectId = l.projectID,
+                        ProjectName = l.Project.Name,
+                        AppId = 1,
+                        ApplicationName = Constants.Qt
+                    },
+                    Start = l.Start,
+                    End = l.End,
+                    OutputID = l.outputID,
+                    OutputName = l.Output.Name,
+                    TypeID = l.typeID,
+                    TypeName = l.Type.Name,
+                    PostIts = [.. l.PostItList.Select(p => new PostItDataDTO
+            {
+                UserId = l.accountID,
+                LogId = l.ID,
+                PostItId = p.postItID,
+                Subject = new SubjectDataDTO
+                {
+                    UserId = p.Subject.accountID,
+                    SubjectId = p.subjectID,
+                    SubjectName = p.Subject.Subject,
+                    AppId = p.Subject.appID,
+                    ProjectId = p.Subject.projectID
+                },
+                Error = p.Error,
+                ERCaptureTime = p.ERCaptureTime,
+                Solution = p.Solution,
+                SOCaptureTime = p.SOCaptureTime,
+                Suggestion = p.Suggestion,
+                Comment = p.Comment
+            })],
+                    Bugs = l.Bugs,
+                    Success = l.Success
+                };
+            }).ToList();
+
+            return qtDTOs;
         }
 
-        public async Task<List<AndroidCodingLOG>> RetrieveAndroidCodingLogsAsync(int userId)
+        /// <summary>
+        /// Retrieves Android Coding logs.
+        /// </summary>
+        /// <returns>Returns a list of AndroidDataDTO objects.</returns>
+        public async Task<List<AndroidDataDTO>> RetrieveAndroidCodingLogsAsync(int userId)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
-            return await master.AndroidCodingLogs
+            var androidLogs = await master.AndroidCodingLogs
                 .Where(a => a.accountID == userId && a.Application!.appID == 2)
+                .Include(l => l.Author)
+                .Include(l => l.Project)
+                .Include(l => l.Application)
+                .Include(l => l.Output)
+                .Include(l => l.Type)
+                .Include(l => l.PostItList)
+                .ThenInclude(p => p.Subject)
                 .OrderBy(a => a.Start)
                 .ToListAsync();
+
+            var androidDTOs = androidLogs.Select(l =>
+            {
+                return new AndroidDataDTO
+                {
+                    LogId = l.ID,
+                    UserId = l.accountID,
+                    ProjectId = l.projectID,
+                    Project = new ProjectDataDTO
+                    {
+                        ProjectId = l.projectID,
+                        ProjectName = l.Project.Name,
+                        AppId = 2,
+                        ApplicationName = Constants.Android
+                    },
+                    Start = l.Start,
+                    End = l.End,
+                    OutputID = l.outputID,
+                    OutputName = l.Output.Name,
+                    TypeID = l.typeID,
+                    TypeName = l.Type.Name,
+
+                    PostIts = [.. l.PostItList.Select(p => new PostItDataDTO
+            {
+                LogId = l.ID,
+                PostItId = p.postItID,
+                UserId = l.accountID,
+                Subject = new SubjectDataDTO
+                {
+                    UserId = p.Subject.accountID,
+                    SubjectId = p.subjectID,
+                    SubjectName = p.Subject.Subject,
+                    AppId = p.Subject.appID,
+                    ProjectId = p.Subject.projectID
+                },
+                Error = p.Error,
+                ERCaptureTime = p.ERCaptureTime,
+                Solution = p.Solution,
+                SOCaptureTime = p.SOCaptureTime,
+                Suggestion = p.Suggestion,
+                Comment = p.Comment
+            })],
+
+                    Bugs = l.Bugs,
+                    Success = l.Success,
+
+                    Scope = l.Scope == AndroidCodingLOG.SCOPE.SIMPLE,
+                    Sync = l.Sync,
+                    StartingGradleDaemon = l.StartingGradleDaemon,
+                    RunBuild = l.RunBuild,
+                    LoadBuild = l.LoadBuild,
+                    ConfigureBuild = l.ConfigureBuild,
+                    AllProjects = l.AllProjects
+                };
+            }).ToList();
+
+            return androidDTOs;
         }
 
         public async Task<List<GraphicsLOG>> RetrieveGraphicsLogsAsync(int userId)
@@ -415,6 +593,25 @@ namespace Data.Services
             return null;
         }
 
+        public async Task<ApplicationClass?> FindApplicationByID(AsyncServiceScope scope, EntityMaster master, int appID)
+        {
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                var application = await master.Applications
+                    .FirstOrDefaultAsync(app => app.appID == appID);
+
+                return application;
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex);
+            }
+
+            return null;
+        }
+
         public async Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
@@ -498,6 +695,25 @@ namespace Data.Services
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
+            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
+
+            try
+            {
+                var project = await master.Projects
+                    .FirstOrDefaultAsync((pro => pro.projectID == projectID));
+
+                return project;
+            }
+            catch (Exception ex)
+            {
+                await writer.HandleExceptionAsync(ex);
+            }
+
+            return null;
+        }
+
+        public async Task<ProjectClass?> FindProjectByID(AsyncServiceScope scope, EntityMaster master, int projectID)
+        {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
             try

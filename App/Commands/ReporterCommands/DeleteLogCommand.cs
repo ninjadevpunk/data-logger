@@ -1,8 +1,6 @@
 ﻿using MVVMEssentials.Commands;
-using System.Diagnostics;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using Data.Interfaces;
-using Core.Models;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -14,28 +12,28 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
     {
         private readonly IDataService _dataService;
         private readonly ReportDeskViewModel _reportDeskViewModel;
-        private readonly LOG _log;
+        private readonly int _logId;
 
 
-        public DeleteLogCommand(IDataService dataService, ReportDeskViewModel reportDeskViewModel, LOG log)
+        public DeleteLogCommand(IDataService dataService, ReportDeskViewModel reportDeskViewModel, int logId)
         {
             _dataService = dataService;
             _reportDeskViewModel = reportDeskViewModel;
-            _log = log;
+            _logId = logId;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
             try
             {
-                if (await _dataService.DeleteLOGAsync(_log))
+                if (await _dataService.DeleteLOGByIDAsync(_logId))
                 {
                     await _reportDeskViewModel.UpdateLogsListAsync();
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred near DeleteLogCommand.Execute(): {e.Message}");
+                await _dataService.HandleExceptionAsync(ex);
             }
         }
     }

@@ -144,20 +144,26 @@ namespace Data.Services
         /// Retrieves projects from the database of a specified category and populates SQLITE_PROJECTS, skipping unnamed projects.
         /// </summary>
         /// <param name="appName">The name of the app to filter by</param>
-        public async Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(string appName)
+        public async Task<IReadOnlyList<ProjectDataDTO>> InitialiseProjectsLISTAsync(string appName)
         {
             var user = await EnsureValidUserAsync();
 
-            List<string> SQLITE_PROJECTS = [];
+            List<ProjectDataDTO> SQLITE_PROJECTS = [];
 
-            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<ProjectDataDTO>>(async reader =>
             {
                 var collection = await reader.ListProjects(appName, user.Id);
 
                 foreach (var pro in collection)
                 {
                     if (pro != null)
-                        SQLITE_PROJECTS.Add(pro.Name);
+                        SQLITE_PROJECTS.Add(new ProjectDataDTO
+                        {
+                            ProjectId = pro.projectID,
+                            ProjectName = pro.Name,
+                            AppId = pro.appID,
+                            ApplicationName = pro.Application.Name
+                        });
                 }
 
                 return SQLITE_PROJECTS;
@@ -169,20 +175,26 @@ namespace Data.Services
         /// Retrieves projects from the database of a specified category and populates SQLITE_PROJECTS, skipping unnamed projects.
         /// </summary>
         /// <param name="category">The type of project.</param>
-        public async Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(LOG.CATEGORY category)
+        public async Task<IReadOnlyList<ProjectDataDTO>> InitialiseProjectsLISTAsync(LOG.CATEGORY category)
         {
             var user = await EnsureValidUserAsync();
 
-            List<string> SQLITE_PROJECTS = [];
+            List<ProjectDataDTO> SQLITE_PROJECTS = [];
 
-            return await UseReaderAsync<IReadOnlyList<string>>(async reader =>
+            return await UseReaderAsync<IReadOnlyList<ProjectDataDTO>>(async reader =>
             {
                 var collection = await reader.ListProjects(category, user.Id);
 
                 foreach (var pro in collection)
                 {
                     if (pro != null)
-                        SQLITE_PROJECTS.Add(pro.Name);
+                        SQLITE_PROJECTS.Add(new ProjectDataDTO
+                        {
+                            ProjectId = pro.projectID,
+                            ProjectName = pro.Name,
+                            AppId = pro.appID,
+                            ApplicationName = pro.Application.Name
+                        });
                 }
 
                 return SQLITE_PROJECTS;
@@ -866,27 +878,25 @@ namespace Data.Services
         /// <summary>
         /// Retrieves logs from the database for a specific cache context.
         /// </summary>
-        /// <param name="context">The logCacheDTO context to filter logs.</param>
-        /// <returns>Returns an IEnumerable of LOG objects, or null if an error occurs.</returns>
-        public async Task<IEnumerable<LOG>> RetrieveLogsAsync(LogContext context)
+        /// <param name="context">The log cache context to filter logs.</param>
+        /// <returns>Returns an IEnumerable of LogDataDTO objects, or null if an error occurs.</returns>
+        public async Task<IEnumerable<LogDataDTO>> RetrieveLogsAsync(LogContext context)
         {
             var user = await EnsureValidUserAsync();
             int id = user.Id;
 
-            return await UseReaderAsync<IEnumerable<LOG>>(async reader =>
+            return await UseReaderAsync<IEnumerable<LogDataDTO>>(async reader =>
             {
-                return context switch
+                IEnumerable<LogDataDTO> logs = context switch
                 {
                     LogContext.Qt => await reader.RetrieveQtCodingLogsAsync(id),
                     LogContext.AndroidStudio => await reader.RetrieveAndroidCodingLogsAsync(id),
                     LogContext.Coding => await reader.RetrieveCodingLogsAsync(id),
-                    LogContext.Graphics => await reader.RetrieveGraphicsLogsAsync(id),
-                    LogContext.Film => await reader.RetrieveFilmLogsAsync(id),
-                    LogContext.Flexi => await reader.RetrieveFlexiNotesLogsAsync(id),
                     _ => []
                 };
-            });
 
+                return logs;
+            });
         }
 
         /// <summary>
@@ -1051,13 +1061,11 @@ namespace Data.Services
         /// Saves all pending changes on the current logCacheDTO to the database through the reader.
         /// </summary>
         /// <param name="log">The edited logCacheDTO</param>
-        public async Task UpdateLogAsync(LOG log)
+        public async Task<bool> UpdateLogAsync(LogDataDTO logDataDTO)
         {
-            await UseHandlerAsync<Task>(async handler =>
+            return await UseHandlerAsync<bool>(async handler =>
             {
-                await handler.UpdateLogAsync(log);
-
-                return Task.CompletedTask;
+                return await handler.UpdateLogAsync(logDataDTO);
             });
         }
 

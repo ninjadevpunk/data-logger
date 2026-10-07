@@ -20,7 +20,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt
             base(navigationService, dataService, loggerCreateViewModel)
         {
             var postItCacheDTO = cacheStickyPostItViewModel.RtfPostIt;
-            Subject = postItCacheDTO.Subject;
+            Subject = postItCacheDTO.Subject.SubjectName;
             PlaceholderText = string.IsNullOrWhiteSpace(Subject) ? "Subject" : string.Empty;
 
             Error = postItCacheDTO.Error;

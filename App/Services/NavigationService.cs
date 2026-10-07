@@ -887,7 +887,7 @@ namespace Data_Logger_1._3.Services
                                 }
                                 var codeViewerViewModel = viewModelFactory.CreateViewerViewModel(user, new CodingViewDTO
                                 {
-                                    ProjectName = logDTO.ProjectName,
+                                    ProjectName = logDTO.Project.ProjectName,
                                     ApplicationName = logDTO.ApplicationName,
                                     Date = logDTO.Start.ToString("d MMMM yyyy HH:mm"),
                                     OutputName = logDTO.OutputName,
@@ -1015,9 +1015,9 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToPostItEditor(LoggerViewModel logger, CacheStickyPostItViewModel cacheStickyPostItViewModel)
         {
-            if(NavigationContext == NavContext.LOGGER)
+            if (NavigationContext == NavContext.LOGGER)
                 NavigationContext = NavContext.POSTIT;
-            else if(NavigationContext == NavContext.EDITOR)
+            else if (NavigationContext == NavContext.EDITOR)
                 NavigationContext = NavContext.EDITOR_POSTIT;
 
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
@@ -1056,7 +1056,7 @@ namespace Data_Logger_1._3.Services
 
         public async Task NavigateToReporter()
         {
-            _mainWindowFrame?.RemoveBackEntry();
+            _mainWindowFrame.RemoveBackEntry();
 
             SetReporterContext();
 
@@ -1069,13 +1069,8 @@ namespace Data_Logger_1._3.Services
                 default:
                     {
                         var reporterDashboard = uiFactory.CreateReporterPage("Code");
-                        var reportDesk = _serviceProvider.GetRequiredService<CodeReportDeskViewModel>();
-
-                        if (!reportDesk.DeskSet)
-                        {
-                            await reportDesk.AutoStartAsync();
-                            reportDesk.DeskSet = true;
-                        }
+                        dynamic reportDesk = reporterDashboard.DataContext;
+                        await reportDesk.AutoStartAsync();
 
                         await NavigateToPage(reporterDashboard);
 

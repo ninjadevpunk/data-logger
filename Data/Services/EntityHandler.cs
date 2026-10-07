@@ -1,5 +1,8 @@
-﻿using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.Enums;
+using Core.Models;
 using Core.Models.App_Models;
+using Data.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,13 +35,14 @@ namespace Data.Services
         }
 
         /// <summary>
-        /// Updates a log in the database.
+        /// Updates a logDataDTO in the database.
         /// </summary>
-        /// <param name="log">The log needing updates.</param>
-        /// <returns></returns>
-        public async Task UpdateLogAsync(LOG log)
+        /// <param name="logDataDTO">The logDataDTO needing updates.</param>
+        /// <returns>True if the log has been updated; otherwise false.</returns>
+        public async Task<bool> UpdateLogAsync(LogDataDTO logDataDTO)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
+            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 
             try
             {
@@ -52,59 +56,90 @@ namespace Data.Services
                     .Include(l => l.Type)
                     .Include(l => l.PostItList)
                         .ThenInclude(p => p.Subject)
-                    .FirstOrDefaultAsync(l => l.ID == log.ID);
+                    .FirstOrDefaultAsync(l => l.ID == logDataDTO.LogId) ?? throw new ArgumentNullException(null, "Log not found!");
 
-                if (existingLog == null)
-                    throw new ArgumentNullException("Cannot update a log that doesn't exist.");
+                var user = existingLog.Author;
+                var userId = logDataDTO.UserId;
+                // Resolve Application
 
-                master.Entry(existingLog).CurrentValues.SetValues(log);
+                ApplicationClass? newApp = null;
 
-                if (log.Application != null)
+                if (logDataDTO.AppId != existingLog.Application.appID)
                 {
-                    if (log.Application.appID == 0)
+                    var existingApp = await reader.FindApplicationByID(scope, master, logDataDTO.AppId);
+
+                    if (existingApp != null)
+                        existingLog.Application = existingApp;
+                    else
                     {
-                        // New App
-                        existingLog.Application = log.Application;
+                        newApp = new ApplicationClass
+                        {
+                            User = user,
+                            Name = logDataDTO.ApplicationName,
+                            Category = Extensions.GetLogCategory(logDataDTO.Context)
+                        };
+
+                        existingLog.Application = newApp;
+                    }
+                }
+
+
+                // Resolve Project
+
+                ProjectClass? newProject = null;
+
+                if (newApp == null)
+                {
+                    if (logDataDTO.ProjectId != existingLog.Project.projectID)
+                    {
+                        var existingProject = await reader.FindProjectByID(scope, master, logDataDTO.ProjectId);
+
+                        if (existingProject != null)
+                            existingLog.Project = existingProject;
+                        else
+                        {
+                            newProject = new ProjectClass
+                            {
+                                User = user,
+                                Application = existingLog.Application,
+                                Name = logDataDTO.Project.ProjectName
+                            };
+
+                            existingLog.Project = newProject;
+                        }
                     }
                 }
                 else
                 {
-                    existingLog.Application = (await master.Applications.FirstOrDefaultAsync(a => a.appID == existingLog.appID))!;
+                    newProject = new ProjectClass
+                    {
+                        User = user,
+                        Application = newApp,
+                        Name = logDataDTO.Project.ProjectName
+                    };
+
+                    existingLog.Project = newProject;
                 }
 
+                existingLog.Start = logDataDTO.Start;
+                existingLog.End = logDataDTO.End;
 
-                // PROJECT
-                if (log.projectID != 0 && log.projectID != existingLog.projectID)
-                {
-                    existingLog.projectID = log.projectID;
-                    existingLog.Project = null!;
-                }
-                else if (log.Project != null && log.Project.projectID == 0)
-                {
-                    // If the application is existing, use the tracked app; 
-                    // if it's new, the reference is already set correctly in the command
-                    log.Project.Application = existingLog.Application!;
-                    existingLog.Project = log.Project;
-                }
-                else
-                {
-                    existingLog.Project = (await master.Projects.FirstOrDefaultAsync(p => p.projectID == existingLog.projectID))!;
-                }
+                if (logDataDTO.OutputID != existingLog.outputID)
+                    existingLog.Output = master.Outputs.FirstOrDefault(o => o.outputID == logDataDTO.OutputID)
+                        ?? throw new ArgumentNullException(null, "Output not found!");
 
-                if (log.Output != null)
-                    existingLog.Output = master.Outputs
-                        .FirstOrDefault(o => o.outputID == log.Output.outputID) ?? log.Output;
+                if (logDataDTO.TypeID != existingLog.typeID)
+                    existingLog.Type = master.Types.FirstOrDefault(t => t.typeID == logDataDTO.TypeID)
+                        ?? throw new ArgumentNullException(null, "Type not found!");
 
-                if (log.Type != null)
-                    existingLog.Type = master.Types
-                        .FirstOrDefault(t => t.typeID == log.Type.typeID) ?? log.Type;
-
-                var incomingIds = log.PostItList
-                    .Where(p => p.postItID != 0)
-                    .Select(p => p.postItID)
-                    .ToHashSet();
+                IReadOnlyList<PostItDataDTO> postIts = [.. logDataDTO.PostIts.Cast<PostItDataDTO>()];
 
                 // REMOVE
+
+                HashSet<int> incomingIds = [.. postIts
+                    .Where(p => p.PostItId > 0)
+                    .Select(p => p.PostItId)];
+
                 foreach (var postIt in existingLog.PostItList.ToList())
                 {
                     if (!incomingIds.Contains(postIt.postItID))
@@ -113,104 +148,142 @@ namespace Data.Services
                     }
                 }
 
+
+                // Prepare existing PostIts
+                var existingPostIts = existingLog.PostItList
+                    .ToDictionary(p => p.postItID);
+
+
+                // Prepare Subject IDs that we actually need to look up
+                var subjectIds = postIts
+                    .Where(p => p.SubjectId > 0)
+                    .Select(p => p.SubjectId)
+                    .ToHashSet();
+
+                var existingSubjects = await master.Subjects
+                    .Where(s => s.accountID == userId)
+                    .Where(s => subjectIds.Contains(s.subjectID))
+                    .ToDictionaryAsync(s => s.subjectID);
+
+
+                // New/unpersisted Subjects created during this operation.
+                // These all have subjectID < 1 until SaveChangesAsync().
+                var newSubjects = new Dictionary<string, SubjectClass>();
+
+
                 // ADD + UPDATE
-                foreach (var postIt in log.PostItList)
+
+                foreach (var postIt in postIts)
                 {
-                    // resolve subject
+                    var subjectDataDTO = (SubjectDataDTO)postIt.Subject;
 
-                    SubjectClass? trackedSubject = null;
-                    bool subjectIsNew = false;
-
-                    if (postIt.Subject != null)
+                    // Existing PostIt
+                    if (existingPostIts.TryGetValue(postIt.PostItId, out var existingPostIt))
                     {
-                        subjectIsNew = postIt.Subject.subjectID == 0;
+                        SubjectClass? existingSubject = null, newSubject = null;
 
-                        if (subjectIsNew)
+                        // Resolve Subject if changed
+                        if (existingPostIt.subjectID != postIt.SubjectId)
                         {
-                            trackedSubject = postIt.Subject;
+                            if (existingSubjects.TryGetValue(postIt.SubjectId, out existingSubject))
+                            {
+                                existingPostIt.Subject = existingSubject;
+                                existingPostIt.Subject.Application = existingLog.Application;
+                                existingPostIt.Subject.Project = existingLog.Project;
+                            }
+                            else if (newSubjects.TryGetValue(subjectDataDTO.SubjectName, out newSubject)
+                                     && newSubject.subjectID < 1)
+                            {
+                                existingPostIt.Subject = newSubject;
+                            }
+                            else
+                            {
+                                newSubject = new SubjectClass
+                                {
+                                    User = user,
+                                    Category = Extensions.GetLogCategory(logDataDTO.Context),
+                                    Subject = subjectDataDTO.SubjectName,
+                                    Application = existingLog.Application,
+                                    Project = existingLog.Project
+                                };
+
+                                newSubjects[subjectDataDTO.SubjectName] = newSubject;
+                                existingPostIt.Subject = newSubject;
+                            }
                         }
-                        else
-                        {
-                            trackedSubject = await master.Subjects
-                                .FirstOrDefaultAsync(s => s.subjectID == postIt.Subject.subjectID) ?? postIt.Subject;
-                        }
+
+                        // Resolve Existing PostIt
+                        existingPostIt.Error = postIt.Error;
+                        existingPostIt.ERCaptureTime = postIt.ERCaptureTime;
+                        existingPostIt.Solution = postIt.Solution;
+                        existingPostIt.SOCaptureTime = postIt.SOCaptureTime;
+                        existingPostIt.Suggestion = postIt.Suggestion;
+                        existingPostIt.Comment = postIt.Comment;
                     }
+
+                    // New PostIt
                     else
                     {
-                        // Subject Exists
-                        trackedSubject = master.Subjects.FirstOrDefault(s => s.subjectID == postIt.subjectID);
-                    }
+                        SubjectClass subject;
 
-
-
-
-                    if (trackedSubject != null)
-                    {
-                        // Subject is NEW
-                        if (subjectIsNew)
+                        if (existingSubjects.TryGetValue(postIt.SubjectId, out var existingSubject))
                         {
-                            if (existingLog.Application == null || existingLog.Project == null)
-                                throw new InvalidOperationException("Application and Project must be set before creating a new Subject.");
-
-                            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                            trackedSubject.Application = existingLog.Application;
-                            trackedSubject.Project = existingLog.Project;
+                            subject = existingSubject;
                         }
-
-
-
-                        // Resolve PostIts
-
-                        // PostIt is NEW
-                        if (postIt.postItID == 0)
+                        else if (newSubjects.TryGetValue(subjectDataDTO.SubjectName, out var newSubject)
+                                 && newSubject.subjectID < 1)
                         {
-
-                            if (existingLog.Author == null)
-                                throw new InvalidOperationException("Author can't be null");
-
-                            // create new entity
-                            var newPostIt = new PostIt
-                            {
-                                accountID = existingLog.Author.accountID,
-                                logID = existingLog.ID,
-                                Error = postIt.Error,
-                                Solution = postIt.Solution,
-                                Suggestion = postIt.Suggestion,
-                                Comment = postIt.Comment,
-                                ERCaptureTime = postIt.ERCaptureTime,
-                                SOCaptureTime = postIt.SOCaptureTime,
-                            };
-
-                            if (!subjectIsNew)
-                                newPostIt.subjectID = trackedSubject.subjectID;
-                            else
-                                newPostIt.Subject = trackedSubject;
-
-                            existingLog.PostItList.Add(newPostIt);
+                            subject = newSubject;
                         }
                         else
                         {
-                            var trackedPostIt = existingLog.PostItList
-                                .First(p => p.postItID == postIt.postItID);
+                            newSubject = new SubjectClass
+                            {
+                                User = user,
+                                Category = Extensions.GetLogCategory(logDataDTO.Context),
+                                Subject = subjectDataDTO.SubjectName,
+                                Application = existingLog.Application,
+                                Project = existingLog.Project
+                            };
 
-                            // explicit update
-                            trackedPostIt.Error = postIt.Error;
-                            trackedPostIt.Solution = postIt.Solution;
-                            trackedPostIt.Suggestion = postIt.Suggestion;
-                            trackedPostIt.Comment = postIt.Comment;
-                            trackedPostIt.ERCaptureTime = postIt.ERCaptureTime;
-                            trackedPostIt.SOCaptureTime = postIt.SOCaptureTime;
-
-                            if (subjectIsNew)
-                                trackedPostIt.Subject = trackedSubject;
-                            else
-                                trackedPostIt.subjectID = trackedSubject.subjectID;
-
+                            newSubjects[subjectDataDTO.SubjectName] = newSubject;
+                            subject = newSubject;
                         }
+
+                        var newPostIt = new PostIt
+                        {
+                            Author = user,
+                            Subject = subject,
+                            Error = postIt.Error,
+                            ERCaptureTime = postIt.ERCaptureTime,
+                            Solution = postIt.Solution,
+                            SOCaptureTime = postIt.SOCaptureTime,
+                            Suggestion = postIt.Suggestion,
+                            Comment = postIt.Comment
+                        };
+
+                        existingLog.PostItList.Add(newPostIt);
                     }
                 }
 
+                switch (logDataDTO.Context)
+                {
+                    case LogContext.Qt when logDataDTO is QtDataDTO qtDataDTO:
+                    case LogContext.AndroidStudio when logDataDTO is AndroidDataDTO androidDataDTO:
+                    case LogContext.Coding when logDataDTO is CodingDataDTO codingDataDTO:
+                        {
+                            var codingLog = (CodingLOG)existingLog;
+                            codingDataDTO = (CodingDataDTO)logDataDTO;
+                            codingLog.Bugs = codingDataDTO.Bugs;
+                            codingLog.Success = codingDataDTO.Success;
+
+                            break;
+                        }
+                }
+
                 await master.SaveChangesAsync();
+
+                return true;
             }
             catch (ArgumentNullException nullex)
             {
@@ -222,6 +295,8 @@ namespace Data.Services
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
                 await writer.HandleExceptionAsync(ex);
             }
+
+            return false;
         }
 
         public async Task<bool> UpdateNotesLog(NoteItem noteItem)
@@ -266,12 +341,8 @@ namespace Data.Services
                 var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
                 var account = await master.Accounts
-                    .FirstOrDefaultAsync(a => a.accountID == id);
-
-                if (account == null)
-                    throw new ArgumentNullException("Cannot update profile picture for an account that doesn't exist.");
-
-
+                    .FirstOrDefaultAsync(a => a.accountID == id) 
+                    ?? throw new ArgumentNullException(null, "Account not found!");
                 account.ProfilePic = filePath;
 
                 await master.SaveChangesAsync();
@@ -306,12 +377,7 @@ namespace Data.Services
             {
                 var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
                 var existingUser = await master.Accounts
-                    .FirstOrDefaultAsync(a => a.accountID == user.Id);
-
-
-                if (existingUser == null)
-                    throw new ArgumentNullException("Cannot update a user that doesn't exist.");
-
+                    .FirstOrDefaultAsync(a => a.accountID == user.Id) ?? throw new ArgumentNullException(null, "Account not found!");
                 existingUser.FirstName = user.Name;
                 existingUser.LastName = user.Surname;
                 existingUser.Email = user.Email;
@@ -350,11 +416,8 @@ namespace Data.Services
             {
                 var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
                 var account = await master.Accounts
-                    .FirstOrDefaultAsync(a => a.Email == email);
-
-                if (account == null)
-                    throw new ArgumentNullException("Cannot change password for an account that doesn't exist.");
-
+                    .FirstOrDefaultAsync(a => a.Email == email) 
+                    ?? throw new ArgumentNullException(null, "Account not found!");
                 account.Password = EntityWriter.SaltedSHA256Hash(newPassword, account.accountID.ToString());
                 await master.SaveChangesAsync();
 

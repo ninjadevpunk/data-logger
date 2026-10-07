@@ -39,7 +39,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
         {
             try
             {
-
+                // TODO: Update the log directly in the database with data service.
                 await _reportDeskViewModel.UpdateLogsListAsync();
 
                 //await _dataService.UpdateLogAsync(_logDataDTO);

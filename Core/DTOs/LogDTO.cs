@@ -22,7 +22,7 @@ namespace Core.DTOs
         /// <summary>
         /// The project's name.
         /// </summary>
-        public string ProjectName { get; init; } = string.Empty;
+        public ProjectDTO Project { get; init; } = new ProjectDTO { };
 
         /// <summary>
         /// The date the log is created.

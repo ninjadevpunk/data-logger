@@ -87,7 +87,8 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Create
 
 
        
-        protected override async Task LoadProjectsAsync() => Projects = (await _dataService.InitialiseProjectsLISTAsync(Constants.Android)).ToHashSet();
+        protected override async Task LoadProjectsAsync() => Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Constants.Android))
+            .Select(pro => pro.ProjectName)];
 
         protected override async Task LoadApplicationsAsync() => Applications = [];
 

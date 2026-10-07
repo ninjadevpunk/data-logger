@@ -15,9 +15,7 @@ namespace Data.Interfaces
 
         // Save Database Changes
         Task SaveChangesAsync();
-        Task UpdateLogAsync(LOG log);
-
-
+        
         // --- User / Account ---
         Task SignInUserAsync();
 
@@ -47,8 +45,8 @@ namespace Data.Interfaces
 
         // --- Initialise methods ---
         Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync();
-        Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(string appName);
-        Task<IReadOnlyList<string>> InitialiseProjectsLISTAsync(LOG.CATEGORY category);
+        Task<IReadOnlyList<ProjectDataDTO>> InitialiseProjectsLISTAsync(string appName);
+        Task<IReadOnlyList<ProjectDataDTO>> InitialiseProjectsLISTAsync(LOG.CATEGORY category);
 
         Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync();
         Task<IReadOnlyList<string>> InitialiseApplicationsLISTAsync(LOG.CATEGORY category);
@@ -83,7 +81,7 @@ namespace Data.Interfaces
 
 
         // Reads
-        Task<IEnumerable<LOG>> RetrieveLogsAsync(LogContext context);
+        Task<IEnumerable<LogDataDTO>> RetrieveLogsAsync(LogContext context);
 
         /// <summary>
         /// Retrieves notes from the database that belong to a specific user.
@@ -124,6 +122,12 @@ namespace Data.Interfaces
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText);
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID);
         Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID);
+
+
+        // Updates
+
+
+        Task<bool> UpdateLogAsync(LogDataDTO logDataDTO);
 
 
         // Deletes

@@ -29,10 +29,10 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         public bool IsDisposed { get; set; } = false;
 
 
-        public ICommand EditCommand { get; set; } = null!;
-        public ICommand ViewCommand { get; set; } = null!;
-        public ICommand DeleteCacheItemCommand { get; set; } = null!;
-        public ICommand QuickDeleteCacheItemCommand { get; set; } = null!;
+        public abstract ICommand EditCommand { get; }
+        public abstract ICommand ViewCommand { get; }
+        public ICommand DeleteCacheItemCommand { get; }
+        public ICommand QuickDeleteCacheItemCommand { get; }
 
 
 
@@ -64,6 +64,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             // Resume timer when returning from the editor
             _navigationService.BackFromEditor += OnBackFromEditor;
 
+            // ViewCommand
             DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true);
             QuickDeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, false);
         }
@@ -88,7 +89,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         /// <summary>
         /// The project name of the log
         /// </summary>
-        public string ProjectName => $"{_logCacheDTO.ProjectName} ({_logCacheDTO.ApplicationName})";
+        public string ProjectName => $"{_logCacheDTO.Project.ProjectName} ({_logCacheDTO.ApplicationName})";
 
         /// <summary>
         /// ID for log cache item

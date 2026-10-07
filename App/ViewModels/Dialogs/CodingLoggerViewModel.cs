@@ -65,7 +65,10 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         protected override async Task LoadProjectsAsync()
         {
-            Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Category))];
+            Projects = [.. (await _dataService.InitialiseProjectsLISTAsync(Category))
+                .Where(pro => pro.ApplicationName == ApplicationName)
+                .Select(pro => pro.ProjectName)
+                .Distinct()];
         }
 
         protected override async Task LoadApplicationsAsync()
