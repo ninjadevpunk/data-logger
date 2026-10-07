@@ -244,7 +244,6 @@ namespace Data_Logger_1._3.Utilities
         #endregion
 
 
-
         internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
         {
