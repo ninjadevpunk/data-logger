@@ -157,9 +157,10 @@
 
 
         <!-- PANEL -->
-        <Border x:Name="panel" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource PANELWHITE}"
+        <Border x:Name="panel" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource PANEL}"
                 CornerRadius="3 0 0 3"
-                >
+                BorderBrush="{DynamicResource PANELOutline}"
+                BorderThickness="0 0 1 0">
 
             <Grid HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
@@ -401,6 +402,7 @@
                                         HorizontalAlignment="Left" />
                                 
                                 <Path Style="{DynamicResource path_USER}"
+                                      Fill="{DynamicResource PANELForeground}"
                                       Visibility="{Binding ShowDefault}"/>
                             </Grid>
                         </Button>
@@ -410,6 +412,7 @@
                         <Button Grid.Column="0" x:Name="button_HELP" Style="{DynamicResource button_SUPPORT}"
                                 IsEnabled="False">
                             <Path Style="{DynamicResource path_HELP}"
+                                      Fill="{DynamicResource PANELForeground}"
                                   />
                         </Button>
 
@@ -418,6 +421,7 @@
                                 IsEnabled="False"
                                 >
                             <Path Style="{DynamicResource path_FEEDBACK}"
+                                      Fill="{DynamicResource PANELForeground}"
                                 />
                         </Button>
 
@@ -427,6 +431,7 @@
                                 Command="{Binding SettingsCommand}"
                                 >
                             <Path Style="{DynamicResource path_SETTINGS}"
+                                      Fill="{DynamicResource PANELForeground}"
                                 />
                         </Button>
                     </StackPanel>

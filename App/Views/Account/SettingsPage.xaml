@@ -350,7 +350,7 @@ Command="{Binding ChangePasswordCommand}">
 
 
                     <!-- #region THEME FIELDS -->
-                    <StackPanel Grid.Row="6" VerticalAlignment="Stretch" Visibility="Collapsed" >
+                    <StackPanel Grid.Row="6" VerticalAlignment="Stretch" >
 
                         <!-- THEME -->
                         <Border Padding="10 30">
@@ -360,11 +360,11 @@ Command="{Binding ChangePasswordCommand}">
 
                         <!-- Theme Options -->
                         <components:ComboBoxInputField x:Name="theme_CHOICE"
-                                       UserTextBoxStyle="{DynamicResource inputText}"
-                                       Enabled="False"
-                                       UserComboInput="Grey"
-                                       IsEnabled="False"
-                                       />
+                                                       UserTextBoxStyle="{DynamicResource inputText}"
+                                                       Enabled="True"
+                                                       UserComboInput="{Binding Theme, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                       IsEnabled="True"
+                                                       Items="{Binding Themes}"/>
 
 
                     </StackPanel>

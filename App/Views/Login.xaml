@@ -14,7 +14,7 @@
 >
     <local:DLSWindow.Template>
         <ControlTemplate TargetType="Window">
-            <Border Background="{DynamicResource WHITE}" CornerRadius="3"
+            <Border Background="{DynamicResource MainArea}" CornerRadius="3"
                 Margin="0"
                 Padding="0"
                 >

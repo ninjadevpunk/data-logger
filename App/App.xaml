@@ -13,7 +13,8 @@
                 <ResourceDictionary Source="/Design;component/Fonts/Logo.xaml"/>
 
                 <!-- BRUSHES -->
-                    <ResourceDictionary Source="/Design;component/Brushes/Colours.xaml"/>
+                <ResourceDictionary Source="/Design;component/Brushes/Colours.xaml"/>
+                <ResourceDictionary Source="/Design;component/Themes/Default.xaml"/>
                 
                 <!-- STYLES -->
                     <ResourceDictionary Source="/Design;component/Styles/Buttons.xaml"/>

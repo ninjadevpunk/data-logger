@@ -14,7 +14,7 @@
     
     <local:DLSWindow.Template>
         <ControlTemplate TargetType="Window">
-            <Border Background="{DynamicResource WHITE}" CornerRadius="3"
+            <Border Background="{DynamicResource MainArea}" CornerRadius="3"
             Margin="0"
             Padding="0"
             >
@@ -57,7 +57,7 @@
         </StackPanel>
 
         <!-- TITLE BAR -->
-        <StackPanel Orientation="Horizontal" Grid.Column="0" Grid.Row="0"
+        <StackPanel Orientation="Horizontal" Grid.Column="3" Grid.Row="0"
             HorizontalAlignment="Right"
             Margin="15"
             >
@@ -127,11 +127,14 @@
 
 
 
-                <Border Style="{DynamicResource image_viewer_logo}" />
+                <Grid HorizontalAlignment="Center" Height="20" Width="20">
+                    <Path Style="{DynamicResource pathLOGO2}"/>
+                </Grid>
 
                 <Border Width="15" />
 
-                <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"/>
+                <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"
+                           Foreground="{DynamicResource AuthLettermarkForeground}" />
 
             </StackPanel>
 

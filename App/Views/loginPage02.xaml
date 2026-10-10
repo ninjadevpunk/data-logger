@@ -16,18 +16,6 @@
         Height="758" >
 
         <!-- DISPLAY PICTURE (Not Editable) -->
-        <Grid Margin="0 30" >
-            
-            <Border x:Name="image_USER"
-                    Style="{DynamicResource image_displayPic}" />
-
-            <Path x:Name="path_DEFAULT_DP" Style="{DynamicResource path_USER}"
-                  Visibility="{Binding}" />
-
-
-
-        </Grid>
-
         <!--#region Data Logger LOGO -->
 
         <StackPanel Margin="0 10" Orientation="Horizontal" HorizontalAlignment="Center"
@@ -36,16 +24,14 @@
 
 
 
-            <Grid Margin="20 0" HorizontalAlignment="Center" Height="38.1" Width="40">
-                <Path Style="{DynamicResource pathLOGO1}"/>
+            <Grid HorizontalAlignment="Center" Height="20" Width="20">
                 <Path Style="{DynamicResource pathLOGO2}"/>
-                <Path Style="{DynamicResource pathLOGO3}"/>
-                <Path Style="{DynamicResource pathLOGO4}"/>
-                <Path Style="{DynamicResource pathLOGO5}"/>
-                <Path Style="{DynamicResource pathLOGO6}"/>
             </Grid>
 
-            <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"/>
+            <Border Width="15" />
+
+            <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"
+                       Foreground="{DynamicResource AuthLettermarkForeground}" />
         </StackPanel>
 
         <!--#endregion-->

@@ -33,7 +33,7 @@
         <SolidColorBrush x:Key="RadioButton.Disabled.Glyph" Color="#FF707070"/>
         <Style x:Key="radio_MENU_ITEM" TargetType="{x:Type RadioButton}">
             <Setter Property="FocusVisualStyle" Value="{StaticResource MENU_FocusVisual}"/>
-            <Setter Property="Background" Value="{DynamicResource PANELWHITE}"/>
+            <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Height" Value="80"/>
@@ -57,7 +57,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Path x:Name="path_icon"  Grid.Column="0" Style="{Binding MENUIcon, ElementName=control_MENU_item}"
-                                    Fill="{DynamicResource BLACK}"
+                                    Fill="{DynamicResource PANELForeground}"
                                     />
 
                                 <TextBlock x:Name="text_ITEM_name"  Grid.Column="2" Style="{DynamicResource text_MENU}"
@@ -74,8 +74,8 @@
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="true">
                                 <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResource SELECTEDMainMenuItem}"/>
-                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource WHITE}"/>
-                                <Setter Property="Foreground" TargetName="text_ITEM_name" Value="{DynamicResource WHITE}"/>
+                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource SELECTEDMainMenuItemText}"/>
+                                <Setter Property="Foreground" TargetName="text_ITEM_name" Value="{DynamicResource SELECTEDMainMenuItemText}"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="false">
                                 <Setter Property="Opacity" TargetName="radioButtonBorder" Value=".3"/>
@@ -89,8 +89,8 @@
                             </Trigger>
                             <Trigger Property="IsChecked" Value="true">
                                 <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResource SELECTEDMainMenuItem}"/>
-                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource WHITE}"/>
-                                <Setter Property="Foreground" TargetName="text_ITEM_name" Value="{DynamicResource WHITE}"/>
+                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource SELECTEDMainMenuItemText}"/>
+                                <Setter Property="Foreground" TargetName="text_ITEM_name" Value="{DynamicResource SELECTEDMainMenuItemText}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

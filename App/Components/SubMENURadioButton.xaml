@@ -38,7 +38,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Path x:Name="path_icon"  Grid.Column="0" Style="{Binding SubMENUIcon, ElementName=control_subMENU_item}"
-                                    Fill="{DynamicResource BLACK}"
+                                    Fill="{DynamicResource SubMenuForeground}"
                                     />
 
                                 <TextBlock x:Name="text_subITEM_name"  Grid.Column="2" Style="{DynamicResource text_SUBMENU}"

@@ -32,6 +32,7 @@ using System.Windows.Media.Animation;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Core.Utilities;
+using Core.Models;
 
 namespace Data_Logger_1._3
 {
@@ -62,6 +63,7 @@ namespace Data_Logger_1._3
                     service.AddTransient<StartUpService>();
                     service.AddTransient<PDFService>();
                     service.AddTransient<ViewModelFactory>();
+                    service.AddSingleton<ThemeService>();
 
 
                     service.AddDataDependencies(context.Configuration);
@@ -163,6 +165,22 @@ namespace Data_Logger_1._3
         {
             Configuration = _serviceProvider.GetRequiredService<IConfiguration>();
             var cachemaster = _serviceProvider.GetRequiredService<ICacheService>();
+            var configuration = _serviceProvider.GetRequiredService<IConfiguration>();
+
+            var themeService = _serviceProvider.GetRequiredService<ThemeService>();
+
+            var defaultTheme = Enum.TryParse<Theme>(configuration["App:DefaultTheme"], true, out var parsedDefaultTheme)
+                ? parsedDefaultTheme
+                : Theme.Default;
+
+            var startupTheme = Enum.TryParse<Theme>(configuration["App:ForcedTheme"], true, out var parsedForcedTheme)
+                ? parsedForcedTheme
+                : defaultTheme;
+
+            themeService.ApplyTheme(startupTheme);
+
+
+
 
 
             var splash = _serviceProvider.GetRequiredService<Splashscreen>();

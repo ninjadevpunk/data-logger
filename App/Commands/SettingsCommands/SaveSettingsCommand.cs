@@ -8,7 +8,10 @@ using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
+using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 
 namespace Data_Logger_1._3.Commands.SettingsCommands
@@ -23,7 +26,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
         private readonly MainWindowViewModel _mainWindowViewModel;
         private readonly SettingsViewModel _settingsViewModel;
 
-        public SaveSettingsCommand(IAuthService authService, IDataService dataService, ICacheService cacheService, SettingsService settingsService, 
+        public SaveSettingsCommand(IAuthService authService, IDataService dataService, ICacheService cacheService, SettingsService settingsService,
             Settings settings, MainWindowViewModel mainWindowViewModel, SettingsViewModel settingsViewModel)
         {
             _authService = authService;
@@ -41,7 +44,6 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             string newProfilePicPath = string.Empty;
             UserSettings? oldUserSettings = null;
             string currentProfilePic = string.Empty;
-            UserSettings? currentUserSettings = null;
             Settings? savedSettings = _settingsService.Load();
             bool IsNewProfilePic = false;
 
@@ -54,7 +56,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                 oldProfilePicPath = savedSettings.User.ProfilePic;
                 oldUserSettings = savedSettings.User;
-                currentUserSettings = _settings.User;
+                UserSettings? currentUserSettings = _settings.User;
                 currentProfilePic = currentUserSettings.ProfilePic;
 
                 if (!string.Equals(oldUserSettings.Email, currentUserSettings.Email, StringComparison.OrdinalIgnoreCase))
@@ -63,7 +65,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                         throw new EmailConflictException("An account with this email already exists.");
                 }
 
-                if(!currentUserSettings.IsCompanyEmployee)
+                if (!currentUserSettings.IsCompanyEmployee)
                 {
                     currentUserSettings.CompanyName = string.Empty;
                     currentUserSettings.CompanyAddress = string.Empty;
@@ -113,11 +115,22 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
 
                 // Save new settings to JSON Permanently
-                _settingsService.Save(_settings);
+                savedSettings = _settingsService.Save(_settings) ?? throw new Exception("Failed to save settings.");
+
+                // Update the startup theme
+                try
+                {
+                    PersistTheme(_settings.AppTheme);
+                }
+                catch (Exception ex)
+                {
+                    await _dataService.HandleExceptionAsync(ex);
+                    Debug.WriteLine($"{Constants.ExceptionPrefix} SaveSettingsCommand.PersistTheme(): {ex.Message}");
+                }
 
 
                 if (IsNewProfilePic)
-                {   
+                {
                     // Delete old profile pic in AppData if it exists
                     if (File.Exists(oldProfilePicPath))
                     {
@@ -144,7 +157,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
             catch (Exception ex)
             {
-                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} SaveSettingsCommand.ExecuteAsync(): {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex);
 
                 // Profile Pic
                 if (!string.IsNullOrEmpty(currentProfilePic) && IsNewProfilePic)
@@ -195,7 +208,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 // Theme
                 if (savedSettings != null)
                 {
-                    _settings.AppTheme = savedSettings.AppTheme;
+                    _settingsViewModel.Theme = savedSettings.AppTheme.ToString();
                 }
 
                 // User Settings
@@ -209,6 +222,41 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                 MessageBox.Show("An unexpected error occurred. Changes have been reverted", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private static void PersistTheme(Theme theme)
+        {
+#if DEBUG
+            const string fileName = "appsettings.DevMode.json";
+#else
+            const string fileName = "appsettings.json";
+#endif
+
+            var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+            JsonObject? root = null;
+            if (File.Exists(filePath))
+                root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject;
+
+            root ??= [];
+
+
+            if (root["App"] is not JsonObject app)
+            {
+                app = [];
+                root["App"] = app;
+            }
+
+            app["ForcedTheme"] = theme.ToString();
+
+            File.WriteAllText(filePath, root.ToJsonString(new JsonSerializerOptions
+            {
+                WriteIndented = true
+            }));
+
+            if (App.Configuration != null)
+                App.Configuration["App:ForcedTheme"] = theme.ToString();
+
         }
     }
 }

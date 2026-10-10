@@ -28,11 +28,14 @@
 
 
 
-            <Border Style="{DynamicResource image_viewer_logo}" />
+            <Grid HorizontalAlignment="Center" Height="20" Width="20">
+                <Path Style="{DynamicResource pathLOGO2}"/>
+            </Grid>
 
             <Border Width="15" />
 
-            <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"/>
+            <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"
+                       Foreground="{DynamicResource AuthLettermarkForeground}" />
             
         </StackPanel>
 

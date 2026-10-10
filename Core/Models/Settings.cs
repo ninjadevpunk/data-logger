@@ -11,16 +11,9 @@ namespace Core.Models
 
     public class Settings
     {
-        public enum Theme
-        {
-            Default,
-            Light,
-            Grey
-        }
 
         // AlphaBeta builds are Grey themed only
-        // TODO
-        public Theme AppTheme { get; set; } = Theme.Grey;
+        public Theme AppTheme { get; set; } = Theme.Default;
 
         public UserSettings User { get; set; } = new UserSettings();
 

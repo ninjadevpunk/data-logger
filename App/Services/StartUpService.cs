@@ -3,7 +3,6 @@ using Core.DTOs.Data;
 using Core.DTOs.Notes;
 using Core.Interfaces;
 using Core.Models;
-using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.ViewModels;
@@ -74,43 +73,8 @@ namespace Data_Logger_1._3.Services
 
 
 
-        #region Editors
 
 
-
-
-
-        #endregion
-
-
-
-
-
-
-
-        #region Viewers
-
-
-
-
-
-        #endregion
-
-
-
-
-
-
-        #region Updaters
-
-
-
-
-
-
-
-
-        #endregion
 
 
 
@@ -149,7 +113,7 @@ namespace Data_Logger_1._3.Services
         {
             await LoadCachedLogs();
             await LoadNotes(id);
-            SetUpSettings();
+            await SetUpSettings();
             SetupUserProfile();
         }
 
@@ -182,7 +146,7 @@ namespace Data_Logger_1._3.Services
             }
         }
 
-        private ObservableCollection<LOGViewModel> ConvertLogsToViewModels(IEnumerable<LogCacheDTO> logs, Func<LogCacheDTO, LOGViewModel> converter)
+        private static ObservableCollection<LOGViewModel> ConvertLogsToViewModels(IEnumerable<LogCacheDTO> logs, Func<LogCacheDTO, LOGViewModel> converter)
         {
             ObservableCollection<LOGViewModel> list = [];
 
@@ -192,7 +156,7 @@ namespace Data_Logger_1._3.Services
             return list;
         }
 
-        private void LoadCacheItems(ObservableCollection<LOGViewModel> cacheList, LogCacheViewModel dashboard) 
+        private static void LoadCacheItems(ObservableCollection<LOGViewModel> cacheList, LogCacheViewModel dashboard)
         {
             if (cacheList.Count > 0)
                 dashboard.CacheItems = cacheList;
@@ -241,13 +205,11 @@ namespace Data_Logger_1._3.Services
         }
 
 
-        private void SetUpSettings()
+        private async Task SetUpSettings()
         {
             try
             {
                 var user = _authService.GetUser();
-
-                var id = user.Id;
 
                 if (_settingsService.CreateSettingsDir())
                 {
@@ -262,10 +224,12 @@ namespace Data_Logger_1._3.Services
 
                         settings = _settingsService.Save(settings, true);
                     }
+
                 }
             }
             catch (Exception ex)
             {
+                await _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"ArgumentNullException in SetUpSettings(): {ex.Message}");
             }
 

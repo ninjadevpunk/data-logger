@@ -22,27 +22,28 @@ namespace Data_Logger_1._3.ViewModels
             PasswordChanged
         }
 
-        private readonly ICacheService _cacheService;
         private readonly SettingsService _settingsService;
         private readonly Settings _settings;
+        private readonly ThemeService _themeService;
 
         public ICommand OpenImageCommand { get; set; }
         public ICommand ResetImageCommand { get; set; }
         public ICommand PasswordResetCommand { get; set; }
         public ICommand SubmitVerificationCodeCommand { get; set; }
         public ICommand ChangePasswordCommand { get; set; }
-        public ICommand DeleteAccountCommand { get; set; }
-        public ICommand SaveSettingsCommand { get; set; }
-        public ICommand ReturnToDashboardCommand { get; set; }
+        public ICommand DeleteAccountCommand { get; }
+        public ICommand SaveSettingsCommand { get; }
+        public ICommand ReturnToDashboardCommand { get; }
 
 
 
-        public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, ICacheService cacheService, 
-            SettingsService settingsService, MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService)
+        public SettingsViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, ICacheService cacheService,
+            SettingsService settingsService, MainWindowViewModel mainWindowViewModel, PasswordResetService passwordResetService,
+            ThemeService themeService)
         {
             var id = authService.GetUser().Id;
-            _cacheService = cacheService;
             _settingsService = settingsService;
+            _themeService = themeService;
             _settings = _settingsService.Load() ?? throw new ArgumentNullException(nameof(settingsService), "Settings are null!");
 
             var author = _settings.User;
@@ -75,7 +76,7 @@ namespace Data_Logger_1._3.ViewModels
             DeleteAccountCommand = new DeleteAccountCommand(authService, dataService, settingsService);
             SaveSettingsCommand = new SaveSettingsCommand(authService, dataService, cacheService, settingsService, _settings, mainWindowViewModel, this);
             SaveIsEnabled = SettingsService.FieldsAcceptable(Email, YesBox, CompanyName);
-            ReturnToDashboardCommand = new ReturnToDashboardCommand(mainWindowViewModel, dataService);
+            ReturnToDashboardCommand = new ReturnToDashboardCommand(navigationService, mainWindowViewModel, dataService);
         }
 
         private BitmapImage? signUpImage;
@@ -318,20 +319,24 @@ namespace Data_Logger_1._3.ViewModels
         private string theme = string.Empty;
         public string Theme
         {
-            get
-            {
-                return theme;
-            }
+            get => theme;
             set
             {
-                if (Enum.TryParse<Settings.Theme>(value, true, out var result))
-                {
-                    _settings.AppTheme = result;
-                }
+                if (string.Equals(theme, value, StringComparison.Ordinal))
+                    return; 
+                
                 theme = value;
+
+                if (Enum.TryParse<Theme>(value, true, out var selectedTheme))
+                {
+                    _settings.AppTheme = selectedTheme; 
+                    _themeService.ApplyTheme(selectedTheme);
+                }
                 OnPropertyChanged(nameof(Theme));
             }
         }
+
+        public HashSet<string> Themes { get; } = ["Default", "Grey", "Light"];
 
         private bool saveIsEnabled;
         public bool SaveIsEnabled
