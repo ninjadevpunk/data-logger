@@ -103,7 +103,7 @@
     <!-- VERSION -->
     <Style x:Key="text_VERSION" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Zekton Light}"/>
-        <Setter Property="Foreground" Value="{DynamicResource SplashForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource VersionForeground}"/>
         <Setter Property="FontWeight" Value="Regular"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>

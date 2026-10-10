@@ -11,6 +11,7 @@
     <SolidColorBrush x:Key="UIForeground">#000000</SolidColorBrush>
     <SolidColorBrush x:Key="LinkForeground">#009900</SolidColorBrush>
     <SolidColorBrush x:Key="SplashForeground">#009900</SolidColorBrush>
+    <SolidColorBrush x:Key="VersionForeground">#000000</SolidColorBrush>
     <SolidColorBrush x:Key="AuthLettermarkForeground">#009900</SolidColorBrush>
 
     <!-- Menu -->
