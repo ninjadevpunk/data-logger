@@ -9,6 +9,7 @@ using System.Windows.Media.Imaging;
 using Data.Interfaces;
 using Core.Interfaces;
 using FileSys.Interfaces;
+using Core.Utilities;
 
 namespace Data_Logger_1._3.ViewModels
 {
@@ -48,9 +49,19 @@ namespace Data_Logger_1._3.ViewModels
 
             var author = _settings.User;
             author.Id = id;
+            var profilePic = author.ProfilePic;
 
-            SignUpImage = BitmapService.LoadImage(author.ProfilePic) ?? null;
-            DisplayPicPath = author.ProfilePic;
+            if (!string.IsNullOrEmpty(profilePic))
+            {
+                SignUpImage = BitmapService.LoadImage(profilePic) ?? null;
+                DisplayPicPath = profilePic;
+            }
+            else
+            {
+                SignUpImage = null;
+                DisplayPicPath = string.Empty;
+            }
+
             DefaultPicVisibility = SignUpImage == null ? Visibility.Visible : Visibility.Collapsed;
 
             cacheService.DeleteTempProfilePics();
@@ -105,7 +116,8 @@ namespace Data_Logger_1._3.ViewModels
             {
                 displayPicPath = value;
                 _settings.User.ProfilePic = value;
-                SignUpImage = BitmapService.LoadImage(displayPicPath) ?? null;
+                if (!string.IsNullOrEmpty(DisplayPicPath))
+                    SignUpImage = BitmapService.LoadImage(displayPicPath) ?? null;
                 OnPropertyChanged(nameof(DisplayPicPath));
             }
         }
@@ -323,13 +335,13 @@ namespace Data_Logger_1._3.ViewModels
             set
             {
                 if (string.Equals(theme, value, StringComparison.Ordinal))
-                    return; 
-                
+                    return;
+
                 theme = value;
 
                 if (Enum.TryParse<Theme>(value, true, out var selectedTheme))
                 {
-                    _settings.AppTheme = selectedTheme; 
+                    _settings.AppTheme = selectedTheme;
                     _themeService.ApplyTheme(selectedTheme);
                 }
                 OnPropertyChanged(nameof(Theme));

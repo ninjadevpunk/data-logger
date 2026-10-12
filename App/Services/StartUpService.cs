@@ -194,7 +194,7 @@ namespace Data_Logger_1._3.Services
             var user = _authService.GetUser();
             if (user != null)
             {
-                if (user.ProfilePic.Contains(Constants.Avatar))
+                if (user.ProfilePic.Contains(Constants.Avatar) || string.IsNullOrEmpty(user.ProfilePic))
                 {
                     _mainWindowViewModel.SignUpImage = null;
                     _mainWindowViewModel.ShowDefault = Visibility.Visible;
@@ -224,7 +224,8 @@ namespace Data_Logger_1._3.Services
 
                         settings = _settingsService.Save(settings, true);
                     }
-
+                    var themeService = _serviceProvider.GetRequiredService<ThemeService>();
+                    themeService.ApplyTheme(settings?.AppTheme ?? Theme.Default);
                 }
             }
             catch (Exception ex)
@@ -234,6 +235,9 @@ namespace Data_Logger_1._3.Services
             }
 
         }
+
+        
+
 
 
 

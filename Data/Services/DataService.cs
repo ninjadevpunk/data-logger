@@ -43,6 +43,34 @@ namespace Data.Services
         }
 
         /// <summary>
+        /// Retrieves the logged-in user.
+        /// </summary>
+        /// <returns>A UserDTO</returns>
+        internal async Task<UserDTO?> RetrieveUserAsync()
+        {
+            var userId = _authService.GetUser().Id;
+            var account = await UseReaderAsync(reader => reader.FindAccountByID(userId));
+
+            if(account != null)
+            {
+                return new UserDTO
+                {
+                    UserId = account.accountID,
+                    ProfilePic = account.ProfilePic,
+                    Name = account.FirstName,
+                    Surname = account.LastName,
+                    Email = account.Email,
+                    IsEmployee = account.IsEmployee,
+                    CompanyName = account.CompanyName,
+                    CompanyAddress = account.CompanyAddress,
+                    CompanyLogo = account.CompanyLogo
+                };
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Sets the currently online user to online.
         /// </summary>
         /// <param name="userId">The user's ID</param>

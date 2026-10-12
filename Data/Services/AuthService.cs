@@ -1,5 +1,4 @@
-﻿using Core.DTOs.Identity;
-using Core.Interfaces;
+﻿using Core.Interfaces;
 using Core.Models;
 using Core.Models.App_Models;
 using Data.Interfaces;
@@ -27,6 +26,34 @@ namespace Data.Services
         /// </summary>
         /// <returns>User settings</returns>
         public UserSettings GetUser() => Account ?? throw new ArgumentNullException(nameof(Account), "GetUser() returned null!");
+
+        /// <summary>
+        /// Refreshes Account property if a user has been modified.
+        /// </summary>
+        /// <returns>True if user is updated; otherwise false</returns>
+        public async Task<bool> UpdateUser()
+        {
+            var dataService = _serviceProvider.GetRequiredService<DataService>();
+            var account = await dataService.RetrieveUserAsync();
+
+            if (account == null)
+                return false;
+
+            Account = new UserSettings
+            {
+                Id = account.UserId,
+                ProfilePic = account.ProfilePic,
+                Name = account.Name,
+                Surname = account.Surname,
+                Email = account.Email,
+                IsCompanyEmployee = account.IsEmployee,
+                CompanyName = account.CompanyName,
+                CompanyAddress = account.CompanyAddress,
+                CompanyLogo = account.CompanyLogo
+            };
+
+            return true;
+        }
 
         /// <summary>
         /// Validates a user's email before processing

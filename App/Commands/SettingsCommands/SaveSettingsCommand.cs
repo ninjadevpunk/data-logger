@@ -104,13 +104,28 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                         user.ProfilePic = newProfilePicPath;
 
                     // Update MainWindow profile picture
-                    _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(newProfilePicPath);
-                    _settingsViewModel.SignUpImage = BitmapService.LoadImage(newProfilePicPath);
+                    if (!string.IsNullOrEmpty(newProfilePicPath))
+                    {
+                        _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(newProfilePicPath);
+                        _settingsViewModel.SignUpImage = BitmapService.LoadImage(newProfilePicPath);
+                    }
+                    else
+                    {
+                        _mainWindowViewModel.SignUpImage = null;
+                        _settingsViewModel.SignUpImage = null;
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(_settingsViewModel.DisplayPicPath))
+                        _mainWindowViewModel.SignUpImage = null;
                 }
 
                 // User Settings Update
                 if (!await _dataService.UpdateUserAsync(currentUserSettings))
                     throw new Exception("Failed to update user information.");
+
+                await _authService.UpdateUser();
 
 
 
@@ -147,6 +162,8 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                 // Delete all temp profile pics
                 _cacheService.DeleteTempProfilePics();
+
+                
 
 
             }

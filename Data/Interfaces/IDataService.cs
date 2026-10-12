@@ -15,9 +15,14 @@ namespace Data.Interfaces
 
         // Save Database Changes
         Task SaveChangesAsync();
-        
+
         // --- User / Account ---
+
+        /// <summary>
+        /// Signs in the current user by setting them as the current user in the database.
+        /// </summary>
         Task SignInUserAsync();
+
 
         /// <summary>
         /// Signs in the current user by setting them as the current user in the database.

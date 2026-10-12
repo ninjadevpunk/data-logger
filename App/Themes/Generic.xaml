@@ -173,7 +173,6 @@
         </Setter>
 
         <Style.Triggers>
-
             <!-- When there are results, replace content with ListBox -->
             <DataTrigger Binding="{Binding HasNoResults, RelativeSource={RelativeSource AncestorType=components:SearchBarControl}}" Value="False">
                 <Setter Property="Content">

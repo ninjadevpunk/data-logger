@@ -12,6 +12,12 @@ namespace Core.Interfaces
         UserSettings GetUser();
 
         /// <summary>
+        /// Refreshes Account property if a user has been modified.
+        /// </summary>
+        /// <returns>True if user is updated; otherwise false</returns>
+        Task<bool> UpdateUser();
+
+        /// <summary>
         /// Signs up a user. Throws a <see cref="FormatException"/> if the user enters an invalid email and an
         /// <see cref="InvalidOperationException"/> if the user isn't logged in successfully.
         /// </summary>

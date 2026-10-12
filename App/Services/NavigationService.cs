@@ -377,12 +377,6 @@ namespace Data_Logger_1._3.Services
                     }
 
                 }
-                catch (InvalidOperationException invex)
-                {
-                    await dataService.HandleExceptionAsync(invex);
-
-                    CloseApp();
-                }
                 catch (Exception ex)
                 {
                     await dataService.HandleExceptionAsync(ex);
