@@ -24,8 +24,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
         {
             try
             {
-                _mainWindowViewModel.CodingQtChecked = true;
-                _navigationService.NavigateToLogCachePage();
+                _navigationService.GoBack();
             }
             catch (Exception e)
             {
