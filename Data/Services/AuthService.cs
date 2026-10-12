@@ -33,7 +33,7 @@ namespace Data.Services
         /// <returns>True if user is updated; otherwise false</returns>
         public async Task<bool> UpdateUser()
         {
-            var dataService = _serviceProvider.GetRequiredService<DataService>();
+            var dataService = _serviceProvider.GetRequiredService<IDataService>();
             var account = await dataService.RetrieveUserAsync();
 
             if (account == null)

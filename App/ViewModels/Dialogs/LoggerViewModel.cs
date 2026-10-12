@@ -96,7 +96,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         public string Author => $"{_userDTO.Name ?? string.Empty} {_userDTO.Surname ?? string.Empty}";
 
 
-        public BitmapImage? SignUpImage => BitmapService.LoadImage(_userDTO.ProfilePic);
+        public BitmapImage? SignUpImage => string.IsNullOrEmpty(_userDTO.ProfilePic) ? null : BitmapService.LoadImage(_userDTO.ProfilePic);
 
         private string projectName = string.Empty;
         public string ProjectName

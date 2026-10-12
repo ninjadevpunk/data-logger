@@ -46,7 +46,7 @@ namespace Data.Services
         /// Retrieves the logged-in user.
         /// </summary>
         /// <returns>A UserDTO</returns>
-        internal async Task<UserDTO?> RetrieveUserAsync()
+        public async Task<UserDTO?> RetrieveUserAsync()
         {
             var userId = _authService.GetUser().Id;
             var account = await UseReaderAsync(reader => reader.FindAccountByID(userId));

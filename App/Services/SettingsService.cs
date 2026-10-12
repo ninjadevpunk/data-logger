@@ -10,11 +10,7 @@ namespace Data_Logger_1._3.Services
 {
     internal class SettingsService
     {
-#if DEBUG
-        public static readonly string BasePath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
-#else
-        public static readonly string BasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger");
-#endif
+        public static readonly string BasePath = Constants.SettingsBasePath;
         private readonly int _userId;
 
         public SettingsService(IAuthService authService)

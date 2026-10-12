@@ -16,6 +16,9 @@ using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Media;
 
@@ -23,6 +26,14 @@ namespace Data_Logger_1._3.Utilities
 {
     internal static class Extensions
     {
+
+
+        #region Settings
+
+
+
+
+
         /// <summary>
         /// Turns user settings into a UserDTO.
         /// </summary>
@@ -43,6 +54,48 @@ namespace Data_Logger_1._3.Utilities
                 CompanyLogo = userSettings.CompanyLogo,
             };
         }
+
+        internal static void PersistTheme(Theme theme)
+        {
+#if DEBUG
+            const string fileName = "appsettings.DevMode.json";
+#else
+            const string fileName = "appsettings.json";
+#endif
+
+            var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+            JsonObject? root = null;
+            if (File.Exists(filePath))
+                root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject;
+
+            root ??= [];
+
+
+            if (root["App"] is not JsonObject app)
+            {
+                app = [];
+                root["App"] = app;
+            }
+
+            app["ForcedTheme"] = theme.ToString();
+
+            File.WriteAllText(filePath, root.ToJsonString(new JsonSerializerOptions
+            {
+                WriteIndented = true
+            }));
+
+            if (App.Configuration != null)
+                App.Configuration["App:ForcedTheme"] = theme.ToString();
+
+        }
+
+
+
+
+        #endregion
+
+
 
 
         #region App.xaml
@@ -244,6 +297,12 @@ namespace Data_Logger_1._3.Utilities
         #endregion
 
 
+
+        #region Logger
+
+
+
+
         internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
         {
@@ -348,5 +407,9 @@ namespace Data_Logger_1._3.Utilities
         }
 
 
+
+
+
+        #endregion
     }
 }

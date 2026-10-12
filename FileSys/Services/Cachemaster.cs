@@ -155,7 +155,7 @@ namespace FileSys.Services
         {
             try
             {
-                string folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Data Logger", "Profile Pics");
+                string folder = Path.Combine(Constants.SettingsBasePath, "Profile Pics");
 
                 Directory.CreateDirectory(folder);
 

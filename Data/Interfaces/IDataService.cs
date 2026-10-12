@@ -23,6 +23,12 @@ namespace Data.Interfaces
         /// </summary>
         Task SignInUserAsync();
 
+        /// <summary>
+        /// Retrieves the logged-in user.
+        /// </summary>
+        /// <returns>A UserDTO</returns>
+        public Task<UserDTO?> RetrieveUserAsync();
+
 
         /// <summary>
         /// Signs in the current user by setting them as the current user in the database.

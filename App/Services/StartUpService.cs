@@ -5,6 +5,7 @@ using Core.Interfaces;
 using Core.Models;
 using Core.Utilities;
 using Data.Interfaces;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels;
 using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
@@ -13,6 +14,7 @@ using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime;
 using System.Windows;
 
 namespace Data_Logger_1._3.Services
@@ -226,6 +228,16 @@ namespace Data_Logger_1._3.Services
                     }
                     var themeService = _serviceProvider.GetRequiredService<ThemeService>();
                     themeService.ApplyTheme(settings?.AppTheme ?? Theme.Default);
+
+                    try
+                    {
+                        Extensions.PersistTheme(settings?.AppTheme ?? Theme.Default);
+                    }
+                    catch (Exception ex)
+                    {
+                        await _dataService.HandleExceptionAsync(ex);
+                        Debug.WriteLine($"{Constants.ExceptionPrefix} SaveSettingsCommand.PersistTheme(): {ex.Message}");
+                    }
                 }
             }
             catch (Exception ex)

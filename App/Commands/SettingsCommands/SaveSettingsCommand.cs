@@ -5,6 +5,7 @@ using Core.Utilities;
 using Data.Exceptions;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
+using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels;
 using FileSys.Interfaces;
 using MVVMEssentials.Commands;
@@ -118,8 +119,15 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 else
                 {
                     if (string.IsNullOrEmpty(_settingsViewModel.DisplayPicPath))
+                    {
                         _mainWindowViewModel.SignUpImage = null;
+
+                        // Profile Pic Update
+                        if (!await _dataService.UpdateProfilePicAsync(currentUserSettings.Id, string.Empty))
+                            throw new Exception("Failed to update profile picture.");
+                    }
                 }
+                _settingsViewModel.DisplayPicPath = currentProfilePic;
 
                 // User Settings Update
                 if (!await _dataService.UpdateUserAsync(currentUserSettings))
@@ -128,14 +136,13 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 await _authService.UpdateUser();
 
 
-
                 // Save new settings to JSON Permanently
                 savedSettings = _settingsService.Save(_settings) ?? throw new Exception("Failed to save settings.");
 
                 // Update the startup theme
                 try
                 {
-                    PersistTheme(_settings.AppTheme);
+                    Extensions.PersistTheme(_settings.AppTheme);
                 }
                 catch (Exception ex)
                 {
@@ -163,7 +170,7 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 // Delete all temp profile pics
                 _cacheService.DeleteTempProfilePics();
 
-                
+
 
 
             }
@@ -209,16 +216,16 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                     _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
                     _settingsViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
-
+                    _settingsViewModel.DisplayPicPath = oldProfilePicPath;
                 }
                 else
                 {
-                    oldProfilePicPath = Constants.Avatar;
+                    oldProfilePicPath = string.Empty;
 
                     await _dataService.UpdateProfilePicAsync(_settings.User.Id, oldProfilePicPath);
                     _settings.User.ProfilePic = oldProfilePicPath;
-                    _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
-                    _settingsViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
+                    _mainWindowViewModel.SignUpImage = null;
+                    _settingsViewModel.SignUpImage = null;
                 }
 
 
@@ -241,39 +248,5 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
             }
         }
 
-        private static void PersistTheme(Theme theme)
-        {
-#if DEBUG
-            const string fileName = "appsettings.DevMode.json";
-#else
-            const string fileName = "appsettings.json";
-#endif
-
-            var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
-
-            JsonObject? root = null;
-            if (File.Exists(filePath))
-                root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject;
-
-            root ??= [];
-
-
-            if (root["App"] is not JsonObject app)
-            {
-                app = [];
-                root["App"] = app;
-            }
-
-            app["ForcedTheme"] = theme.ToString();
-
-            File.WriteAllText(filePath, root.ToJsonString(new JsonSerializerOptions
-            {
-                WriteIndented = true
-            }));
-
-            if (App.Configuration != null)
-                App.Configuration["App:ForcedTheme"] = theme.ToString();
-
-        }
     }
 }
