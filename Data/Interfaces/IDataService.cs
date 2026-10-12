@@ -188,7 +188,7 @@ namespace Data.Interfaces
         /// </summary>
         /// <param name="user">The user settings to update</param>
         /// <returns>Returns true if the user information was updated successfully, false otherwise.</returns>
-        Task<bool> UpdateUserAsync(UserSettings user);
+        Task<bool> UpdateUserAsync(UserDTO user);
 
         /// <summary>
         /// Updates a user's password in the database based on the provided email and new password.

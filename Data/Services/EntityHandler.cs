@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Data;
+using Core.DTOs.Identity;
 using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
@@ -367,9 +368,9 @@ namespace Data.Services
         /// <summary>
         /// Updates a user's information in the database based on the provided UserSettings object.
         /// </summary>
-        /// <param name="user">The user settings to update</param>
+        /// <param name="user">The user DTO containing update data</param>
         /// <returns>Returns true if the user information was updated successfully, false otherwise.</returns>
-        public async Task<bool> UpdateUserAsync(UserSettings user)
+        public async Task<bool> UpdateUserAsync(UserDTO user)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             bool isUpdated = false;
@@ -377,11 +378,11 @@ namespace Data.Services
             {
                 var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
                 var existingUser = await master.Accounts
-                    .FirstOrDefaultAsync(a => a.accountID == user.Id) ?? throw new ArgumentNullException(null, "Account not found!");
+                    .FirstOrDefaultAsync(a => a.accountID == user.UserId) ?? throw new ArgumentNullException(null, "Account not found!");
                 existingUser.FirstName = user.Name;
                 existingUser.LastName = user.Surname;
                 existingUser.Email = user.Email;
-                existingUser.IsEmployee = user.IsCompanyEmployee;
+                existingUser.IsEmployee = user.IsEmployee;
                 existingUser.CompanyName = user.CompanyName;
                 existingUser.CompanyAddress = user.CompanyAddress;
                 await master.SaveChangesAsync();

@@ -1114,7 +1114,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="user">The user settings to update</param>
         /// <returns>Returns true if the user information was updated successfully, false otherwise.</returns>
-        public Task<bool> UpdateUserAsync(UserSettings user)
+        public Task<bool> UpdateUserAsync(UserDTO user)
         {
             return UseHandlerAsync(handler => handler.UpdateUserAsync(user));
         }

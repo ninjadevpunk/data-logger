@@ -140,7 +140,6 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                //App.LogExceptionAsync(ex);
                 Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} LoadImage");
             }
             return false;

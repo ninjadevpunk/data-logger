@@ -1,4 +1,5 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs.Identity;
+using Core.Interfaces;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
@@ -80,12 +81,12 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 {
                     // Copy Selected Pic to AppData Folder
                     newProfilePicPath = _cacheService.SaveProfilePicture(currentProfilePic);
-                    currentProfilePic = newProfilePicPath;
 
                     // Update new profile picture if profile pic has changed
                     if (string.IsNullOrEmpty(newProfilePicPath))
                         throw new InvalidOperationException("Profile pic cannot be null/empty when saving settings.");
 
+                    currentProfilePic = newProfilePicPath;
 
                     // Update database
                     // Profile Pic Update
@@ -93,16 +94,9 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                         throw new Exception("Failed to update profile picture.");
 
 
-                    // Update new profile picture to settings object
+                    // Assign new profile picture to settings and static current user settings
                     _settings.User.ProfilePic = newProfilePicPath;
-
-
                     currentUserSettings.ProfilePic = newProfilePicPath;
-
-                    var user = _authService.GetUser();
-
-                    if (user != null)
-                        user.ProfilePic = newProfilePicPath;
 
                     // Update MainWindow profile picture
                     if (!string.IsNullOrEmpty(newProfilePicPath))
@@ -130,7 +124,18 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 _settingsViewModel.DisplayPicPath = currentProfilePic;
 
                 // User Settings Update
-                if (!await _dataService.UpdateUserAsync(currentUserSettings))
+                if (!await _dataService.UpdateUserAsync(new UserDTO
+                {
+                    UserId = currentUserSettings.Id,
+                    ProfilePic = currentUserSettings.ProfilePic,
+                    Name = currentUserSettings.Name,
+                    Surname = currentUserSettings.Surname,
+                    Email = currentUserSettings.Email,
+                    IsEmployee = currentUserSettings.IsCompanyEmployee,
+                    CompanyName = currentUserSettings.CompanyName,
+                    CompanyAddress = currentUserSettings.CompanyAddress,
+                    CompanyLogo = currentUserSettings.CompanyLogo
+                }))
                     throw new Exception("Failed to update user information.");
 
                 await _authService.UpdateUser();
@@ -167,17 +172,22 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                     }
                 }
 
-                // Delete all temp profile pics
-                _cacheService.DeleteTempProfilePics();
-
-
+                try
+                {
+                    // Delete all temp profile pics
+                    _cacheService.DeleteTempProfilePics();
+                }
+                catch (Exception ex)
+                {
+                    await _dataService.HandleExceptionAsync(ex);
+                }
 
 
             }
             catch (EmailConflictException mailex)
             {
                 await _dataService.HandleExceptionAsync(mailex);
-                MessageBox.Show("This email has been taken.", "Email Already Exists", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("The email you selected has been taken.", "Email Already Exists", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             catch (Exception ex)
             {
@@ -209,11 +219,6 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
 
                     _settings.User.ProfilePic = oldProfilePicPath;
 
-                    var user = _authService.GetUser();
-
-                    if (user != null && user.ProfilePic != oldProfilePicPath)
-                        user.ProfilePic = oldProfilePicPath;
-
                     _mainWindowViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
                     _settingsViewModel.SignUpImage = BitmapService.LoadImage(oldProfilePicPath);
                     _settingsViewModel.DisplayPicPath = oldProfilePicPath;
@@ -238,9 +243,21 @@ namespace Data_Logger_1._3.Commands.SettingsCommands
                 // User Settings
                 if (oldUserSettings != null)
                 {
-                    await _dataService.UpdateUserAsync(oldUserSettings);
+                    await _dataService.UpdateUserAsync(new UserDTO
+                    {
+                        UserId = oldUserSettings.Id,
+                        ProfilePic = oldUserSettings.ProfilePic,
+                        Name = oldUserSettings.Name,
+                        Surname = oldUserSettings.Surname,
+                        Email = oldUserSettings.Email,
+                        IsEmployee = oldUserSettings.IsCompanyEmployee,
+                        CompanyName = oldUserSettings.CompanyName,
+                        CompanyAddress = oldUserSettings.CompanyAddress,
+                        CompanyLogo = oldUserSettings.CompanyLogo
+                    });
 
                     _settings.User = oldUserSettings;
+                    await _authService.UpdateUser();
                 }
 
 
