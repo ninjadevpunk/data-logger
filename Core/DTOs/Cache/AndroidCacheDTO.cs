@@ -3,7 +3,7 @@ using Core.Utilities;
 
 namespace Core.DTOs.Cache
 {
-    public record AndroidCacheDTO : CodingCacheDTO
+    public sealed record AndroidCacheDTO : CodingCacheDTO
     {
         public override string ApplicationName => Constants.Android;
         public override LogContext Context => LogContext.AndroidStudio;

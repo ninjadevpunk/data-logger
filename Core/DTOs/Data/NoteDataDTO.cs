@@ -2,7 +2,7 @@
 
 namespace Core.DTOs.Data
 {
-    public record NoteDataDTO : NoteDTO
+    public sealed record NoteDataDTO : NoteDTO
     {
         public int NoteItemId { get; init; }
     }

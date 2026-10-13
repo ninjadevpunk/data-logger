@@ -1,6 +1,6 @@
 ﻿namespace Core.DTOs.Data
 {
-    public record SubjectDataDTO : SubjectDTO
+    public sealed record SubjectDataDTO : SubjectDTO
     {
         public int SubjectId { get; init; }
         public int AppId { get; init; }

@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 {
-    internal class codeViewerViewModel : ViewerViewModel
+    internal sealed class codeViewerViewModel : ViewerViewModel
     {
         public override LOG.CATEGORY Category => LOG.CATEGORY.CODING;
         public override LogContext Context => LogContext.Coding;

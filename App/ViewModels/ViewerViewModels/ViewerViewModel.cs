@@ -23,6 +23,7 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "ViewerViewModel");
             _postIts = [.. viewDTO.PostIts.Select(postIt => new ViewStickyPostItViewModel(postIt))];
+            PostIts = _postIts;
 
             Author = $"{userDTO.Name} {userDTO.Surname}";
             SignUpImage = BitmapService.LoadImage(userDTO.ProfilePic);
@@ -39,19 +40,19 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
 
         public Visibility DisplayPicVisibility => SignUpImage != null ? Visibility.Collapsed : Visibility.Visible;
 
-        public string Author { get; init; }
+        public string Author { get; }
 
 
-        public BitmapImage? SignUpImage { get; init; }
-        public string ProjectName { get; init; }
-        public string ApplicationName { get; init; }
-        public string Date { get; init; }
+        public BitmapImage? SignUpImage { get; }
+        public string ProjectName { get; }
+        public string ApplicationName { get; }
+        public string Date { get; }
 
 
 
-        public string Output { get; init; }
-        public string Type { get; init; }
-        public IReadOnlyList<ViewStickyPostItViewModel> PostIts => _postIts;
+        public string Output { get; }
+        public string Type { get; }
+        public IReadOnlyList<ViewStickyPostItViewModel> PostIts { get; }
         public abstract ICommand OKCommand { get; }
     }
 }

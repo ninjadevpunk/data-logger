@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces;
+using Core.Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels;
 using MVVMEssentials.Commands;
@@ -23,6 +24,8 @@ namespace Data_Logger_1._3.Commands
 
         protected override async Task ExecuteAsync(object parameter)
         {
+            Result signUpResult = null!;
+
             try
             {
 
@@ -37,12 +40,12 @@ namespace Data_Logger_1._3.Commands
                 var address = _signUpViewModel.CompanyAddress;
                 var logo = _signUpViewModel.CompanyLogo;
 
-                
+
 
                 // Call the SignUp method in AuthService to handle user registration
-                var isSignedUp = await _authService.SignUpAsync(displayPic, email, password, displayName, surname, IsHired, company, address, logo);
-
-                if (isSignedUp.Success)
+                signUpResult = await _authService.SignUpAsync(displayPic, email, password, displayName, surname, IsHired, company, address, logo);
+                
+                if (signUpResult.Success)
                 {
                     _signUpViewModel.StatusMessage = "Sign up Successful";
                     _signUpViewModel.StatusMessageColour = _signUpViewModel.MessageGood;
@@ -57,8 +60,7 @@ namespace Data_Logger_1._3.Commands
             }
             catch (Exception)
             {
-                MessageBox.Show("An error occurred on our side. We apologise for any inconvenience. Feedback will be automatically sent to our support desk.",
-                    "Error", MessageBoxButton.OK, MessageBoxImage.Error, MessageBoxResult.OK);
+                MessageBoxService.Show(signUpResult, "Error");
             }
         }
     }

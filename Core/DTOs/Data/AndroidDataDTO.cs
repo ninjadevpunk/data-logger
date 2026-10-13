@@ -3,7 +3,7 @@ using Core.Utilities;
 
 namespace Core.DTOs.Data
 {
-    public record AndroidDataDTO : CodingDataDTO
+    public sealed record AndroidDataDTO : CodingDataDTO
     {
         public override LogContext Context => LogContext.AndroidStudio;
         public override int AppId => 2;

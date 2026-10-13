@@ -1,6 +1,6 @@
 ﻿namespace Core.DTOs.Viewer
 {
-    public record AndroidViewDTO : CodingViewDTO
+    public sealed record AndroidViewDTO : CodingViewDTO
     {
         public DateTime Sync { get; init; }
         public DateTime StartingGradleDaemon { get; init; }

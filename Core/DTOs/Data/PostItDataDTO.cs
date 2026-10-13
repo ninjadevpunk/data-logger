@@ -1,6 +1,6 @@
 ﻿namespace Core.DTOs.Data
 {
-    public record PostItDataDTO : PostItDTO
+    public sealed record PostItDataDTO : PostItDTO
     {
         public int LogId { get; init; }
         public int PostItId { get; init; }
