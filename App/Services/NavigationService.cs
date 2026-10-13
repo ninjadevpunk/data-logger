@@ -98,9 +98,19 @@ namespace Data_Logger_1._3.Services
         public event Action<Timer>? BackFromEditor;
 
         /// <summary>
+        /// Event triggered when navigating back from the editor page.
+        /// </summary>
+        public event Action<Timer>? BackFromViewer;
+
+        /// <summary>
         /// The specific instance of Timer belonging to the log cache item requesting the editor.
         /// </summary>
         private Timer? _editorTimer;
+
+        /// <summary>
+        /// The specific instance of Timer belonging to the log cache item requesting the viewer.
+        /// </summary>
+        private Timer? _viewerTimer;
 
         /// <summary>
         /// Navigate back in the main frame's history - if possible.
@@ -155,6 +165,14 @@ namespace Data_Logger_1._3.Services
                     {
                         BackFromEditor?.Invoke(_editorTimer);
                         _editorTimer = null;
+                    }
+                }
+                else if (contextBeforeBack == NavContext.VIEWER)
+                {
+                    if (_viewerTimer != null)
+                    {
+                        BackFromViewer?.Invoke(_viewerTimer);
+                        _viewerTimer = null;
                     }
                 }
             }
@@ -738,10 +756,11 @@ namespace Data_Logger_1._3.Services
 
                     switch (LogContext)
                     {
+                        // TODO: Handle Qt and Android cases
                         default:
                             {
 
-                                var codingCacheDTO = (CodingCacheDTO)logCacheDTO;
+                                var codingCacheDTO = logCacheDTO as CodingCacheDTO ?? throw new ArgumentNullException(null, "DTO is null!");
                                 var codingViewModel = _serviceProvider.GetRequiredService<CodingViewModel>();
                                 var codingEditor = viewModelFactory.CreateCodeEditViewModel(codingViewModel, codingCacheDTO, logViewModel,
                                     timeRemaining);
@@ -768,7 +787,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-        public async Task NavigateToViewer(LogDTO logDTO)
+        public async Task NavigateToViewer(LogDTO logDTO, Timer timer)
         {
             try
             {
@@ -777,12 +796,13 @@ namespace Data_Logger_1._3.Services
 
                 try
                 {
-                    NavigationContext = NavContext.DASHBOARD;
+                    _viewerTimer = timer;
+                    NavigationContext = NavContext.VIEWER;
 
                     var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
                     var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
                     var loggerViewPage = uiFactory.CreatePage<ViewerPage>();
-                    var auth = _serviceProvider.GetRequiredService<AuthService>();
+                    var auth = _serviceProvider.GetRequiredService<IAuthService>();
                     var user = Extensions.UserSettingsToDTO(auth.GetUser());
                     string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
 
@@ -795,8 +815,91 @@ namespace Data_Logger_1._3.Services
 
                     switch (LogContext)
                     {
-                        // TODO: Qt and Android cases
+                        case LogContext.Qt:
+                            {
+                                int bugs = 0;
+                                bool isSuccessful = false;
 
+                                if (logDTO is QtCacheDTO qtCacheDTO)
+                                {
+                                    bugs = qtCacheDTO.Bugs;
+                                    isSuccessful = qtCacheDTO.Success;
+                                }
+                                else if (logDTO is QtDataDTO qtDataDTO)
+                                {
+                                    bugs = qtDataDTO.Bugs;
+                                    isSuccessful = qtDataDTO.Success;
+                                }
+
+                                var qtViewerViewModel = viewModelFactory.CreateViewerViewModel(user, new CodingViewDTO
+                                {
+                                    ProjectName = logDTO.Project.ProjectName,
+                                    ApplicationName = Constants.Qt,
+                                    Date = logDTO.Start.ToString("d MMMM yyyy HH:mm"),
+                                    OutputName = logDTO.OutputName,
+                                    TypeName = logDTO.TypeName,
+                                    PostIts = logDTO.PostIts,
+                                    Bugs = $"{bugs} Bugs Found",
+                                    ApplicationOpened = isSuccessful ? "Launch Successful" : "Unsuccessful Launch"
+                                });
+
+                                await NavigateToPage(loggerViewPage, qtViewerViewModel, new coding_UserControl_View());
+
+                                break;
+                            }
+                        case LogContext.AndroidStudio:
+                            {
+                                int bugs = 0;
+                                bool isSuccessful = false;
+                                DateTime sync, gradleDaemon, runBuild, loadBuild, configBuild, allProjects;
+                                sync = gradleDaemon = runBuild = loadBuild = configBuild = allProjects = default;
+
+                                if (logDTO is AndroidCacheDTO androidCacheDTO)
+                                {
+                                    bugs = androidCacheDTO.Bugs;
+                                    isSuccessful = androidCacheDTO.Success;
+                                    sync = androidCacheDTO.Sync;
+                                    gradleDaemon = androidCacheDTO.StartingGradleDaemon;
+                                    runBuild = androidCacheDTO.RunBuild;
+                                    loadBuild = androidCacheDTO.LoadBuild;
+                                    configBuild = androidCacheDTO.ConfigureBuild;
+                                    allProjects = androidCacheDTO.AllProjects;
+                                }
+                                else if (logDTO is AndroidDataDTO androidDataDTO)
+                                {
+                                    bugs = androidDataDTO.Bugs;
+                                    isSuccessful = androidDataDTO.Success;
+                                    sync = androidDataDTO.Sync;
+                                    gradleDaemon = androidDataDTO.StartingGradleDaemon;
+                                    runBuild = androidDataDTO.RunBuild;
+                                    loadBuild = androidDataDTO.LoadBuild;
+                                    configBuild = androidDataDTO.ConfigureBuild;
+                                    allProjects = androidDataDTO.AllProjects;
+                                }
+
+                                var androidViewerViewModel = viewModelFactory.CreateViewerViewModel(user, new AndroidViewDTO
+                                {
+                                    ProjectName = logDTO.Project.ProjectName,
+                                    ApplicationName = Constants.Qt,
+                                    Date = logDTO.Start.ToString("d MMMM yyyy HH:mm"),
+                                    OutputName = logDTO.OutputName,
+                                    TypeName = logDTO.TypeName,
+                                    PostIts = logDTO.PostIts,
+                                    Bugs = $"{bugs} Bugs Found",
+                                    ApplicationOpened = isSuccessful ? "Launch Successful" : "Unsuccessful Launch",
+                                    Sync = sync,
+                                    StartingGradleDaemon = gradleDaemon,
+                                    RunBuild = runBuild,
+                                    LoadBuild = loadBuild,
+                                    ConfigureBuild = configBuild,
+                                    AllProjects = allProjects
+                                });
+
+                                // TODO: Send to Android viewer
+                                //await NavigateToPage(loggerViewPage, androidViewerViewModel, new coding_UserControl_View());
+
+                                break;
+                            }
                         default:
                             {
                                 int bugs = 0;
@@ -812,6 +915,7 @@ namespace Data_Logger_1._3.Services
                                     bugs = codingDataDTO.Bugs;
                                     isSuccessful = codingDataDTO.Success;
                                 }
+
                                 var codeViewerViewModel = viewModelFactory.CreateViewerViewModel(user, new CodingViewDTO
                                 {
                                     ProjectName = logDTO.Project.ProjectName,
@@ -824,7 +928,7 @@ namespace Data_Logger_1._3.Services
                                     ApplicationOpened = isSuccessful ? "Launch Successful" : "Unsuccessful Launch"
                                 });
 
-                                await NavigateToPage<ViewerViewModel>(loggerViewPage, new coding_UserControl_View());
+                                await NavigateToPage(loggerViewPage, codeViewerViewModel, new coding_UserControl_View());
 
                                 break;
                             }

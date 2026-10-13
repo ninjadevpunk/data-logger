@@ -63,6 +63,8 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
 
             // Resume timer when returning from the editor
             _navigationService.BackFromEditor += OnBackFromEditor;
+            _navigationService.BackFromViewer+= OnBackFromViewer;
+
 
             // ViewCommand
             DeleteCacheItemCommand = new DeleteCacheItemCommand(_logCacheViewModel, dataService, cacheService, logCacheDTO, true);
@@ -70,6 +72,14 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
         }
 
         private void OnBackFromEditor(Timer timer)
+        {
+            if (ReferenceEquals(timer, _timer))
+            {
+                _timer.Change(TimeSpan.Zero, TimeSpan.FromSeconds(1));
+            }
+        }
+
+        private void OnBackFromViewer(Timer timer)
         {
             if (ReferenceEquals(timer, _timer))
             {

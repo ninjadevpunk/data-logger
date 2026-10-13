@@ -306,7 +306,17 @@ namespace Data_Logger_1._3.Utilities
         internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
         {
-            IReadOnlyList<PostItCacheDTO> postIts = [.. codingCacheDTO.PostIts.Cast<PostItCacheDTO>()];
+            IReadOnlyList<PostItCacheDTO> postIts = [.. codingCacheDTO.PostIts.Select(postIt => new PostItCacheDTO
+            {
+                UserId = postIt.UserId,
+                Subject = postIt.Subject,
+                Error = postIt.Error,
+                Solution = postIt.Solution,
+                Suggestion = postIt.Suggestion,
+                Comment = postIt.Comment,
+                ERCaptureTime = postIt.ERCaptureTime,
+                SOCaptureTime = postIt.SOCaptureTime
+            })];
 
             codingLoggerViewModel.ProjectName = codingCacheDTO.Project.ProjectName;
             codingLoggerViewModel.ApplicationName = codingCacheDTO.ApplicationName;
@@ -337,7 +347,24 @@ namespace Data_Logger_1._3.Utilities
         internal static void InitialiseCodingUpdateViewModel(NavigationService navigationService, IDataService dataService,
             CodingLoggerViewModel codingLoggerViewModel, CodingDataDTO codingDataDTO)
         {
-            IReadOnlyList<PostItDataDTO> postIts = [.. codingDataDTO.PostIts.Cast<PostItDataDTO>()];
+            IReadOnlyList<PostItDataDTO> postIts = [.. codingDataDTO.PostIts.Select(postIt => {
+                var postItDataDTO = (PostItDataDTO)postIt;
+
+                return new PostItDataDTO
+                {
+                    UserId = postIt.UserId,
+                    Subject = postIt.Subject,
+                    Error = postIt.Error,
+                    Solution = postIt.Solution,
+                    Suggestion = postIt.Suggestion,
+                    Comment = postIt.Comment,
+                    ERCaptureTime = postIt.ERCaptureTime,
+                    SOCaptureTime = postIt.SOCaptureTime,
+                    LogId = postItDataDTO.LogId,
+                    PostItId = postItDataDTO.PostItId,
+                    SubjectId = postItDataDTO.SubjectId
+                };
+            })];
 
             codingLoggerViewModel.ProjectName = codingDataDTO.Project.ProjectName;
             codingLoggerViewModel.ApplicationName = codingDataDTO.ApplicationName;

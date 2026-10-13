@@ -168,7 +168,7 @@
                                              Maximum="1200" 
                                              Value="{Binding TimeRemaining, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                              BorderThickness="0"
-                                             Foreground="{DynamicResource PANEL}" />
+                                             Foreground="{DynamicResource PrimaryColour}" />
 
 
                             </StackPanel>
@@ -916,7 +916,7 @@
                                 <TextBlock x:Name="text_POSTIT_SUBJECT" Style="{DynamicResource text_LIST_LABEL_HEADING_View}"
                                    Height="27"
                                    HorizontalAlignment="Stretch"
-                                   Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                   Text="{Binding DisplaySubject}" />
 
                                 <StackPanel Orientation="Vertical" Grid.Row="1"
                                     HorizontalAlignment="Stretch"
@@ -935,7 +935,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_ERROR" Style="{DynamicResource text_LIST_ERROR_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding DisplayError, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayError}" />
 
                                         </Grid>
                                     </Border>
@@ -955,7 +955,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SOLUTION" Style="{DynamicResource text_LIST_SOLUTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding DisplaySolution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySolution}" />
 
                                         </Grid>
                                     </Border>
@@ -975,7 +975,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SUGGESTION" Style="{DynamicResource text_LIST_SUGGESTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding DisplaySuggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySuggestion}" />
 
                                         </Grid>
                                     </Border>
@@ -995,7 +995,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_COMMENT" Style="{DynamicResource text_LIST_COMMENT_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding DisplayComment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayComment}" />
 
                                         </Grid>
                                     </Border>

@@ -10,12 +10,14 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
     {
         private readonly NavigationService _navigationService;
         private readonly LogDTO _logDTO;
+        private readonly Timer _timer;
 
 
-        public ViewCommand(NavigationService navigationService, LogDTO logDTO)
+        public ViewCommand(NavigationService navigationService, LogDTO logDTO, Timer timer)
         {
             _navigationService = navigationService;
             _logDTO = logDTO;
+            _timer = timer;
         }
 
 
@@ -23,7 +25,10 @@ namespace Data_Logger_1._3.Commands.LogCacheCommands
         {
             try
             {
-                await _navigationService.NavigateToViewer(_logDTO);
+                if (!_timer.Change(Timeout.Infinite, Timeout.Infinite))
+                    throw new InvalidOperationException("Timer not paused!");
+
+                await _navigationService.NavigateToViewer(_logDTO, _timer);
             }
             catch (Exception e)
             {

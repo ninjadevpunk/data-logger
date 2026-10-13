@@ -21,11 +21,11 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt
         }
 
 
-        public string DisplaySubject { get; init; }
-        public string DisplayError { get; set; }
-        public string DisplaySolution { get; set; }
-        public string DisplaySuggestion { get; set; }
-        public string DisplayComment { get; set; }
+        public string DisplaySubject { get; }
+        public string DisplayError { get; }
+        public string DisplaySolution { get; }
+        public string DisplaySuggestion { get; }
+        public string DisplayComment { get; }
 
         public Visibility ErrorVisibile => Formatters.FieldVisible(DisplayError);
         public Visibility SolutionVisible => Formatters.FieldVisible(DisplaySolution);

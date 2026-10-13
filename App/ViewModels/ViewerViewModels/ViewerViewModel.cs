@@ -22,7 +22,7 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels
         protected ViewerViewModel(NavigationService navigationService, UserDTO userDTO, ViewDTO viewDTO)
         {
             _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService), "ViewerViewModel");
-            _postIts = viewDTO.PostIts.Select(postIt => new ViewStickyPostItViewModel(postIt)).ToList();
+            _postIts = [.. viewDTO.PostIts.Select(postIt => new ViewStickyPostItViewModel(postIt))];
 
             Author = $"{userDTO.Name} {userDTO.Surname}";
             SignUpImage = BitmapService.LoadImage(userDTO.ProfilePic);
