@@ -18,6 +18,14 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt
             DisplaySolution = RtfConverter.ToPlainText(dto.Solution).Text;
             DisplaySuggestion = RtfConverter.ToPlainText(dto.Suggestion).Text;
             DisplayComment = RtfConverter.ToPlainText(dto.Comment).Text;
+            ErrorVisible = Formatters.FieldVisible(DisplayError);
+            SolutionVisible = Formatters.FieldVisible(DisplaySolution);
+            SuggestionVisible = Formatters.FieldVisible(DisplaySuggestion);
+            CommentVisible = Formatters.FieldVisible(DisplayComment);
+            ErrorTextBlockHeight = Formatters.BlockHeight(DisplayError);
+            SolutionTextBlockHeight = Formatters.BlockHeight(DisplaySolution);
+            SuggestionTextBlockHeight = Formatters.BlockHeight(DisplaySuggestion);
+            CommentTextBlockHeight = Formatters.BlockHeight(DisplayComment);
         }
 
 
@@ -27,11 +35,17 @@ namespace Data_Logger_1._3.ViewModels.ViewerViewModels.PostIt
         public string DisplaySuggestion { get; }
         public string DisplayComment { get; }
 
-        public Visibility ErrorVisibile => Formatters.FieldVisible(DisplayError);
-        public Visibility SolutionVisible => Formatters.FieldVisible(DisplaySolution);
-        public Visibility SuggestionVisible => Formatters.FieldVisible(DisplaySuggestion);
-        public Visibility CommentVisibile => Formatters.FieldVisible(DisplayComment);
+        public Visibility ErrorVisible { get; }
+        public Visibility SolutionVisible { get; }
+        public Visibility SuggestionVisible { get; }
+        public Visibility CommentVisible { get; }
 
-        
+
+        public double ErrorTextBlockHeight { get; }
+        public double SolutionTextBlockHeight { get; }
+        public double SuggestionTextBlockHeight { get; }
+        public double CommentTextBlockHeight { get; }
+
+
     }
 }

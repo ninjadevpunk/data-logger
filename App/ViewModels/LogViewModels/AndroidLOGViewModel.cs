@@ -21,7 +21,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             : base(navigationService, androidCacheDTO, codingAndroidViewModel, dataService, cacheService, isCacheSave)
         {
             EditCommand = new EditCommand(navigationService, androidCacheDTO, _timer);
-            ViewCommand = new ViewCommand(_navigationService, androidCacheDTO, _timer);
+            ViewCommand = new OpenViewerCommand(_navigationService, androidCacheDTO, _timer);
 
             if (_isCacheSave)
                 _cacheMaster.SaveAndroidCodeCache(androidCacheDTO);

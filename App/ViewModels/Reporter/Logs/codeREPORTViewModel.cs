@@ -14,7 +14,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
 
         public codeREPORTViewModel(NavigationService navigationService, IDataService dataService, CodeReportDeskViewModel codeReportDeskViewModel, 
             CodingDataDTO codingDataDTO)
-            : base(dataService, codeReportDeskViewModel, codingDataDTO)
+            : base(navigationService, dataService, codeReportDeskViewModel, codingDataDTO)
         {
             // TODO: SingleExport
             OpenUpdaterCommand = new OpenUpdaterCommand(navigationService, codeReportDeskViewModel, dataService, codingDataDTO);

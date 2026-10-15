@@ -22,18 +22,18 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
 
         public abstract ICommand SingleExport { get; }
         public abstract ICommand OpenUpdaterCommand { get; }
-        public ICommand OpenViewerCommand { get; } = null!;
+        public ICommand OpenViewerCommand { get; }
         public ICommand DeleteLogCommand { get; }
 
 
-        public REPORTViewModel(IDataService dataService, ReportDeskViewModel reportDeskViewModel, LogDataDTO logDataDTO)
+        public REPORTViewModel(NavigationService navigationService, IDataService dataService, ReportDeskViewModel reportDeskViewModel, LogDataDTO logDataDTO)
         {
             _dataService = dataService;
             _reportDeskViewModel = reportDeskViewModel;
             _logDataDTO = logDataDTO;
 
             //SingleExportCommand
-            //OpenViewerCommand
+            OpenViewerCommand = new OpenViewerCommand(navigationService, logDataDTO);
             DeleteLogCommand = new DeleteLogCommand(_dataService, _reportDeskViewModel, _logDataDTO.LogId);
         }
 

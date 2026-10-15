@@ -14,7 +14,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
 
         public qtREPORTViewModel(NavigationService navigationService, IDataService dataService, QtReportDeskViewModel qtReportDeskViewModel, 
             QtDataDTO qtDataDTO)
-            : base(dataService, qtReportDeskViewModel, qtDataDTO)
+            : base(navigationService, dataService, qtReportDeskViewModel, qtDataDTO)
         {
             // TODO: SingleExport
             OpenUpdaterCommand = new OpenUpdaterCommand(navigationService, qtReportDeskViewModel, dataService, qtDataDTO);

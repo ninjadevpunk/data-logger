@@ -14,7 +14,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
 
         public androidREPORTViewModel(NavigationService navigationService, IDataService dataService, ASReportDeskViewModel androidReportDeskViewModel, 
             AndroidDataDTO androidDataDTO)
-            : base(dataService, androidReportDeskViewModel, androidDataDTO)
+            : base(navigationService, dataService, androidReportDeskViewModel, androidDataDTO)
         {
             // TODO: SingleExport
             OpenUpdaterCommand = new OpenUpdaterCommand(navigationService, androidReportDeskViewModel, dataService, androidDataDTO);

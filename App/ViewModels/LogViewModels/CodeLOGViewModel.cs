@@ -21,7 +21,7 @@ namespace Data_Logger_1._3.ViewModels.LogViewModels
             : base(navigationService, codingCacheDTO, codingViewModel, dataService, cacheService, isCacheSave)
         {
             EditCommand = new EditCommand(navigationService, codingCacheDTO, _timer);
-            ViewCommand = new ViewCommand(_navigationService, codingCacheDTO, _timer);
+            ViewCommand = new OpenViewerCommand(_navigationService, codingCacheDTO, _timer);
 
             if (_isCacheSave)
                 _cacheMaster.SaveCodeCache(codingCacheDTO);

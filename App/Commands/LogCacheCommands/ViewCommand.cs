@@ -6,14 +6,14 @@ using System.Diagnostics;
 namespace Data_Logger_1._3.Commands.LogCacheCommands
 {
 
-    internal class ViewCommand : AsyncCommandBase
+    internal class OpenViewerCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
         private readonly LogDTO _logDTO;
         private readonly Timer _timer;
 
 
-        public ViewCommand(NavigationService navigationService, LogDTO logDTO, Timer timer)
+        public OpenViewerCommand(NavigationService navigationService, LogDTO logDTO, Timer timer)
         {
             _navigationService = navigationService;
             _logDTO = logDTO;

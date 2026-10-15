@@ -788,7 +788,7 @@ namespace Data_Logger_1._3.Services
 
 
 
-        public async Task NavigateToViewer(LogDTO logDTO, Timer timer)
+        public async Task NavigateToViewer(LogDTO logDTO, Timer? timer = null)
         {
             try
             {
@@ -797,7 +797,9 @@ namespace Data_Logger_1._3.Services
 
                 try
                 {
-                    _viewerTimer = timer;
+                    if(timer != null)
+                        _viewerTimer = timer;
+
                     NavigationContext = NavContext.VIEWER;
 
                     var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
