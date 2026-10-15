@@ -1868,18 +1868,18 @@ namespace Data.Services
 
 
 
-        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText)
+        public async Task<List<QtDataDTO>?> SearchQtLogsAsync(string searchBarText)
         {
             return null;
         }
-        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName)
+        public async Task<List<QtDataDTO>?> SearchQtLogsAsync(string searchBarText, string projectName)
         {
             return null;
         }
 
-        public async Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName)
+        public async Task<List<QtDataDTO>> SearchQtLogsAsync(string searchBarText, string projectName, string appName)
         {
-            return null;
+            return [];
         }
 
         /// <summary>
@@ -1887,7 +1887,7 @@ namespace Data.Services
         /// </summary>
         /// <param name="searchBarText">The query for the database.</param>
         /// <returns>Returns a list of logs that match the search bar text.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int id)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -1908,17 +1908,17 @@ namespace Data.Services
                     .OrderBy(l => l.Start)
                     .ToListAsync();
 
-                var result = new List<CodingLOG>();
+                var result = new List<CodingDataDTO>();
 
                 foreach (var log in logs)
                 {
                     bool matches =
-                           log.Project!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Application!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                           log.Project.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Application.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.Start.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
                         || log.End.ToLongDateString().Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Output!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
-                        || log.Type!.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
+                        || log.Output.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase)
+                        || log.Type.Name.Contains(searchBarText, StringComparison.OrdinalIgnoreCase);
 
                     if (!matches && log.PostItList != null)
                     {
@@ -1966,7 +1966,50 @@ namespace Data.Services
                     }
 
                     if (matches)
-                        result.Add(log);
+                        result.Add(new CodingDataDTO
+                        {
+                            LogId = log.ID,
+                            UserId = log.accountID,
+                            AppId = log.appID,
+                            ApplicationName = log.Application.Name,
+                            ProjectId = log.projectID,
+                            Project = new ProjectDataDTO
+                            {
+                                ProjectId = log.projectID,
+                                ProjectName = log.Project.Name,
+                                AppId = log.appID,
+                                ApplicationName = log.Application.Name
+                            },
+                            Start = log.Start,
+                            End = log.End,
+                            OutputID = log.outputID,
+                            OutputName = log.Output.Name,
+                            TypeID = log.typeID,
+                            TypeName = log.Type.Name,
+                            PostIts = log.PostItList?.Select(postIt => new PostItDataDTO
+                            {
+                                LogId = log.ID,
+                                UserId = log.accountID,
+                                PostItId = postIt.postItID,
+                                SubjectId = postIt.subjectID,
+                                Subject = new SubjectDataDTO
+                                {
+                                    SubjectId = postIt.subjectID,
+                                    UserId = log.accountID,
+                                    SubjectName = postIt.Subject?.Subject ?? string.Empty,
+                                    ProjectId = log.projectID,
+                                    AppId = log.appID
+                                },
+                                Error = postIt.Error,
+                                Solution = postIt.Solution,
+                                Suggestion = postIt.Suggestion,
+                                Comment = postIt.Comment,
+                                ERCaptureTime = postIt.ERCaptureTime,
+                                SOCaptureTime = postIt.SOCaptureTime
+                            }).ToList() ?? [],
+                            Bugs = log.Bugs,
+                            Success = log.Success
+                        });
                 }
 
                 return result;
@@ -1976,7 +2019,7 @@ namespace Data.Services
                 await writer.HandleExceptionAsync(ex);
             }
 
-            return null;
+            return [];
         }
 
 
@@ -1987,7 +2030,7 @@ namespace Data.Services
         /// <param name="searchBarText">The query for the database.</param>
         /// <param name="appID">The application that logs use.</param>
         /// <returns>A list of logs that match the search bar text that were created with the provided app filter.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int appID, int id)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int appID, int id)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -2010,7 +2053,7 @@ namespace Data.Services
                     .ToListAsync();
 
                 // In-memory filtering for search + IDs
-                var result = new List<CodingLOG>();
+                var result = new List<CodingDataDTO>();
 
                 foreach (var log in logs.Where(l =>
                     l.Application!.appID == appID))
@@ -2069,7 +2112,50 @@ namespace Data.Services
                     }
 
                     if (matches)
-                        result.Add(log);
+                        result.Add(new CodingDataDTO
+                        {
+                            LogId = log.ID,
+                            UserId = log.accountID,
+                            AppId = log.appID,
+                            ApplicationName = log.Application.Name,
+                            ProjectId = log.projectID,
+                            Project = new ProjectDataDTO
+                            {
+                                ProjectId = log.projectID,
+                                ProjectName = log.Project.Name,
+                                AppId = log.appID,
+                                ApplicationName = log.Application.Name
+                            },
+                            Start = log.Start,
+                            End = log.End,
+                            OutputID = log.outputID,
+                            OutputName = log.Output.Name,
+                            TypeID = log.typeID,
+                            TypeName = log.Type.Name,
+                            PostIts = log.PostItList?.Select(postIt => new PostItDataDTO
+                            {
+                                LogId = log.ID,
+                                UserId = log.accountID,
+                                PostItId = postIt.postItID,
+                                SubjectId = postIt.subjectID,
+                                Subject = new SubjectDataDTO
+                                {
+                                    SubjectId = postIt.subjectID,
+                                    UserId = log.accountID,
+                                    SubjectName = postIt.Subject?.Subject ?? string.Empty,
+                                    ProjectId = log.projectID,
+                                    AppId = log.appID
+                                },
+                                Error = postIt.Error,
+                                Solution = postIt.Solution,
+                                Suggestion = postIt.Suggestion,
+                                Comment = postIt.Comment,
+                                ERCaptureTime = postIt.ERCaptureTime,
+                                SOCaptureTime = postIt.SOCaptureTime
+                            }).ToList() ?? [],
+                            Bugs = log.Bugs,
+                            Success = log.Success
+                        });
                 }
 
                 return result;
@@ -2079,7 +2165,7 @@ namespace Data.Services
                 await writer.HandleExceptionAsync(ex);
             }
 
-            return null;
+            return [];
         }
 
 
@@ -2091,7 +2177,7 @@ namespace Data.Services
         /// <param name="projectID">The project that the log was created for.</param>
         /// <param name="appID">The application that logs use.</param>
         /// <returns>A list of logs that match the search bar text that were created with the provided app and project filter.</returns>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int id, int projectID, int appID)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int id, int projectID, int appID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -2114,7 +2200,7 @@ namespace Data.Services
                     .ToListAsync();
 
                 // In-memory filtering for search + IDs
-                var result = new List<CodingLOG>();
+                var result = new List<CodingDataDTO>();
 
                 foreach (var log in logs.Where(l =>
                     l.Project!.projectID == projectID &&
@@ -2180,7 +2266,50 @@ namespace Data.Services
                     }
 
                     if (matches)
-                        result.Add(log);
+                        result.Add(new CodingDataDTO
+                        {
+                            LogId = log.ID,
+                            UserId = log.accountID,
+                            AppId = log.appID,
+                            ApplicationName = log.Application.Name,
+                            ProjectId = log.projectID,
+                            Project = new ProjectDataDTO
+                            {
+                                ProjectId = log.projectID,
+                                ProjectName = log.Project.Name,
+                                AppId = log.appID,
+                                ApplicationName = log.Application.Name
+                            },
+                            Start = log.Start,
+                            End = log.End,
+                            OutputID = log.outputID,
+                            OutputName = log.Output.Name,
+                            TypeID = log.typeID,
+                            TypeName = log.Type.Name,
+                            PostIts = log.PostItList?.Select(postIt => new PostItDataDTO
+                            {
+                                LogId = log.ID,
+                                UserId = log.accountID,
+                                PostItId = postIt.postItID,
+                                SubjectId = postIt.subjectID,
+                                Subject = new SubjectDataDTO
+                                {
+                                    SubjectId = postIt.subjectID,
+                                    UserId = log.accountID,
+                                    SubjectName = postIt.Subject?.Subject ?? string.Empty,
+                                    ProjectId = log.projectID,
+                                    AppId = log.appID
+                                },
+                                Error = postIt.Error,
+                                Solution = postIt.Solution,
+                                Suggestion = postIt.Suggestion,
+                                Comment = postIt.Comment,
+                                ERCaptureTime = postIt.ERCaptureTime,
+                                SOCaptureTime = postIt.SOCaptureTime
+                            }).ToList() ?? [],
+                            Bugs = log.Bugs,
+                            Success = log.Success
+                        });
                 }
 
                 return result;
@@ -2190,7 +2319,7 @@ namespace Data.Services
                 await writer.HandleExceptionAsync(ex);
             }
 
-            return null;
+            return [];
         }
 
 

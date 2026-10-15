@@ -1,11 +1,12 @@
-﻿using Core.Enums;
-using Core.Models;
-using Data_Logger_1._3.Commands.LogCacheCommands;
-using Data_Logger_1._3.Commands.ReporterCommands;
+﻿using Core.DTOs.Data;
+using Core.Enums;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Result
 {
@@ -14,47 +15,20 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
     /// </summary>
     internal class qt_SearchResultViewModel : SearchResultViewModel
     {
-        private readonly CodingLOG _QtCodingLOG;
         public override LogContext SearchResultContext => LogContext.Qt;
+        public override ICommand OpenUpdaterCommand { get; }
 
-        public qt_SearchResultViewModel(CodingLOG codingLOG, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService) : 
-            base(codingLOG, reportDeskViewModel, navigationService)
+        public qt_SearchResultViewModel(NavigationService navigationService, IDataService dataService, QtDataDTO qtDataDTO, 
+            QtReportDeskViewModel qtReportDeskViewModel) : 
+            base(navigationService, dataService, qtDataDTO, qtReportDeskViewModel)
         {
-            _QtCodingLOG = codingLOG;
             var style = Extensions.TryParsePath("path_Qt_icon");
-            IconStyle = style == null ? new Style() : style;
+            IconStyle = style ?? new Style();
 
-            
+            OpenUpdaterCommand = new OpenUpdaterCommand(navigationService, qtReportDeskViewModel, dataService, qtDataDTO);
         }
 
 
-
-
-
-
-
-        #region Methods
-
-
-
-
-        /// <summary>
-        /// Returns the Qt Coding log injected into the ViewModel.
-        /// </summary>
-        public CodingLOG GetCodingLog => _QtCodingLOG;
-
-
-        
-
-
-
-
-
-
-
-
-
-        #endregion
 
     }
 }

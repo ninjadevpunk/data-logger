@@ -5,8 +5,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Data_Logger_1._3.ViewModels.Reporter.Result;
 using Data.Interfaces;
-using Core.Models;
 using Core.Enums;
+using Core.DTOs.Data;
 
 namespace Data_Logger_1._3.Commands.ReporterCommands
 {
@@ -38,14 +38,14 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                 string projectFilter = _reportDesk.Project;
                 string appFilter = _reportDesk.Application;
 
-                
+
                 switch (_context)
                 {
                     case LogContext.Qt:
                         {
-                            List<CodingLOG> list = [];
+                            List<QtDataDTO> list = [];
 
-                            var qtReportDesk = (CodeReportDeskViewModel)_reportDesk;
+                            var qtReportDesk = (QtReportDeskViewModel)_reportDesk;
 
                             if (qtReportDesk.Project == "NONE")
                             {
@@ -71,7 +71,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
 
                             foreach (var record in list)
                             {
-                                items.Add(new qt_SearchResultViewModel(record, qtReportDesk, _navigationService));
+                                items.Add(new qt_SearchResultViewModel(_navigationService, _dataService, record, qtReportDesk));
                             }
 
                             qtReportDesk.SearchBarItems = items;
@@ -80,6 +80,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                         }
                     case LogContext.AndroidStudio:
                         {
+                            // TODO: Handle Android case
                             break;
                         }
                     case LogContext.Graphics:
@@ -96,11 +97,11 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                         }
                     default:
                         {
-                            List<CodingLOG>? list = [];
+                            List<CodingDataDTO> list = [];
 
                             var codeReportDesk = (CodeReportDeskViewModel)_reportDesk;
 
-                            if(codeReportDesk.Project == "NONE")
+                            if (codeReportDesk.Project == "NONE")
                             {
                                 codeReportDesk.SearchBarItems.Clear();
                                 return;
@@ -114,22 +115,25 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
                                 }
                                 else if (codeReportDesk.Project == "ANY")
                                 {
-                                    //list = await _dataService.SearchCodingLogsAsync(codeReportDesk.Query, appFilter.appID);
+                                    var appId = (await _dataService.FindApplicationAsync(appFilter))?.appID ?? -1;
+                                    list = await _dataService.SearchCodingLogsAsync(codeReportDesk.Query, appId);
                                 }
                                 else
                                 {
-                                    //list = projectFilter is null || appFilter is null
-                                    //    ? throw new ArgumentNullException("Project not found.")
-                                    //    : await _dataService.SearchCodingLogsAsync(codeReportDesk.Query,
-                                    //        projectFilter.projectID, appFilter.appID);
+                                    var appId = (await _dataService.FindApplicationAsync(appFilter))?.appID ?? -1;
+                                    var projectId = (await _dataService.FindProjectAsync(projectFilter, appId))?.projectID ?? -1;
+                                    list = await _dataService.SearchCodingLogsAsync(codeReportDesk.Query, projectId, appId);
                                 }
                             }
 
 
                             var items = new ObservableCollection<SearchResultViewModel>();
 
-                            if (list == null)
+                            if (!list.Any())
+                            {
+                                codeReportDesk.SearchBarItems.Clear();
                                 return;
+                            }
 
                             foreach (var record in list)
                             {
@@ -140,16 +144,12 @@ namespace Data_Logger_1._3.Commands.ReporterCommands
 
                             break;
                         }
-
                 }
 
             }
-            catch (ArgumentNullException nullex)
-            {
-                Debug.WriteLine($"ArgumentNullException occurred near SearchCommand.Execute(): {nullex.Message}");
-            }
             catch (Exception ex)
             {
+                await _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"Exception occurred near SearchCommand.Execute(): {ex.Message}");
             }
         }

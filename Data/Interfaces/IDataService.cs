@@ -138,12 +138,12 @@ namespace Data.Interfaces
         Task<int> ASLogCountAsync();
         Task<int> FlexiLogCountAsync();
 
-        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText);
-        Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, string projectName);
-        Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName);
-        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText);
-        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID);
-        Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID);
+        Task<List<QtDataDTO>?> SearchQtLogsAsync(string searchBarText);
+        Task<List<QtDataDTO>?> SearchQtLogs(string searchBarText, string projectName);
+        Task<List<QtDataDTO>> SearchQtLogsAsync(string searchBarText, string projectName, string appName);
+        Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText);
+        Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int projectID);
+        Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int projectID, int appID);
 
 
         // Updates

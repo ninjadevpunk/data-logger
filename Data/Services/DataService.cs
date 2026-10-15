@@ -1012,19 +1012,19 @@ namespace Data.Services
         /// <summary>
         /// Searches Qt logs based on a search text.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText) =>
+        public Task<List<QtDataDTO>?> SearchQtLogsAsync(string searchBarText) =>
             UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText));
 
         /// <summary>
         /// Searches Qt logs within a specific project.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogs(string searchBarText, string projectName) =>
+        public Task<List<QtDataDTO>?> SearchQtLogs(string searchBarText, string projectName) =>
             UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectName));
 
         /// <summary>
         /// Searches Qt logs within a specific project and application.
         /// </summary>
-        public Task<List<CodingLOG>?> SearchQtLogsAsync(string searchBarText, string projectName, string appName) =>
+        public Task<List<QtDataDTO>> SearchQtLogsAsync(string searchBarText, string projectName, string appName) =>
             UseReaderAsync(reader => reader.SearchQtLogsAsync(searchBarText, projectName, appName));
 
 
@@ -1033,7 +1033,7 @@ namespace Data.Services
         /// <summary>
         /// Searches coding logs based on a search text.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText)
         {
             var user = await EnsureValidUserAsync();
             return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.Id));
@@ -1041,7 +1041,7 @@ namespace Data.Services
         /// <summary>
         /// Searches coding logs within a specific project.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int projectID)
         {
             var user = await EnsureValidUserAsync();
             return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, projectID, user.Id));
@@ -1050,7 +1050,7 @@ namespace Data.Services
         /// <summary>
         /// Searches coding logs within a specific project and application.
         /// </summary>
-        public async Task<List<CodingLOG>?> SearchCodingLogsAsync(string searchBarText, int projectID, int appID)
+        public async Task<List<CodingDataDTO>> SearchCodingLogsAsync(string searchBarText, int projectID, int appID)
         {
             var user = await EnsureValidUserAsync();
             return await UseReaderAsync(reader => reader.SearchCodingLogsAsync(searchBarText, user.Id, projectID, appID));

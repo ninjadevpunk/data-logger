@@ -1,15 +1,14 @@
-﻿using Core.Enums;
-using Core.Models;
+﻿using Core.DTOs;
+using Core.DTOs.Data;
+using Core.Enums;
 using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.ViewModels;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Input;
 using Path = System.Windows.Shapes.Path;
 
@@ -20,16 +19,26 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
     /// </summary>
     internal abstract class SearchResultViewModel : ViewModelBase
     {
-        protected readonly LOG _LOG;
+        protected readonly LogDataDTO _logDataDTO;
         protected readonly ReportDeskViewModel _reportDesk;
         protected readonly NavigationService _navigationService;
         public abstract LogContext SearchResultContext { get; }
 
-        public SearchResultViewModel(LOG log, ReportDeskViewModel reportDeskViewModel, NavigationService navigationService)
+
+        public abstract ICommand OpenUpdaterCommand { get; }
+        public ICommand ViewLogCommand { get; }
+        public ICommand DeleteLogCommand { get; }
+
+
+        public SearchResultViewModel(NavigationService navigationService, IDataService dataService, LogDataDTO logDataDTO, 
+            ReportDeskViewModel reportDeskViewModel)
         {
-            _LOG = log;
+            _logDataDTO = logDataDTO;
             _reportDesk = reportDeskViewModel;
             _navigationService = navigationService;
+
+            ViewLogCommand = new OpenViewerCommand(navigationService, _logDataDTO);
+            DeleteLogCommand = new DeleteLogCommand(dataService, reportDeskViewModel, _logDataDTO.LogId, this);
         }
 
 
@@ -38,37 +47,22 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
 
 
 
-        public int ViewModelID => _LOG.ID;
-
-        public Style? IconStyle { get; set; }
+        public Style? IconStyle { get; init; }
 
         // For JetBrains (gradient)
-        public Path IconPath { get; set; } = new();
+        public Path IconPath { get; init; } = new();
 
-        public UIElement IconContainer { get; set; } = new();
+        public UIElement IconContainer { get; init; } = new();
 
-        public string Date => _LOG.Start.ToString("d MMMM yyyy");
+        public string Date => _logDataDTO.Start.ToString("d MMMM yyyy");
 
-        public string Project => _LOG?.Project?.Name ?? "Unknown Project";
+        public string Project => _logDataDTO.Project.ProjectName ?? "Unknown Project";
 
 
         public string Subject => CreateSubject();
 
         public string Content => CreateContent();
 
-
-
-        #region Commands
-
-
-        public ICommand ViewLogCommand { get; set; } = null!;
-
-        public ICommand EditLogCommand { get; set; } = null!;
-
-        public ICommand DeleteLogCommand { get; set; } = null!;
-
-
-        #endregion
 
 
 
@@ -83,50 +77,9 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
 
 
 
-
-        public string ConvertRtfToPlainText(string rtfContent)
-        {
-            try
-            {
-                // CreateViewerViewModel a temporary RichTextBox
-                var richTextBox = new RichTextBox();
-
-                // Convert RTF content to a byte array
-                byte[] rtfBytes = Encoding.UTF8.GetBytes(rtfContent);
-
-                // Use a MemoryStream to load the RTF content
-                using (var stream = new MemoryStream(rtfBytes))
-                {
-                    richTextBox.Document = new FlowDocument();
-                    var textRange = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd);
-                    textRange.Load(stream, DataFormats.Rtf);
-                }
-
-                // Extract plain text
-                string plainText = new TextRange(richTextBox.Document.ContentStart, richTextBox.Document.ContentEnd).Text;
-
-                return plainText;
-            }
-            catch (ArgumentException argx)
-            {
-                Debug.WriteLine($"ArgumentException near ConvertRtfToPlaintText(): {argx.Message}");
-
-                return string.Empty;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Exception near ConvertRtfToPlainText(): {ex.Message}");
-
-                // TODO
-
-                return string.Empty;
-            }
-        }
-
-
         public string CreateContent()
         {
-            foreach (PostIt p in _LOG.PostItList)
+            foreach (PostItDTO p in _logDataDTO.PostIts)
             {
                 if (RtfConverter.HasContent(p.Error))
                 {
@@ -152,21 +105,18 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
 
         public string CreateSubject()
         {
-            // TODO
+            const string defaultSubject = "Nothing to Display";
+
             try
             {
-                return _LOG.PostItList is not null && _LOG.PostItList.Count > 0 ? _LOG.PostItList[0].Subject.Subject : "Nothing to Display";
-            }
-            catch (NullReferenceException nullex)
-            {
-                Debug.WriteLine($"NullReferenceException occurred near CreateSubject(): {nullex.Message}");
+                return _logDataDTO.PostIts.Count > 0 ? _logDataDTO.PostIts[0].Subject.SubjectName : defaultSubject;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Exception occurred near CreateSubject(): {ex.Message}");
             }
 
-            return "Nothing to Display";
+            return defaultSubject;
         }
 
 

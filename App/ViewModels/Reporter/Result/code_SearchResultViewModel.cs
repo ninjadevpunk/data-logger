@@ -1,11 +1,13 @@
-﻿using Core.Enums;
-using Core.Models;
+﻿using Core.DTOs.Data;
+using Core.Enums;
 using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Utilities;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -15,16 +17,16 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
     {
         public override LogContext SearchResultContext => LogContext.Coding;
 
-        public code_SearchResultViewModel(NavigationService navigationService, IDataService dataService, CodingLOG codingLOG,
-            CodeReportDeskViewModel codeReportDeskViewModel)
-    : base(codingLOG, codeReportDeskViewModel, navigationService)
-        {
-            ID = codingLOG.ID;
+        public override ICommand OpenUpdaterCommand { get; }
 
+        public code_SearchResultViewModel(NavigationService navigationService, IDataService dataService, CodingDataDTO codingDataDTO,
+            CodeReportDeskViewModel codeReportDeskViewModel)
+            : base(navigationService, dataService, codingDataDTO, codeReportDeskViewModel)
+        {
             // Default
             IconStyle = Extensions.TryParsePath("path_DefaultApp");
 
-            switch (codingLOG.Application.Name)
+            switch (codingDataDTO.ApplicationName)
             {
                 case "Visual Studio Community 2022":
                     IconStyle = Extensions.TryParsePath("path_VS_SearchResult");
@@ -242,10 +244,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Result
 
             }
 
-            
+            OpenUpdaterCommand = new OpenUpdaterCommand(navigationService, codeReportDeskViewModel, dataService, codingDataDTO);
         }
-
-        public int ID { get; set; }
 
     }
 }
