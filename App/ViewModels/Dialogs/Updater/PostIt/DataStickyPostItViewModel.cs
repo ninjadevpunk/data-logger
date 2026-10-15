@@ -16,12 +16,12 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt
         private readonly PostItDataDTO _postItDataDTO;
 
         public override ICommand EditPostItCommand { get; }
-        public override ICommand DeletePostItCommand { get; } = null!;
+        public override ICommand DeletePostItCommand { get; }
 
 
-        public DataStickyPostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, 
+        public DataStickyPostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerUpdateViewModel, 
             PostItDataDTO postItDataDTO)
-            : base(navigationService, dataService, loggerCreateViewModel)
+            : base(navigationService, dataService, loggerUpdateViewModel)
         {
             _postItDataDTO = postItDataDTO;
 
@@ -32,6 +32,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt
             DisplayComment = RtfConverter.ToPlainText(postItDataDTO.Comment).Text;
 
             EditPostItCommand = new UpdatePostItCommand(_navigationService, _loggerCreateViewModel, this);
+            DeletePostItCommand = new DeletePostItCommand(loggerUpdateViewModel);
         }
 
         public PostItDataDTO RtfPostIt => _postItDataDTO;
