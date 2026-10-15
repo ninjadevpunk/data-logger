@@ -33,6 +33,7 @@ using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
 using Core.Utilities;
 using Core.Models;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
 
 namespace Data_Logger_1._3
 {
@@ -136,7 +137,13 @@ namespace Data_Logger_1._3
                     service.AddTransient<codeCreateViewModel>();
                     service.AddTransient<AScodeCreateViewModel>();
 
+                    service.AddTransient<qtEditViewModel>();
+                    service.AddTransient<AScodeEditViewModel>();
                     service.AddTransient<codeEditViewModel>();
+
+                    service.AddTransient<qtUpdateViewModel>();
+                    service.AddTransient<AScodeUpdateViewModel>();
+                    service.AddTransient<codeUpdateViewModel>();
 
 
                     // REPORTER

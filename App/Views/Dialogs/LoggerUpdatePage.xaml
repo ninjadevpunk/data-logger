@@ -81,10 +81,10 @@
                                 HorizontalAlignment="Left" />
 
                                 <Path x:Name="path_DEFAULT_DP" Style="{DynamicResource path_AUTHOR}"
-                              Visibility="{Binding DisplayPicVisibility, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                              Visibility="{Binding DisplayPicVisibility}" />
 
                                 <TextBlock x:Name="text_AUTHOR" Grid.Column="1" Style="{DynamicResource text_Placeholder}"
-                                   Text="{Binding Author, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                   Text="{Binding Author}"
                                    Foreground="{DynamicResource BLACK}"
                                    HorizontalAlignment="Left" />
                             </Grid>
@@ -102,7 +102,7 @@
 
                         <!-- APPLICATION -->
                         <components:ComboBoxInputField x:Name="inputText_APP"
-                                                   Enabled="{Binding AppFieldEnabled, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Enabled="{Binding AppFieldEnabled}"
                                                    PlaceholderText="Application Name"
                                                    UserTextBoxStyle="{DynamicResource inputText_APP}"
                                                    UserTextBlockStyle="{DynamicResource text_APP_Placeholder}"
@@ -300,9 +300,12 @@
                     HorizontalAlignment="Stretch"
                     Padding="0" >
 
-                    <StackPanel Orientation="Vertical"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch" >
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="45" />
+                        </Grid.RowDefinitions>
 
                         <!-- TOOLBAR -->
                         <ToolBar Style="{DynamicResource toolbar_POSTITS_list}" x:Name="tool_POST_IT_LIST"
@@ -321,7 +324,7 @@
 
 
                         <!-- POST ITS -->
-                        <ListView Style="{DynamicResource listView_POSTITS}"
+                        <ListView Style="{DynamicResource listView_POSTITS}" Grid.Row="1"
                               ItemsSource="{Binding PostIts, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
 
 
@@ -332,7 +335,7 @@
 
 
 
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
 

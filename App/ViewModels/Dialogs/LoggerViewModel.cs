@@ -42,6 +42,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
             _userDTO = Extensions.UserSettingsToDTO(authService.GetUser());
 
+            Author = $"{_userDTO.Name ?? string.Empty} {_userDTO.Surname ?? string.Empty}";
             ProjectName = string.Empty;
             ApplicationName = string.Empty;
 
@@ -93,7 +94,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         public Visibility DisplayPicVisibility => SignUpImage != null ? Visibility.Collapsed : Visibility.Visible;
 
-        public string Author => $"{_userDTO.Name ?? string.Empty} {_userDTO.Surname ?? string.Empty}";
+        public string Author { get; }
 
 
         public BitmapImage? SignUpImage => string.IsNullOrEmpty(_userDTO.ProfilePic) ? null : BitmapService.LoadImage(_userDTO.ProfilePic);

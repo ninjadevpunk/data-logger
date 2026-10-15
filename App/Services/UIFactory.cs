@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
 using Core.DTOs.Cache;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 
 namespace Data_Logger_1._3.Services
 {
@@ -70,6 +71,16 @@ namespace Data_Logger_1._3.Services
             var postItViewModel = viewModelFactory.CreateEditPostItViewModel(loggerViewModel, cacheStickyPostItViewModel);
             await postItViewModel.AutoStartAsync(appName, projectName);
             
+            return ActivatorUtilities.CreateInstance<PostItPage>(_serviceProvider, postItViewModel);
+        }
+
+        public async Task<PostItPage> CreateUpdatePostItPage(LoggerViewModel loggerViewModel, DataStickyPostItViewModel dataStickyPostItViewModel,
+            string appName, string projectName)
+        {
+            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+            var postItViewModel = viewModelFactory.CreateUpdatePostItViewModel(loggerViewModel, dataStickyPostItViewModel);
+            await postItViewModel.AutoStartAsync(appName, projectName);
+
             return ActivatorUtilities.CreateInstance<PostItPage>(_serviceProvider, postItViewModel);
         }
 

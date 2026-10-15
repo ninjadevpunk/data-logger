@@ -375,9 +375,9 @@
                     <!-- Context Menu -->
                     <ControlTemplate.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
-                            <MenuItem Header="Edit" Command="{Binding EditLogCommand}"
+                            <MenuItem Header="Edit" Command="{Binding OpenUpdaterCommand}"
                                       CommandParameter="{Binding}" />
-                            <MenuItem Header="View" Command="{Binding ViewLogCommand}"
+                            <MenuItem Header="View" Command="{Binding OpenViewerCommand}"
                                       CommandParameter="{Binding}" />
                             <MenuItem Header="Delete" Command="{Binding DeleteLogCommand}"
                                       CommandParameter="{Binding}" />

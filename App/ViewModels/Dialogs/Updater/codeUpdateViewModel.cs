@@ -2,6 +2,7 @@
 using Core.Interfaces;
 using Core.Utilities;
 using Data.Interfaces;
+using Data_Logger_1._3.Commands.ReporterCommands;
 using Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.Utilities;
@@ -13,26 +14,24 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
     /// <summary>
     /// TODO
     /// </summary>
-    internal class codeUpdateViewModel : CodingLoggerUpdateViewModel
+    internal sealed class codeUpdateViewModel : CodingLoggerUpdateViewModel
     {
         public override bool AppFieldEnabled => true;
-        private readonly CodeReportDeskViewModel _codeReportDeskViewModel;
 
 
         public override ICommand SaveCommand { get; } = null!;
-        public override ICommand UpdateLogCommand { get; }
+        public override ICommand UpdateCommand { get; }
 
 
-        public codeUpdateViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService, 
+        public codeUpdateViewModel(NavigationService navigationService, IAuthService authService, IDataService dataService,
             CodeReportDeskViewModel codeReportDeskViewModel, CodingDataDTO codingDataDTO)
             : base(navigationService, authService, dataService)
         {
-            _codeReportDeskViewModel = codeReportDeskViewModel;
             Extensions.InitialiseCodingUpdateViewModel(_navigationService, _dataService, this, codingDataDTO);
-            ApplicationName = Constants.VisualStudio;
+            ApplicationName = codingDataDTO.ApplicationName;
 
             // TODO: SaveCommand
-            UpdateLogCommand = new UpdateCommand(_navigationService, this, _codeReportDeskViewModel, _authService, _dataService, codingDataDTO, Context);
+            UpdateCommand = new UpdateLogCommand(navigationService, dataService, codeReportDeskViewModel, this, codingDataDTO);
         }
 
 

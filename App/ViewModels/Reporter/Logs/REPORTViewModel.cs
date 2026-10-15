@@ -2,6 +2,8 @@
 using Core.Utilities;
 using Data.Interfaces;
 using Data_Logger_1._3.Commands.ReporterCommands;
+using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.ViewModels;
 using System.Diagnostics;
@@ -19,8 +21,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
         protected readonly IDataService _dataService;
 
         public abstract ICommand SingleExport { get; }
-        public ICommand EditLogCommand { get; } = null!;
-        public ICommand ViewLogCommand { get; } = null!;
+        public abstract ICommand OpenUpdaterCommand { get; }
+        public ICommand OpenViewerCommand { get; } = null!;
         public ICommand DeleteLogCommand { get; }
 
 
@@ -31,8 +33,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Logs
             _logDataDTO = logDataDTO;
 
             //SingleExportCommand
-            //EditLogCommand
-            //ViewLogCommand
+            //OpenViewerCommand
             DeleteLogCommand = new DeleteLogCommand(_dataService, _reportDeskViewModel, _logDataDTO.LogId);
         }
 

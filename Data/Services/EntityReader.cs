@@ -523,7 +523,7 @@ namespace Data.Services
             return null;
         }
 
-        public async Task<ApplicationClass?> FindApplication(int? ID, string name)
+        public async Task<ApplicationClass?> FindApplication(int? id, string name)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -531,11 +531,11 @@ namespace Data.Services
 
             try
             {
-                if (ID == null)
-                    throw new ArgumentNullException(nameof(ID), "ID is needed to find application's from Data Logger or user!");
+                if (id == null)
+                    throw new ArgumentNullException(nameof(id), "ID is needed to find application's from Data Logger or user!");
 
                 var application = await master.Applications
-                    .Where(app => app.accountID == ID || app.accountID == 1)
+                    .Where(app => app.accountID == id || app.accountID == 1)
                     .FirstOrDefaultAsync(app => app.Name == name);
 
                 return application;
@@ -593,7 +593,7 @@ namespace Data.Services
             return null;
         }
 
-        public async Task<ApplicationClass?> FindApplicationByID(AsyncServiceScope scope, EntityMaster master, int appID)
+        public static async Task<ApplicationClass?> FindApplicationByID(AsyncServiceScope scope, EntityMaster master, int appID)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -612,7 +612,7 @@ namespace Data.Services
             return null;
         }
 
-        public async Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID)
+        public async Task<ProjectClass?> FindProjectAsync(int userID, string projectName, int appID)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
@@ -620,9 +620,6 @@ namespace Data.Services
 
             try
             {
-                if (userID == null)
-                    throw new ArgumentNullException(nameof(userID), "userID is required to find a user's projects!");
-
                 var project = await master.Projects
                     .Where(p => (p.accountID == userID || p.accountID == 1)
                                 && p.Name == projectName
@@ -712,7 +709,7 @@ namespace Data.Services
             return null;
         }
 
-        public async Task<ProjectClass?> FindProjectByID(AsyncServiceScope scope, EntityMaster master, int projectID)
+        public static async Task<ProjectClass?> FindProjectByID(AsyncServiceScope scope, EntityMaster master, int projectID)
         {
             var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
 
@@ -1148,27 +1145,16 @@ namespace Data.Services
             return null;
         }
 
-        public static async Task<SubjectClass?> FindSubject(AsyncServiceScope scope, EntityMaster master, string name, LOG.CATEGORY category,
+        public static async Task<SubjectClass?> FindSubject(EntityMaster master, string name, LOG.CATEGORY category,
             int userId, int appID, int projectID)
         {
-            var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-
-            try
-            {
-                return await master.Subjects
+            return await master.Subjects
                     .Where(s => new[] { 1, userId }.Contains(s.accountID))
                     .Where(s => s.Subject == name)
                     .Where(s => s.Category == category)
                     .Where(s => s.appID == appID)
                     .Where(s => s.projectID == projectID)
                     .FirstOrDefaultAsync();
-            }
-            catch (Exception ex)
-            {
-                await writer.HandleExceptionAsync(ex);
-            }
-
-            return null;
         }
 
 

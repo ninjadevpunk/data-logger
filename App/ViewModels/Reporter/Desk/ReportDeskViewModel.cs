@@ -21,8 +21,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
         public abstract LogContext Context { get; }
 
-        protected bool AwaitCall = true;
-
 
 
         public ReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService)

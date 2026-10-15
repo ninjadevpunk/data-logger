@@ -2,6 +2,7 @@
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Dialogs;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 using MVVMEssentials.Commands;
 
 namespace Data_Logger_1._3.Commands.PostItCommands
@@ -9,30 +10,20 @@ namespace Data_Logger_1._3.Commands.PostItCommands
     internal class UpdatePostItCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
-        private readonly IDataService _dataService;
         private readonly LoggerViewModel _loggerCreateViewModel;
+        private readonly DataStickyPostItViewModel _dataStickyPostItViewModel;
 
-        private readonly PostItDataDTO _postItDataDTO;
-
-        public UpdatePostItCommand(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel,
-            PostItDataDTO postItDataDTO)
+        public UpdatePostItCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel,
+            DataStickyPostItViewModel dataStickyPostItViewModel)
         {
             _navigationService = navigationService;
-            _dataService = dataService;
             _loggerCreateViewModel = loggerCreateViewModel;
-            _postItDataDTO = postItDataDTO;
+            _dataStickyPostItViewModel = dataStickyPostItViewModel;
         }
 
         protected override async Task ExecuteAsync(object parameter)
         {
-            try
-            {
-                await _navigationService.NavigateToPostItUpdater(_loggerCreateViewModel, _postItDataDTO);
-            }
-            catch (Exception ex)
-            {
-                await _dataService.HandleExceptionAsync(ex);
-            }
+            await _navigationService.NavigateToPostItUpdater(_loggerCreateViewModel, _dataStickyPostItViewModel);
         }
     }
 }

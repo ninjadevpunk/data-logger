@@ -50,7 +50,7 @@ namespace Data_Logger_1._3.Commands.PostItCommands
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception: {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex);
             }
         }
     }

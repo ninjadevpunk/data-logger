@@ -23,7 +23,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         public CodeReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService) :
             base(navigationService, dataService, pdfService)
         {
-
             SearchCommand = new SearchCommand(this, _dataService, _navigationService, Context);
             ExportCommand = new ExportCommand();
             ReturnToDashboard = new ReporterReturnCommand(_navigationService, Context);
@@ -41,7 +40,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
             Applications.Clear();
             Applications.Add("ANY");
-            string holdApp = "ANY";
+            string holdAppName = "ANY";
 
             try
             {
@@ -50,15 +49,16 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
                     Applications.Add(app);
 
                     if (string.IsNullOrEmpty(Application) && Applications.Count > 0)
-                        holdApp = Applications.ElementAt(1);
+                        holdAppName = Applications.ElementAt(1);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception near AutoStartAsync: {ex.Message}");
+                await _dataService.HandleExceptionAsync(ex);
+                Debug.WriteLine($"{Constants.ExceptionPrefix} AutoStartAsync: {ex.Message}");
             }
 
-            Application = holdApp;
+            Application = holdAppName;
             _isBusy = false;
         }
 
@@ -69,7 +69,6 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         {
             if (_isBusy) return;
             _isBusy = true;
-
 
             Projects.Clear();
             Projects.Add("NONE");
@@ -89,6 +88,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             }
             catch (Exception ex)
             {
+                await _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"{Constants.ExceptionPrefix} InitialiseProjectsAsync(): {ex.Message}");
             }
 
@@ -101,6 +101,8 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         /// </summary>
         public override async Task UpdateLogsListAsync()
         {
+            if (_isBusy) return;
+            _isBusy = true;
 
             try
             {
@@ -115,7 +117,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
                     if(codingDTO.Project.ProjectName == Project && codingDTO.ApplicationName == Application 
                         || (Project == "ANY" && codingDTO.ApplicationName == Application)
                         || (Project == "ANY" && Application == "ANY"))
-                        list.Add(new codeREPORTViewModel(_dataService, this, codingDTO));
+                        list.Add(new codeREPORTViewModel(_navigationService, _dataService, this, codingDTO));
                 }
 
                 Logs = list;
@@ -123,6 +125,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             }
             catch (Exception ex)
             {
+                await _dataService.HandleExceptionAsync(ex);
                 Debug.WriteLine($"{Constants.ExceptionPrefix} UpdateLogsListAsync: {ex.Message}");
             }
 

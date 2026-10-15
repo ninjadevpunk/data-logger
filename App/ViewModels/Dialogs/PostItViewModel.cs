@@ -45,7 +45,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
 
         public virtual async Task AutoStartAsync(string appName, string projectName)
         {
-            Subjects = (await _dataService.InitialiseSubjectsLISTAsync(appName, projectName)).ToHashSet<string>();
+            Subjects = [.. (await _dataService.InitialiseSubjectsLISTAsync(appName, projectName))];
         }
 
 

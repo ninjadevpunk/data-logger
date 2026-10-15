@@ -16,7 +16,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt
         private readonly PostItDataDTO _postItDataDTO;
 
         public override ICommand EditPostItCommand { get; }
-        public override ICommand DeletePostItCommand => throw new NotImplementedException();
+        public override ICommand DeletePostItCommand { get; } = null!;
 
 
         public DataStickyPostItViewModel(NavigationService navigationService, IDataService dataService, LoggerViewModel loggerCreateViewModel, 
@@ -25,13 +25,13 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt
         {
             _postItDataDTO = postItDataDTO;
 
+            Subject = _postItDataDTO.Subject.SubjectName;
             DisplayError = RtfConverter.ToPlainText(postItDataDTO.Error).Text;
             DisplaySolution = RtfConverter.ToPlainText(postItDataDTO.Solution).Text;
             DisplaySuggestion = RtfConverter.ToPlainText(postItDataDTO.Suggestion).Text;
             DisplayComment = RtfConverter.ToPlainText(postItDataDTO.Comment).Text;
 
-            EditPostItCommand = new UpdatePostItCommand(_navigationService, _dataService, _loggerCreateViewModel,
-            _postItDataDTO);
+            EditPostItCommand = new UpdatePostItCommand(_navigationService, _loggerCreateViewModel, this);
         }
 
         public PostItDataDTO RtfPostIt => _postItDataDTO;

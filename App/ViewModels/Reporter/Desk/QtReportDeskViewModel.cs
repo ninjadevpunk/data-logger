@@ -1,13 +1,12 @@
 ﻿using Data_Logger_1._3.Commands.ReporterCommands;
-using Core.Models;
-using Core.Models.App_Models;
 using Data_Logger_1._3.Services;
 using Data_Logger_1._3.ViewModels.Reporter.Logs;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Data.Interfaces;
 using Core.Enums;
 using Core.DTOs.Data;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater;
+using Core.Utilities;
 
 namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 {
@@ -23,7 +22,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
         /// </summary>
         /// <param name="navigationService">The service for navigating in adn out of the Qt Report desk.</param>
         /// <param name="dataService">The service required to perform database operations.</param>
-        public QtReportDeskViewModel(NavigationService navigationService, IDataService dataService, PDFService pdfService) 
+        public QtReportDeskViewModel(NavigationService navigationService, IDataService dataService, qtUpdateViewModel qtUpdateViewModel, PDFService pdfService) 
             : base(navigationService, dataService, pdfService)
         {
 
@@ -36,15 +35,11 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
             SearchCommand = new SearchCommand(this, _dataService, _navigationService, Context);
             ExportCommand = new ExportCommand();
             ReturnToDashboard = new ReporterReturnCommand(_navigationService, Context);
-
-
-            AwaitCall = false;
         }
 
         /// <summary>
         /// Updates logs in the Qt Report Desk.
         /// </summary>
-        /// <param name="project">The Qt project you want logs from.</param>
         public override async Task UpdateLogsListAsync()
         {
             Logs.Clear();
@@ -54,7 +49,7 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
             foreach (var qtDTO in qtDataDTOs)
             {
-                list.Add(new qtREPORTViewModel(_dataService, this, qtDTO));
+                list.Add(new qtREPORTViewModel(_navigationService, _dataService, this, qtDTO));
             }
 
             Logs = list;
@@ -62,11 +57,13 @@ namespace Data_Logger_1._3.ViewModels.Reporter.Desk
 
         public override async Task InitialiseAppsAsync()
         {
-            throw new NotImplementedException();
+            Application = Constants.Qt;
+            Applications = [];
         }
 
         public override async Task InitialiseProjectsAsync()
         {
+            // TODO
             throw new NotImplementedException();
         }
     }

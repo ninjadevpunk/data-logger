@@ -261,7 +261,7 @@ namespace Data.Services
             {
                 postIt.Author = user;
 
-                var existingSubject = await EntityReader.FindSubject(scope, master, postIt.Subject.Subject, log.Category, userId, log.Application.appID,
+                var existingSubject = await EntityReader.FindSubject(master, postIt.Subject.Subject, log.Category, userId, log.Application.appID,
                         log.Project.projectID);
 
                 if (existingSubject != null)

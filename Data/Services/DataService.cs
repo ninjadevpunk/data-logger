@@ -346,7 +346,7 @@ namespace Data.Services
 
             List<string> SQLITE_SUBJECTS = [];
 
-            var project = await FindProjectAsync(user.Id, projectName, appName);
+            var project = await FindProjectAsync(projectName, appName);
 
             return await UseReaderAsync(async reader =>
             {
@@ -728,9 +728,10 @@ namespace Data.Services
         /// <param name="ID">The application ID.</param>
         /// <param name="name">The application name.</param>
         /// <returns>Returns the ApplicationClass if found; otherwise null.</returns>
-        public Task<ApplicationClass?> FindApplicationAsync(int ID, string name)
+        public async Task<ApplicationClass?> FindApplicationAsync(string name)
         {
-            return UseReaderAsync(reader => reader.FindApplication(ID, name));
+            var userId = (await EnsureValidUserAsync()).Id;
+            return await UseReaderAsync(reader => reader.FindApplication(userId, name));
         }
 
 
@@ -751,9 +752,10 @@ namespace Data.Services
         /// <param name="projectName">The project name.</param>
         /// <param name="appID">The application ID.</param>
         /// <returns>Returns the ProjectClass if found; otherwise null.</returns>
-        public Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID)
+        public async Task<ProjectClass?> FindProjectAsync(string projectName, int appID)
         {
-            return UseReaderAsync(reader => reader.FindProjectAsync(userID, projectName, appID));
+            var user = await EnsureValidUserAsync();
+            return await UseReaderAsync(reader => reader.FindProjectAsync(user.Id, projectName, appID));
         }
 
         /// <summary> 
@@ -764,8 +766,12 @@ namespace Data.Services
         /// <param name="appName">The app's name</param>
         /// <returns>A project object from the database</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, string appName) 
-            => UseReaderAsync(reader => reader.FindProjectAsync(userID, projectName, appName));
+        public async Task<ProjectClass?> FindProjectAsync(string projectName, string appName)
+        {
+            var user = await EnsureValidUserAsync();
+            return await UseReaderAsync(reader => reader.FindProjectAsync(user.Id, projectName, appName));
+        }
+
 
         /// <summary>
         /// Finds a project by its ID.

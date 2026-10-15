@@ -2,7 +2,6 @@
 using Core.DTOs.Cache;
 using Core.DTOs.Data;
 using Core.DTOs.Identity;
-using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
@@ -242,6 +241,52 @@ namespace Data_Logger_1._3.Utilities
             };
         }
 
+        /// <summary>
+        /// Creates a <see cref="PostItDataDTO"/> from the supplied PostIt data,
+        /// converting the relevant RTF content to plain text and assigning capture times.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <param name="postItDataDTO">The data DTO required.</param>
+        /// <returns>A populated <see cref="PostItCacheDTO"/> containing the PostIt data.</returns>
+        /// <exception cref="Exception">Thrown when the error or solution RTF cannot be converted to plain text.</exception>
+        internal static PostItDataDTO BuildPostItDataDTO(string subject, string error, string solution, string suggestion, string comment,
+            PostItDataDTO postItDataDTO)
+        {
+            var (errorPlaintext, errorException) = RtfConverter.ToPlainText(error);
+            var (solutionPlaintext, solutionException) = RtfConverter.ToPlainText(solution);
+
+            if (errorException != null)
+                throw errorException;
+
+            if (solutionException != null)
+                throw solutionException;
+
+            return new PostItDataDTO
+            {
+                UserId = postItDataDTO.UserId,
+                LogId = postItDataDTO.LogId,
+                PostItId = postItDataDTO.PostItId,
+                SubjectId = postItDataDTO.SubjectId,
+                Subject = new SubjectDataDTO
+                {
+                    SubjectId = postItDataDTO.SubjectId,
+                    SubjectName = subject,
+                    ProjectId = ((SubjectDataDTO)postItDataDTO.Subject).ProjectId,
+                    AppId = ((SubjectDataDTO)postItDataDTO.Subject).AppId,
+                },
+                Error = ValidatePostItRtf(error),
+                Solution = ValidatePostItRtf(solution),
+                Suggestion = ValidatePostItRtf(suggestion),
+                Comment = ValidatePostItRtf(comment),
+                ERCaptureTime = IsEmpty(errorPlaintext) ? default : DateTime.Now,
+                SOCaptureTime = IsEmpty(solutionPlaintext) ? default : DateTime.Now
+            };
+        }
+
 
         /// <summary>
         /// Takes normal RTF, checks if it has content and returns it if it not white space. Useful for removing 
@@ -353,16 +398,16 @@ namespace Data_Logger_1._3.Utilities
                 return new PostItDataDTO
                 {
                     UserId = postIt.UserId,
+                    LogId = postItDataDTO.LogId,
+                    PostItId = postItDataDTO.PostItId,
+                    SubjectId = postItDataDTO.SubjectId,
                     Subject = postIt.Subject,
                     Error = postIt.Error,
                     Solution = postIt.Solution,
                     Suggestion = postIt.Suggestion,
                     Comment = postIt.Comment,
                     ERCaptureTime = postIt.ERCaptureTime,
-                    SOCaptureTime = postIt.SOCaptureTime,
-                    LogId = postItDataDTO.LogId,
-                    PostItId = postItDataDTO.PostItId,
-                    SubjectId = postItDataDTO.SubjectId
+                    SOCaptureTime = postIt.SOCaptureTime
                 };
             })];
 

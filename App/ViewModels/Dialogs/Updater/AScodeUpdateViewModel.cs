@@ -14,15 +14,14 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
     /// <summary>
     /// TODO
     /// </summary>
-    internal class AScodeUpdateViewModel : CodingLoggerUpdateViewModel
+    internal sealed class AScodeUpdateViewModel : CodingLoggerUpdateViewModel
     {
         public override LogContext Context => LogContext.AndroidStudio;
         public override bool AppFieldEnabled => false;
-        private readonly ASReportDeskViewModel _ASviewModel;
 
 
-        public override ICommand UpdateLogCommand => throw new NotImplementedException();
         public override ICommand SaveCommand => throw new NotImplementedException();
+        public override ICommand UpdateCommand => throw new NotImplementedException();
         public override ICommand AddPostItCommand => base.AddPostItCommand;
 
 
@@ -35,7 +34,6 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
             IsSimple = false;
             IsConsidered = false;
 
-            _ASviewModel = aSReportDeskViewModel;
         }
 
 
@@ -136,7 +134,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs.Updater
         public override async Task UpdateLogCountAsync()
         {
             var count = await _dataService.ASLogCountAsync();
-            LogCount = $"{_ASviewModel.Logs.Count} Logs Cached";
+            LogCount = $"{count} Logs Cached";
         }
 
         #endregion

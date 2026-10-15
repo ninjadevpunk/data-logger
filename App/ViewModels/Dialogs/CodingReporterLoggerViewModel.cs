@@ -16,7 +16,7 @@ namespace Data_Logger_1._3.ViewModels.Dialogs
         /// <summary>
         /// Updates a log in the database.
         /// </summary>
-        public abstract ICommand UpdateLogCommand { get; }
+        public abstract ICommand UpdateCommand { get; }
 
         public CodingReporterLoggerViewModel(NavigationService navigationService, IAuthService authService, 
             IDataService dataService) 

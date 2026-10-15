@@ -102,9 +102,20 @@ namespace Data.Interfaces
         Task<IEnumerable<NoteItem>?> RetrieveGenericNotesAsync(int id);
 
         Task<bool> EmailExistsAsync(string email);
-        Task<ApplicationClass?> FindApplicationAsync(int ID, string name);
+        Task<ApplicationClass?> FindApplicationAsync(string name);
         Task<ApplicationClass?> FindApplicationByIDAsync(int appID);
-        Task<ProjectClass?> FindProjectAsync(int? userID, string projectName, int appID);
+        Task<ProjectClass?> FindProjectAsync(string projectName, int appID);
+
+        /// <summary> 
+        /// Finds a project based on project name and app name. Throws if a user is not logged in.
+        /// </summary>
+        /// <param name="userID">The logged in user</param>
+        /// <param name="projectName">The project's name</param>
+        /// <param name="appName">The app's name</param>
+        /// <returns>A project object from the database</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        Task<ProjectClass?> FindProjectAsync(string projectName, string appName);
+
         Task<ProjectClass?> FindProjectByIDAsync(int projectID);
         Task<OutputClass?> FindOutputAsync(string name);
         Task<OutputClass?> FindOutputByIDAsync(int outputID);

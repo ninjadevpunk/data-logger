@@ -15,15 +15,16 @@ using Data_Logger_1._3.ViewModels.Dashboard;
 using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Dialogs.Create;
 using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
 using Data_Logger_1._3.ViewModels.LogViewModels;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
-using Data_Logger_1._3.ViewModels.ViewerViewModels;
 using Data_Logger_1._3.Views;
 using Data_Logger_1._3.Views.Account;
 using Data_Logger_1._3.Views.Dialogs;
 using Data_Logger_1._3.Views.LogPages;
 using FileSys.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MVVMEssentials.ViewModels;
 using System.Diagnostics;
 using System.Windows;
@@ -947,7 +948,7 @@ namespace Data_Logger_1._3.Services
         }
 
 
-        public async Task NavigateToUpdater(LogDataDTO logDataDTO, ReportDeskViewModel reportDeskViewModel)
+        public async Task NavigateToUpdater(ReportDeskViewModel reportDeskViewModel, LogDataDTO logDataDTO)
         {
             try
             {
@@ -956,19 +957,19 @@ namespace Data_Logger_1._3.Services
 
                 try
                 {
-                    NavigationContext = NavContext.EDITOR;
+                    NavigationContext = NavContext.UPDATER;
 
                     var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
                     var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
-                    var loggerEditPage = uiFactory.CreatePage<LoggerEditPage>();
-                    var auth = _serviceProvider.GetRequiredService<AuthService>();
-                    var user = auth.GetUser();
-                    string path = string.IsNullOrWhiteSpace(user.ProfilePic) ? Constants.Avatar : user.ProfilePic;
+                    var loggerUpdatePage = uiFactory.CreatePage<LoggerUpdatePage>();
 
-                    SetLoggerFrame(loggerEditPage.frame_VARIATIONS);
+                    SetLoggerFrame(loggerUpdatePage.frame_VARIATIONS);
 
                     if (LogContext == LogContext.AndroidStudio)
-                        SetAndroidStudioFrame(loggerEditPage.frame_ANDROIDSTUDIO);
+                    {
+                        SetAndroidStudioFrame(loggerUpdatePage.frame_ANDROIDSTUDIO);
+                        // TODO: Give frame data context
+                    }
                     else
                         SetAndroidStudioFrame(null);
 
@@ -983,7 +984,7 @@ namespace Data_Logger_1._3.Services
 
                                 var codingUpdater = viewModelFactory.CreateCodeUpdateViewModel(codeReportDeskViewModel, codingDataDTO);
 
-                                await NavigateToPage(loggerEditPage, codingUpdater, new coding_UserControl());
+                                await NavigateToPage(loggerUpdatePage, codingUpdater, new coding_UserControl());
 
                                 break;
                             }
@@ -1060,15 +1061,17 @@ namespace Data_Logger_1._3.Services
             CheckBackNavigationButton(window);
         }
 
-        public async Task NavigateToPostItUpdater(LoggerViewModel loggerViewModel, PostItDataDTO postItDataDTO)
+        public async Task NavigateToPostItUpdater(LoggerViewModel updater, DataStickyPostItViewModel dataStickyPostItViewModel)
         {
-            // TODO
-            NavigationContext = NavContext.UPDATER_POSTIT;
+            if (NavigationContext == NavContext.LOGGER)
+                NavigationContext = NavContext.POSTIT;
+            else
+                NavigationContext = NavContext.UPDATER_POSTIT;
 
             var uiFactory = _serviceProvider.GetRequiredService<UIFactory>();
-            var viewModelFactory = _serviceProvider.GetRequiredService<ViewModelFactory>();
+            var postItPage = await uiFactory.CreateUpdatePostItPage(updater, dataStickyPostItViewModel, updater.ApplicationName, updater.ProjectName);
 
-            //await NavigateToPage(postItPage);
+            await NavigateToPage(postItPage);
 
             var window = _serviceProvider.GetRequiredService<MainWindowViewModel>();
             CheckBackNavigationButton(window);

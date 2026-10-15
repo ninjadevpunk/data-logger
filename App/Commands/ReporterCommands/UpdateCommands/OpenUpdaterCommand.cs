@@ -1,9 +1,6 @@
 ﻿using Core.DTOs.Data;
-using Core.Enums;
-using Core.Interfaces;
 using Data.Interfaces;
 using Data_Logger_1._3.Services;
-using Data_Logger_1._3.ViewModels.Dialogs;
 using Data_Logger_1._3.ViewModels.Reporter.Desk;
 using MVVMEssentials.Commands;
 using System.Windows;
@@ -13,24 +10,19 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
     /// <summary>
     /// This class will be used to update database logs from the log editor.
     /// </summary>
-    internal class UpdateCommand : AsyncCommandBase
+    internal class OpenUpdaterCommand : AsyncCommandBase
     {
         private readonly NavigationService _navigationService;
         private readonly IDataService _dataService;
-        private readonly LoggerViewModel _loggerViewModel;
         private readonly ReportDeskViewModel _reportDeskViewModel;
-        private readonly LogContext _context = LogContext.Coding;
         private readonly LogDataDTO _logDataDTO;
 
 
 
-        public UpdateCommand(NavigationService navigationService, LoggerViewModel loggerCreateViewModel, ReportDeskViewModel reportDeskViewModel,
-            IAuthService authService, IDataService dataService, LogDataDTO logDataDTO, LogContext type = LogContext.Coding)
+        public OpenUpdaterCommand(NavigationService navigationService, ReportDeskViewModel reportDeskViewModel, IDataService dataService, LogDataDTO logDataDTO)
         {
-            _context = logDataDTO.Context;
             _navigationService = navigationService;
             _dataService = dataService;
-            _loggerViewModel = loggerCreateViewModel;
             _reportDeskViewModel = reportDeskViewModel;
             _logDataDTO = logDataDTO;
         }
@@ -39,12 +31,7 @@ namespace Data_Logger_1._3.Commands.ReporterCommands.UpdateCommands
         {
             try
             {
-                // TODO: Update the log directly in the database with data service.
-                await _reportDeskViewModel.UpdateLogsListAsync();
-
-                //await _dataService.UpdateLogAsync(_logDataDTO);
-                await _navigationService.NavigateToReporter();
-
+                await _navigationService.NavigateToUpdater(_reportDeskViewModel, _logDataDTO);
 
                 return;
             }

@@ -26,8 +26,8 @@ namespace Data.Services
         #region Updates
 
 
-
-        public async Task<bool> UpdateQtLog(LOG log)
+        // TODO: Update Qt Logs
+        public async Task<bool> UpdateQtLog(QtDataDTO qtDataDTO)
         {
             bool isUpdated = false;
 
@@ -67,7 +67,7 @@ namespace Data.Services
 
                 if (logDataDTO.AppId != existingLog.Application.appID)
                 {
-                    var existingApp = await reader.FindApplicationByID(scope, master, logDataDTO.AppId);
+                    var existingApp = await EntityReader.FindApplicationByID(scope, master, logDataDTO.AppId);
 
                     if (existingApp != null)
                         existingLog.Application = existingApp;
@@ -93,7 +93,7 @@ namespace Data.Services
                 {
                     if (logDataDTO.ProjectId != existingLog.Project.projectID)
                     {
-                        var existingProject = await reader.FindProjectByID(scope, master, logDataDTO.ProjectId);
+                        var existingProject = await EntityReader.FindProjectByID(scope, master, logDataDTO.ProjectId);
 
                         if (existingProject != null)
                             existingLog.Project = existingProject;
@@ -135,7 +135,7 @@ namespace Data.Services
 
                 IReadOnlyList<PostItDataDTO> postIts = [.. logDataDTO.PostIts.Cast<PostItDataDTO>()];
 
-                // REMOVE
+                // Remove Deleted PostIts
 
                 HashSet<int> incomingIds = [.. postIts
                     .Where(p => p.PostItId > 0)
@@ -155,65 +155,52 @@ namespace Data.Services
                     .ToDictionary(p => p.postItID);
 
 
-                // Prepare Subject IDs that we actually need to look up
-                var subjectIds = postIts
-                    .Where(p => p.SubjectId > 0)
-                    .Select(p => p.SubjectId)
-                    .ToHashSet();
-
-                var existingSubjects = await master.Subjects
-                    .Where(s => s.accountID == userId)
-                    .Where(s => subjectIds.Contains(s.subjectID))
-                    .ToDictionaryAsync(s => s.subjectID);
-
-
-                // New/unpersisted Subjects created during this operation.
-                // These all have subjectID < 1 until SaveChangesAsync().
                 var newSubjects = new Dictionary<string, SubjectClass>();
-
-
-                // ADD + UPDATE
 
                 foreach (var postIt in postIts)
                 {
+                    // Resolve Subject
+
                     var subjectDataDTO = (SubjectDataDTO)postIt.Subject;
+
+                    SubjectClass? subject = null;
+
+                    // Look for an existing Subject when the target application and project already exist.
+                    if (newApp == null && newProject == null)
+                    {
+                        subject = await EntityReader.FindSubject(master, subjectDataDTO.SubjectName, Extensions.GetLogCategory(logDataDTO.Context),
+                            userId, existingLog.Application.appID, existingLog.Project.projectID);
+                    }
+
+                    // Reuse a Subject created earlier during this update if no persisted Subject was found.
+                    if (subject == null && newSubjects.TryGetValue(subjectDataDTO.SubjectName, out var newSubject))
+                    {
+                        subject = newSubject;
+                    }
+
+                    // Create a new Subject when neither lookup found a suitable match.
+                    if (subject == null)
+                    {
+                        subject = new SubjectClass
+                        {
+                            User = user,
+                            Category = Extensions.GetLogCategory(logDataDTO.Context),
+                            Subject = subjectDataDTO.SubjectName,
+                            Application = existingLog.Application,
+                            Project = existingLog.Project
+                        };
+
+                        newSubjects[subjectDataDTO.SubjectName] = subject;
+                    }
+
+
+                    // ADD or UPDATE
 
                     // Existing PostIt
                     if (existingPostIts.TryGetValue(postIt.PostItId, out var existingPostIt))
                     {
-                        SubjectClass? existingSubject = null, newSubject = null;
+                        existingPostIt.Subject = subject;
 
-                        // Resolve Subject if changed
-                        if (existingPostIt.subjectID != postIt.SubjectId)
-                        {
-                            if (existingSubjects.TryGetValue(postIt.SubjectId, out existingSubject))
-                            {
-                                existingPostIt.Subject = existingSubject;
-                                existingPostIt.Subject.Application = existingLog.Application;
-                                existingPostIt.Subject.Project = existingLog.Project;
-                            }
-                            else if (newSubjects.TryGetValue(subjectDataDTO.SubjectName, out newSubject)
-                                     && newSubject.subjectID < 1)
-                            {
-                                existingPostIt.Subject = newSubject;
-                            }
-                            else
-                            {
-                                newSubject = new SubjectClass
-                                {
-                                    User = user,
-                                    Category = Extensions.GetLogCategory(logDataDTO.Context),
-                                    Subject = subjectDataDTO.SubjectName,
-                                    Application = existingLog.Application,
-                                    Project = existingLog.Project
-                                };
-
-                                newSubjects[subjectDataDTO.SubjectName] = newSubject;
-                                existingPostIt.Subject = newSubject;
-                            }
-                        }
-
-                        // Resolve Existing PostIt
                         existingPostIt.Error = postIt.Error;
                         existingPostIt.ERCaptureTime = postIt.ERCaptureTime;
                         existingPostIt.Solution = postIt.Solution;
@@ -225,32 +212,6 @@ namespace Data.Services
                     // New PostIt
                     else
                     {
-                        SubjectClass subject;
-
-                        if (existingSubjects.TryGetValue(postIt.SubjectId, out var existingSubject))
-                        {
-                            subject = existingSubject;
-                        }
-                        else if (newSubjects.TryGetValue(subjectDataDTO.SubjectName, out var newSubject)
-                                 && newSubject.subjectID < 1)
-                        {
-                            subject = newSubject;
-                        }
-                        else
-                        {
-                            newSubject = new SubjectClass
-                            {
-                                User = user,
-                                Category = Extensions.GetLogCategory(logDataDTO.Context),
-                                Subject = subjectDataDTO.SubjectName,
-                                Application = existingLog.Application,
-                                Project = existingLog.Project
-                            };
-
-                            newSubjects[subjectDataDTO.SubjectName] = newSubject;
-                            subject = newSubject;
-                        }
-
                         var newPostIt = new PostIt
                         {
                             Author = user,
@@ -318,7 +279,7 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "UpdateLogAsync(log)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return isUpdated;
@@ -476,7 +437,7 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "DeleteLOGAsync(log)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return false;
@@ -491,7 +452,7 @@ namespace Data.Services
                 var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
 
                 var logDeletionCandidate = await master.Logs
-                .FirstOrDefaultAsync(log => log.ID == ID);
+                    .FirstOrDefaultAsync(log => log.ID == ID);
 
                 if (logDeletionCandidate == null)
                     return false;
@@ -505,7 +466,7 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "DeleteLOGByIDAsync(ID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return false;
@@ -533,7 +494,7 @@ namespace Data.Services
             }
             catch (Exception ex)
             {
-                await writer.HandleExceptionAsync(ex, "DeleteNoteAsync(ID)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return false;
@@ -567,7 +528,7 @@ namespace Data.Services
             catch (Exception ex)
             {
                 var writer = scope.ServiceProvider.GetRequiredService<EntityWriter>();
-                await writer.HandleExceptionAsync(ex, "DeleteAccountAsync(id)");
+                await writer.HandleExceptionAsync(ex);
             }
 
             return false;
