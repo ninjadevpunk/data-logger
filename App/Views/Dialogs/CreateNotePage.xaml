@@ -1,0 +1,155 @@
+﻿<Page x:Class="Data_Logger_1._3.Views.LogPages.CreateNotePage"
+      x:ClassModifier="internal"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Data_Logger_1._3.Views.LogPages" 
+      xmlns:toolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
+      mc:Ignorable="d" 
+      MinHeight="899"
+      d:Width="1100"
+      Margin="59 0 200 0"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Top"
+      d:Background="White"
+      Title="Create Note">
+    
+    <Page.Resources>
+
+        <Style x:Key="scrollViewer_CONTAINER" TargetType="{x:Type ScrollViewer}">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0.6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollViewer}">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                SnapsToDevicePixels="True"
+                                CornerRadius="3" >
+                            
+                            <Grid x:Name="Grid" Background="{TemplateBinding Background}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Rectangle x:Name="Corner" Grid.Column="1" Fill="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" Grid.Row="1"/>
+                                <ScrollContentPresenter x:Name="PART_ScrollContentPresenter" CanHorizontallyScroll="False" ContentTemplate="{TemplateBinding ContentTemplate}" CanVerticallyScroll="False" Grid.Column="0" Content="{TemplateBinding Content}" CanContentScroll="{TemplateBinding CanContentScroll}" Margin="{TemplateBinding Padding}" Grid.Row="0"/>
+                                <ScrollBar x:Name="PART_VerticalScrollBar" AutomationProperties.AutomationId="VerticalScrollBar" Cursor="Arrow" Grid.Column="1" Maximum="{TemplateBinding ScrollableHeight}" Minimum="0" Grid.Row="0" Value="{Binding VerticalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" ViewportSize="{TemplateBinding ViewportHeight}" Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}"/>
+                                <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource Mode=TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Highlighter01}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource Highlighter01}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="false">
+                    <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        
+        
+        
+        
+        
+        
+        
+    </Page.Resources>
+    
+    
+    
+    
+
+    <Grid Margin="0 50">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="30"/>
+            <ColumnDefinition Width="206"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="45"/>
+            <RowDefinition Height="25"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="30"/>
+        </Grid.RowDefinitions>
+
+
+        <TextBox Grid.Column="0" Grid.Row="0" Style="{DynamicResource inputText_NOTE_subject}"
+                 Text="{Binding NoteSubject, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+        <TextBlock Grid.Column="0" Grid.Row="1" x:Name="text_DATE" Style="{DynamicResource text_NOTE_DATE01}"
+                   Text="{Binding Date, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+
+
+
+
+        <Grid Grid.Column="0" Grid.Row="2" Height="70"/>
+
+
+
+
+
+        <ScrollViewer Style="{DynamicResource scrollViewer_CONTAINER}" Grid.Column="0" Grid.Row="3"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch" >
+
+                <!-- NOTE PAD -->
+                <Grid>
+                <toolkit:RichTextBox x:Name="richTextBox_NOTEPAD" Style="{DynamicResource inputText_NOTEPAD}"
+                     Text="{Binding NoteContent, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                     />
+
+            </Grid>
+            
+        </ScrollViewer>
+
+
+
+
+
+
+
+            <!-- MAIN BUTTONS -->
+        <StackPanel Grid.Column="2" Grid.Row="2" Grid.RowSpan="2" Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top" >
+
+            <!-- SAVE NOTE BUTTON -->
+            <Button x:Name="button_SAVE_NOTE" Style="{DynamicResource SECONDARYSave}"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Center"
+                    Margin="0 70 0 0"
+                    Command="{Binding SaveNoteCommand}" >
+
+                <TextBlock Style="{DynamicResource text_button01}"
+                           Text="Save" />
+                
+            </Button>
+
+        </StackPanel>
+    </Grid>
+</Page>

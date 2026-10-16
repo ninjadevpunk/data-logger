@@ -291,7 +291,7 @@
 
 
     <Style x:Key="dataLoggerLogo" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
+        <Setter Property="Fill" Value="{DynamicResource UIForeground}"/>
         <Setter Property="Data" Value="M15.0267 0H7.81055L5.877 7.21611H13.0931L15.0267 0Z
         M23.325 0H16.1089L14.1753 7.21611H21.3914L23.325 0Z
         M24.9998 8.65942H17.7837L15.8501 15.8755H23.0663L24.9998 8.65942Z
@@ -299,43 +299,24 @@
         M11.1858 8.65942H3.96973L2.03618 15.8755H9.25229L11.1858 8.65942Z
         M9.14922 16.5969H1.93311L-0.000446501 23.813H7.21567L9.14922 16.5969Z" />
     </Style>
-    
-    <Style x:Key="pathLOGO1" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M24.0428 3.05176e-05H12.4971L9.4034 11.5458H20.9491L24.0428 3.05176e-05Z"/>
+
+    <Style x:Key="pathLOGO" TargetType="Path">
+        <Setter Property="Fill" Value="{DynamicResource SplashForeground}"/>
+        <Setter Property="Data" Value="M24.0428 3.05176e-05H12.4971L9.4034 11.5458H20.9491L24.0428 3.05176e-05Z M37.3201 3.05176e-05H25.7744L22.6807 11.5458H34.2265L37.3201 3.05176e-05Z M39.9998 13.8549H28.4541L25.3604 25.4006H36.9062L39.9998 13.8549Z M36.7415 26.5551H25.1958L22.1021 38.1008H33.6479L36.7415 26.5551Z M17.8983 13.8549H6.35254L3.25887 25.4006H14.8046L17.8983 13.8549Z M14.6395 26.5551H3.09375L8.32385e-05 38.1008H11.5458L14.6395 26.5551Z"/>
     </Style>
 
     <Style x:Key="pathLOGO2" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M37.3201 3.05176e-05H25.7744L22.6807 11.5458H34.2265L37.3201 3.05176e-05Z"/>
+        <Setter Property="Fill" Value="{DynamicResource AuthLettermarkForeground}"/>
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="Data" Value="M12.0214 1.52588e-05H6.24854L4.70169 5.7729H10.4746L12.0214 1.52588e-05Z M18.6601 1.52588e-05H12.8872L11.3404 5.7729H17.1133L18.6601 1.52588e-05Z M19.9999 6.92747H14.2271L12.6802 12.7004H18.4531L19.9999 6.92747Z M18.371 13.2777H12.5981L11.0513 19.0506H16.8242L18.371 13.2777Z M8.94916 6.92747H3.17627L1.62943 12.7004H7.40232L8.94916 6.92747Z M7.31977 13.2777H1.54688L3.33505e-05 19.0506H5.77292L7.31977 13.2777Z"/>
     </Style>
 
-    <Style x:Key="pathLOGO3" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M39.9998 13.8549H28.4541L25.3604 25.4006H36.9062L39.9998 13.8549Z"/>
-    </Style>
-
-    <Style x:Key="pathLOGO4" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M36.7415 26.5551H25.1958L22.1021 38.1008H33.6479L36.7415 26.5551Z"/>
-    </Style>
-
-    <Style x:Key="pathLOGO5" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M17.8983 13.8549H6.35254L3.25887 25.4006H14.8046L17.8983 13.8549Z"/>
-    </Style>
-
-    <Style x:Key="pathLOGO6" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource PrimaryColour}"/>
-        <Setter Property="Data" Value="M14.6395 26.5551H3.09375L8.32385e-05 38.1008H11.5458L14.6395 26.5551Z"/>
-    </Style>
-    
     <!-- #region PANEL Version -->
     
     
     
     <Style x:Key="path_PANEL_logo1" TargetType="Path">
-        <Setter Property="Fill" Value="{DynamicResource BLACK}"/>
+        <Setter Property="Fill" Value="{DynamicResource PANELForeground}"/>
         <Setter Property="Data" Value="M15.5269 0.593506H8.31079L6.37724 7.80962H13.5934L15.5269 0.593506Z"/>
     </Style>
 

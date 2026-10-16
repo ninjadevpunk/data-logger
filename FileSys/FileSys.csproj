@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\Assets\icons\filesys_package_icon.png">
+    <None Include="..\App\Assets\icons\filesys_package_icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

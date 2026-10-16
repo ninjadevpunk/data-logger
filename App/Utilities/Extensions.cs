@@ -1,0 +1,487 @@
+﻿using Core.DTOs;
+using Core.DTOs.Cache;
+using Core.DTOs.Data;
+using Core.DTOs.Identity;
+using Core.Models;
+using Core.Models.App_Models;
+using Core.Utilities;
+using Data.Interfaces;
+using Data_Logger_1._3.Services;
+using Data_Logger_1._3.ViewModels.Dashboard;
+using Data_Logger_1._3.ViewModels.Dialogs;
+using Data_Logger_1._3.ViewModels.Dialogs.Create.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Edit.PostIt;
+using Data_Logger_1._3.ViewModels.Dialogs.Updater.PostIt;
+using Data_Logger_1._3.ViewModels.LogViewModels;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Windows;
+using System.Windows.Media;
+
+namespace Data_Logger_1._3.Utilities
+{
+    internal static class Extensions
+    {
+
+
+        #region Settings
+
+
+
+
+
+        /// <summary>
+        /// Turns user settings into a UserDTO.
+        /// </summary>
+        /// <param name="userSettings">The current user settings</param>
+        /// <returns>A UserDTO</returns>
+        internal static UserDTO UserSettingsToDTO(UserSettings userSettings)
+        {
+            return new UserDTO
+            {
+                UserId = userSettings.Id,
+                ProfilePic = userSettings.ProfilePic,
+                Name = userSettings.Name,
+                Surname = userSettings.Surname,
+                Email = userSettings.Email,
+                IsEmployee = userSettings.IsCompanyEmployee,
+                CompanyName = userSettings.CompanyName,
+                CompanyAddress = userSettings.CompanyAddress,
+                CompanyLogo = userSettings.CompanyLogo,
+            };
+        }
+
+        internal static void PersistTheme(Theme theme)
+        {
+#if DEBUG
+            const string fileName = "appsettings.DevMode.json";
+#else
+            const string fileName = "appsettings.json";
+#endif
+
+            var filePath = Path.Combine(AppContext.BaseDirectory, fileName);
+
+            JsonObject? root = null;
+            if (File.Exists(filePath))
+                root = JsonNode.Parse(File.ReadAllText(filePath)) as JsonObject;
+
+            root ??= [];
+
+
+            if (root["App"] is not JsonObject app)
+            {
+                app = [];
+                root["App"] = app;
+            }
+
+            app["ForcedTheme"] = theme.ToString();
+
+            File.WriteAllText(filePath, root.ToJsonString(new JsonSerializerOptions
+            {
+                WriteIndented = true
+            }));
+
+            if (App.Configuration != null)
+                App.Configuration["App:ForcedTheme"] = theme.ToString();
+
+        }
+
+
+
+
+        #endregion
+
+
+
+
+        #region App.xaml
+
+
+
+
+        /// <summary>
+        /// Indicates a green colour for positive status messages.
+        /// </summary>
+        internal static Brush MessageGood => Extensions.TryParseBrush("GREEN");
+
+        /// <summary>
+        /// Indicates a red colour for negative status messages.
+        /// </summary>
+        internal static Brush MessageBad => Extensions.TryParseBrush("RED");
+
+        /// <summary>
+        /// Finds a <see cref="Brush"/> resource in App.xaml.
+        /// </summary>
+        /// <param name="value">Resource value</param>
+        /// <returns>Returns a Brush</returns>
+        internal static Brush TryParseBrush(string value)
+        {
+            try
+            {
+                return (Brush)Application.Current.FindResource(value);
+            }
+            catch (ResourceReferenceKeyNotFoundException rex)
+            {
+                Debug.WriteLine($"ResourceReferenceKeyNotFoundException occurred in TryParseBrush: {rex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{Constants.ExceptionPrefix} TryParseBrush: {ex.Message}");
+            }
+
+            return Brushes.Transparent;
+        }
+
+        /// <summary>
+        /// Finds a path <see cref="Style"/> resource in App.xaml.
+        /// </summary>
+        /// <param name="value">Resource value</param>
+        /// <returns>Returns a Brush</returns>
+        internal static Style? TryParsePath(string value)
+        {
+            try
+            {
+                return (Style)Application.Current.FindResource(value);
+            }
+            catch (ResourceReferenceKeyNotFoundException rex)
+            {
+                Debug.WriteLine($"ResourceReferenceKeyNotFoundException occurred in TryParsePath: {rex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"{Constants.ExceptionPrefix} TryParsePath: {ex.Message}");
+            }
+
+            return null;
+        }
+
+
+
+
+        #endregion
+
+
+
+
+        #region PostIts
+
+
+
+
+        /// <summary>
+        /// Validates PostIt input before a PostIt is created or edited.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <returns>
+        /// <see langword="true"/> when the subject is provided and at least one content
+        /// field contains readable text; otherwise, <see langword="false"/>.
+        /// </returns>
+        internal static bool ValidatePostIt(string subject, string error, string solution, string suggestion, string comment)
+        {
+            if (string.IsNullOrWhiteSpace(subject))
+            {
+                MessageBox.Show("Please add a subject.", "No Subject", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            bool allAreEmpty = !RtfConverter.HasContent(error) && !RtfConverter.HasContent(solution) && !RtfConverter.HasContent(suggestion)
+                && !RtfConverter.HasContent(comment);
+
+            if (allAreEmpty)
+            {
+                MessageBox.Show("You have not entered any relevant data. All logs require that you submit a valid PostIt.", "No Data",
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PostItCacheDTO"/> from the supplied PostIt data,
+        /// converting the relevant RTF content to plain text and assigning capture times.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <returns>A populated <see cref="PostItCacheDTO"/> containing the PostIt data.</returns>
+        /// <exception cref="Exception">Thrown when the error or solution RTF cannot be converted to plain text.</exception>
+        internal static PostItCacheDTO BuildPostItCacheDTO(string subject, string error, string solution, string suggestion, string comment)
+        {
+            var (errorPlaintext, errorException) = RtfConverter.ToPlainText(error);
+            var (solutionPlaintext, solutionException) = RtfConverter.ToPlainText(solution);
+
+            if (errorException != null)
+                throw errorException;
+
+            if (solutionException != null)
+                throw solutionException;
+
+            return new PostItCacheDTO
+            {
+                Subject = new SubjectDTO
+                {
+                    SubjectName = subject
+                },
+                Error = ValidatePostItRtf(error),
+                Solution = ValidatePostItRtf(solution),
+                Suggestion = ValidatePostItRtf(suggestion),
+                Comment = ValidatePostItRtf(comment),
+                ERCaptureTime = IsEmpty(errorPlaintext) ? default : DateTime.Now,
+                SOCaptureTime = IsEmpty(solutionPlaintext) ? default : DateTime.Now
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PostItDataDTO"/> from the supplied PostIt data,
+        /// converting the relevant RTF content to plain text and assigning capture times.
+        /// </summary>
+        /// <param name="subject">The subject of the PostIt.</param>
+        /// <param name="error">The RTF-formatted error content.</param>
+        /// <param name="solution">The RTF-formatted solution content.</param>
+        /// <param name="suggestion">The RTF-formatted suggestion content.</param>
+        /// <param name="comment">The RTF-formatted comment content.</param>
+        /// <param name="postItDataDTO">The data DTO required.</param>
+        /// <returns>A populated <see cref="PostItCacheDTO"/> containing the PostIt data.</returns>
+        /// <exception cref="Exception">Thrown when the error or solution RTF cannot be converted to plain text.</exception>
+        internal static PostItDataDTO BuildPostItDataDTO(string subject, string error, string solution, string suggestion, string comment,
+            PostItDataDTO postItDataDTO)
+        {
+            var (errorPlaintext, errorException) = RtfConverter.ToPlainText(error);
+            var (solutionPlaintext, solutionException) = RtfConverter.ToPlainText(solution);
+
+            if (errorException != null)
+                throw errorException;
+
+            if (solutionException != null)
+                throw solutionException;
+
+            return new PostItDataDTO
+            {
+                UserId = postItDataDTO.UserId,
+                LogId = postItDataDTO.LogId,
+                PostItId = postItDataDTO.PostItId,
+                SubjectId = postItDataDTO.SubjectId,
+                Subject = new SubjectDataDTO
+                {
+                    SubjectId = postItDataDTO.SubjectId,
+                    SubjectName = subject,
+                    ProjectId = ((SubjectDataDTO)postItDataDTO.Subject).ProjectId,
+                    AppId = ((SubjectDataDTO)postItDataDTO.Subject).AppId,
+                },
+                Error = ValidatePostItRtf(error),
+                Solution = ValidatePostItRtf(solution),
+                Suggestion = ValidatePostItRtf(suggestion),
+                Comment = ValidatePostItRtf(comment),
+                ERCaptureTime = IsEmpty(errorPlaintext) ? default : DateTime.Now,
+                SOCaptureTime = IsEmpty(solutionPlaintext) ? default : DateTime.Now
+            };
+        }
+
+
+        /// <summary>
+        /// Takes normal RTF, checks if it has content and returns it if it not white space. Useful for removing 
+        /// formatting marks and other artifacts left over in plain text.
+        /// </summary>
+        /// <param name="rtf">Raw RTF</param>
+        /// <returns>RTF if it has content; otherwise empty <see cref="string"/></returns>
+        internal static string ValidatePostItRtf(string rtf) => RtfConverter.HasContent(rtf) ? rtf : string.Empty;
+
+        /// <summary>
+        /// Checks if plain text is white space or not.
+        /// </summary>
+        /// <param name="fieldText">Plain text</param>
+        /// <returns>False if the field is null or white space; otherwise true</returns>
+        internal static bool IsEmpty(string fieldText) => string.IsNullOrWhiteSpace(fieldText);
+
+
+
+
+        #endregion
+
+
+
+
+
+        #region Notes
+
+
+
+        internal static string NoteDateTimeNow() => DateTime.Now.ToString("d MMMM yyyy HH:mm");
+
+        internal static string CreatedAndModifiedDate(string creationDate, string modified)
+        {
+            modified = creationDate == modified ? string.Empty : $". Last modified on {modified}";
+            return $"Created on {creationDate}{modified}";
+        }
+
+
+
+        #endregion
+
+
+
+        #region Cache
+
+
+
+        internal static string CreateCacheIdentifier(DateTime logCacheStartTime) => logCacheStartTime.ToString("yyyyMMdd_HHmmss");
+
+
+
+
+        #endregion
+
+
+
+        #region Logger
+
+
+
+
+        internal static void InitialiseCodingEditViewModel(NavigationService navigationService, IDataService dataService,
+            CodingLoggerViewModel codingLoggerViewModel, CodingCacheDTO codingCacheDTO)
+        {
+            IReadOnlyList<PostItCacheDTO> postIts = [.. codingCacheDTO.PostIts.Select(postIt => new PostItCacheDTO
+            {
+                UserId = postIt.UserId,
+                Subject = postIt.Subject,
+                Error = postIt.Error,
+                Solution = postIt.Solution,
+                Suggestion = postIt.Suggestion,
+                Comment = postIt.Comment,
+                ERCaptureTime = postIt.ERCaptureTime,
+                SOCaptureTime = postIt.SOCaptureTime
+            })];
+
+            codingLoggerViewModel.ProjectName = codingCacheDTO.Project.ProjectName;
+            codingLoggerViewModel.ApplicationName = codingCacheDTO.ApplicationName;
+
+            codingLoggerViewModel.StartTime = DateTime.Parse(codingCacheDTO.Start.Hour + ":" + codingCacheDTO.Start.Minute + ":" + codingCacheDTO.Start.Second + "." + codingCacheDTO.Start.Millisecond);
+            codingLoggerViewModel.StartHours = codingCacheDTO.Start.Hour;
+            codingLoggerViewModel.StartMinutes = codingCacheDTO.Start.Minute;
+            codingLoggerViewModel.StartSeconds = codingCacheDTO.Start.Second;
+            codingLoggerViewModel.StartMilliseconds = codingCacheDTO.Start.Millisecond;
+            codingLoggerViewModel.StartDate = DateTime.Parse(codingCacheDTO.Start.ToLongDateString());
+
+            codingLoggerViewModel.EndTime = DateTime.Parse(codingCacheDTO.End.Hour + ":" + codingCacheDTO.End.Minute + ":" + codingCacheDTO.End.Second + "." + codingCacheDTO.End.Millisecond);
+            codingLoggerViewModel.EndHours = codingCacheDTO.End.Hour;
+            codingLoggerViewModel.EndMinutes = codingCacheDTO.End.Minute;
+            codingLoggerViewModel.EndSeconds = codingCacheDTO.End.Second;
+            codingLoggerViewModel.EndMilliseconds = codingCacheDTO.End.Millisecond;
+            codingLoggerViewModel.EndDate = DateTime.Parse(codingCacheDTO.End.ToLongDateString());
+
+            codingLoggerViewModel.Output = codingCacheDTO.OutputName;
+            codingLoggerViewModel.Type = codingCacheDTO.TypeName;
+            codingLoggerViewModel.PostIts = new ObservableCollection<StickyPostItViewModel>(postIts.Select(postIt =>
+            new CacheStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt)));
+
+            codingLoggerViewModel.BugsFound = codingCacheDTO.Bugs;
+            codingLoggerViewModel.ApplicationOpened = codingCacheDTO.Success;
+        }
+
+        internal static void InitialiseCodingUpdateViewModel(NavigationService navigationService, IDataService dataService,
+            CodingLoggerViewModel codingLoggerViewModel, CodingDataDTO codingDataDTO)
+        {
+            IReadOnlyList<PostItDataDTO> postIts = [.. codingDataDTO.PostIts.Select(postIt => {
+                var postItDataDTO = (PostItDataDTO)postIt;
+
+                return new PostItDataDTO
+                {
+                    UserId = postIt.UserId,
+                    LogId = postItDataDTO.LogId,
+                    PostItId = postItDataDTO.PostItId,
+                    SubjectId = postItDataDTO.SubjectId,
+                    Subject = postIt.Subject,
+                    Error = postIt.Error,
+                    Solution = postIt.Solution,
+                    Suggestion = postIt.Suggestion,
+                    Comment = postIt.Comment,
+                    ERCaptureTime = postIt.ERCaptureTime,
+                    SOCaptureTime = postIt.SOCaptureTime
+                };
+            })];
+
+            codingLoggerViewModel.ProjectName = codingDataDTO.Project.ProjectName;
+            codingLoggerViewModel.ApplicationName = codingDataDTO.ApplicationName;
+
+            codingLoggerViewModel.StartTime = DateTime.Parse(codingDataDTO.Start.Hour + ":" + codingDataDTO.Start.Minute + ":" + codingDataDTO.Start.Second + "." + codingDataDTO.Start.Millisecond);
+            codingLoggerViewModel.StartHours = codingDataDTO.Start.Hour;
+            codingLoggerViewModel.StartMinutes = codingDataDTO.Start.Minute;
+            codingLoggerViewModel.StartSeconds = codingDataDTO.Start.Second;
+            codingLoggerViewModel.StartMilliseconds = codingDataDTO.Start.Millisecond;
+            codingLoggerViewModel.StartDate = DateTime.Parse(codingDataDTO.Start.ToLongDateString());
+
+            codingLoggerViewModel.EndTime = DateTime.Parse(codingDataDTO.End.Hour + ":" + codingDataDTO.End.Minute + ":" + codingDataDTO.End.Second + "." + codingDataDTO.End.Millisecond);
+            codingLoggerViewModel.EndHours = codingDataDTO.End.Hour;
+            codingLoggerViewModel.EndMinutes = codingDataDTO.End.Minute;
+            codingLoggerViewModel.EndSeconds = codingDataDTO.End.Second;
+            codingLoggerViewModel.EndMilliseconds = codingDataDTO.End.Millisecond;
+            codingLoggerViewModel.EndDate = DateTime.Parse(codingDataDTO.End.ToLongDateString());
+
+            codingLoggerViewModel.Output = codingDataDTO.OutputName;
+            codingLoggerViewModel.Type = codingDataDTO.TypeName;
+            codingLoggerViewModel.PostIts = new ObservableCollection<StickyPostItViewModel>(postIts.Select(postIt =>
+            new DataStickyPostItViewModel(navigationService, dataService, codingLoggerViewModel, postIt)));
+
+            codingLoggerViewModel.BugsFound = codingDataDTO.Bugs;
+            codingLoggerViewModel.ApplicationOpened = codingDataDTO.Success;
+        }
+
+        /// <summary>
+        /// Gets the number of coding logs in the cache list.
+        /// </summary>
+        /// <param name="dataService">DataService dependency</param>
+        /// <param name="codingViewModel">Cache list ViewModel</param>
+        /// <returns>Count of coding logs</returns>
+        internal static async Task<string> GetLogCountAsync(IDataService dataService, CodingViewModel codingViewModel)
+        {
+            var count = await dataService.LogCountAsync(LOG.CATEGORY.CODING);
+            codingViewModel.LogCount = $"{codingViewModel.CacheItems.Count} coding logs cached | {count} total logs";
+
+            return $"{codingViewModel.CacheItems.Count} Logs Cached";
+        }
+
+
+        /// <summary>
+        /// Gets the number of Qt logs in the cache list.
+        /// </summary>
+        /// <param name="dataService">DataService dependency</param>
+        /// <param name="codingQtViewModel">Qt cache list ViewModel</param>
+        /// <returns>Count of <see cref="QtLOGViewModel"/></returns>
+        internal static async Task<string> GetQtLogCountAsync(IDataService dataService, CodingQtViewModel codingQtViewModel)
+        {
+            var count = await dataService.QtLogCountAsync();
+            codingQtViewModel.LogCount = $"{codingQtViewModel.CacheItems.Count} qt logs cached | {count} total logs";
+            return $"{codingQtViewModel.CacheItems.Count} Logs Cached";
+        }
+
+        /// <summary>
+        /// Gets the number of Android Studio logs in the cache list.
+        /// </summary>
+        /// <param name="dataService">DataService dependency</param>
+        /// <param name="codingAndroidViewModel">Android Studio cache list ViewModel</param>
+        /// <returns>Count of <see cref="AndroidLOGViewModel"/></returns>
+        internal static async Task<string> GetAndroidLogCountAsync(IDataService dataService, CodingAndroidViewModel codingAndroidViewModel)
+        {
+            var count = await dataService.ASLogCountAsync();
+            codingAndroidViewModel.LogCount = $"{codingAndroidViewModel.CacheItems.Count} android logs cached | {count} total logs";
+            return $"{codingAndroidViewModel.CacheItems.Count} Logs Cached";
+        }
+
+
+
+
+
+        #endregion
+    }
+}

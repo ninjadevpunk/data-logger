@@ -85,32 +85,10 @@
 
 
                         <CheckBox x:Name="checkBox_CREATE_SHORTCUT" Style="{DynamicResource check_SIGNUP}"
-                                  IsChecked="False" 
-                                  Checked="on_CREATE_SHORTCUT_Checked"
-                                  Unchecked="on_CREATE_SHORTCUT_Unchecked" />
-
-                        <TextBlock Grid.Column="2" Style="{DynamicResource text_LABEL02}"
-                                   Text="Create Desktop Shortcut" />
-
-                    </Grid>
-
-                    <Grid x:Name="grid_SETUP_TASKBAR_PIN" Grid.Column="1"
-                          HorizontalAlignment="Left"
-                          VerticalAlignment="Center"
-                          Visibility="Collapsed"
-                          Margin="0 0 0 6" >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="12" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-
-                        <CheckBox x:Name="checkBox_PIN_TASKBAR" Style="{DynamicResource check_SIGNUP}"
                                   IsChecked="False" />
 
                         <TextBlock Grid.Column="2" Style="{DynamicResource text_LABEL02}"
-                                   Text="Pin to Taskbar" />
+                                   Text="Create Desktop Shortcut" />
 
                     </Grid>
 

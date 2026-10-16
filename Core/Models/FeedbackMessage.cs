@@ -26,7 +26,7 @@ namespace Core.Models
         /// The one sendng the feedback.
         /// </summary>
         [ForeignKey("accountID")]
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 

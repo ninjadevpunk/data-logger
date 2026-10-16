@@ -168,7 +168,7 @@
                                              Maximum="1200" 
                                              Value="{Binding TimeRemaining, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
                                              BorderThickness="0"
-                                             Foreground="{DynamicResource PANEL}" />
+                                             Foreground="{DynamicResource PrimaryColour}" />
 
 
                             </StackPanel>
@@ -375,9 +375,9 @@
                     <!-- Context Menu -->
                     <ControlTemplate.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
-                            <MenuItem Header="Edit" Command="{Binding EditLogCommand}"
+                            <MenuItem Header="Edit" Command="{Binding OpenUpdaterCommand}"
                                       CommandParameter="{Binding}" />
-                            <MenuItem Header="View" Command="{Binding ViewLogCommand}"
+                            <MenuItem Header="View" Command="{Binding OpenViewerCommand}"
                                       CommandParameter="{Binding}" />
                             <MenuItem Header="Delete" Command="{Binding DeleteLogCommand}"
                                       CommandParameter="{Binding}" />
@@ -694,7 +694,7 @@
                                         HorizontalAlignment="Stretch" >
 
                                     <!-- ERROR -->
-                                    <Border Padding="0 5" Visibility="{Binding ErrorVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" >
+                                    <Border Padding="0 5" Visibility="{Binding ErrorVisible}" >
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -707,14 +707,14 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_ERROR" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Error}" />
+                                                       Text="{Binding DisplayError}" />
 
                                         </Grid>
                                     </Border>
 
 
                                     <!-- SOLUTION -->
-                                    <Border Padding="0 5" Visibility="{Binding SolutionVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding SolutionVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -727,14 +727,14 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SOLUTION" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Solution}" />
+                                                       Text="{Binding DisplaySolution}" />
 
                                         </Grid>
                                     </Border>
 
 
                                     <!-- SUGGESTION -->
-                                    <Border Padding="0 5" Visibility="{Binding SuggestionVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding SuggestionVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -747,14 +747,14 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SUGGESTION" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Suggestion}" />
+                                                       Text="{Binding DisplaySuggestion}" />
 
                                         </Grid>
                                     </Border>
 
 
                                     <!-- COMMENT -->
-                                    <Border Padding="0 5" Visibility="{Binding CommentVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <Border Padding="0 5" Visibility="{Binding CommentVisible}">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="15"/>
@@ -767,7 +767,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_COMMENT" Style="{DynamicResource text_LIST_POSTIT_ERSO_CONTENT}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Comment}" />
+                                                       Text="{Binding DisplayComment}" />
 
                                         </Grid>
                                     </Border>
@@ -785,7 +785,7 @@
                     <!-- Context Menu -->
                     <ControlTemplate.Resources>
                         <ContextMenu x:Key="ItemContextMenu">
-                            <MenuItem Header="Edit" Command="{Binding EditCommand}" 
+                            <MenuItem Header="Edit" Command="{Binding EditPostItCommand}" 
                                       CommandParameter="{Binding}" />
                         </ContextMenu>
                     </ControlTemplate.Resources>
@@ -832,7 +832,7 @@
         <Setter Property="BorderThickness" Value="0.6"/>
         <Setter Property="Foreground" Value="{DynamicResource BLACK}"/>
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
         <Setter Property="ScrollViewer.CanContentScroll" Value="false"/>
         <Setter Property="ScrollViewer.PanningMode" Value="Both"/>
         <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>
@@ -916,7 +916,7 @@
                                 <TextBlock x:Name="text_POSTIT_SUBJECT" Style="{DynamicResource text_LIST_LABEL_HEADING_View}"
                                    Height="27"
                                    HorizontalAlignment="Stretch"
-                                   Text="{Binding Subject, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                   Text="{Binding DisplaySubject}" />
 
                                 <StackPanel Orientation="Vertical" Grid.Row="1"
                                     HorizontalAlignment="Stretch"
@@ -935,7 +935,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_ERROR" Style="{DynamicResource text_LIST_ERROR_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Error, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayError}" />
 
                                         </Grid>
                                     </Border>
@@ -955,7 +955,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SOLUTION" Style="{DynamicResource text_LIST_SOLUTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding Display_Solution, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySolution}" />
 
                                         </Grid>
                                     </Border>
@@ -975,7 +975,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_SUGGESTION" Style="{DynamicResource text_LIST_SUGGESTION_LABEL_CONTENT_View}"
                                                    HorizontalAlignment="Stretch"
-                                                   Text="{Binding Display_Suggestion, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                   Text="{Binding DisplaySuggestion}" />
 
                                         </Grid>
                                     </Border>
@@ -995,7 +995,7 @@
 
                                             <TextBlock Grid.Column="2" x:Name="text_POSTIT_COMMENT" Style="{DynamicResource text_LIST_COMMENT_LABEL_CONTENT_View}"
                                                        HorizontalAlignment="Stretch"
-                                                       Text="{Binding Display_Comment, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                                                       Text="{Binding DisplayComment}" />
 
                                         </Grid>
                                     </Border>

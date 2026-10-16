@@ -55,14 +55,14 @@ namespace Core.Models
         /// The medium. Used for music logs.
         /// </summary>
 
-        public MediumClass Medium { get; set; }
+        public MediumClass? Medium { get; set; }
         public int mediumID { get; set; }
 
         /// <summary>
         /// The format. Used for music logs.
         /// </summary>
 
-        public FormatClass Format { get; set; }
+        public FormatClass? Format { get; set; }
         public int formatID { get; set; }
 
         /// <summary>

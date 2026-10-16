@@ -1,0 +1,81 @@
+﻿<UserControl x:Class="Data_Logger_1._3.Components.SubMENURadioButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Data_Logger_1._3.Components"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             x:Name="control_subMENU_item"
+             >
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Background" Color="#FFE6E6E6"/>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Border" Color="#FFBCBCBC"/>
+        <SolidColorBrush x:Key="RadioButton.Disabled.Glyph" Color="#FF707070"/>
+        <Style x:Key="radio_SUB_MENU_ITEM" TargetType="{x:Type RadioButton}">
+            <Setter Property="Background" Value="{DynamicResource subMenuItem}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type RadioButton}">
+                        <Border x:Name="radioButtonBorder" Background="{TemplateBinding Background}"
+                         BorderBrush="{TemplateBinding BorderBrush}"
+                         BorderThickness="{TemplateBinding BorderThickness}"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Stretch"
+                         Height="{TemplateBinding Height}"
+                         >
+                            <Grid Height="60" Margin="50 0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="10"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Path x:Name="path_icon"  Grid.Column="0" Style="{Binding SubMENUIcon, ElementName=control_subMENU_item}"
+                                    Fill="{DynamicResource SubMenuForeground}"
+                                    />
+
+                                <TextBlock x:Name="text_subITEM_name"  Grid.Column="2" Style="{DynamicResource text_SUBMENU}"
+                                    Text="{Binding SubCategory, ElementName=control_subMENU_item}"
+                                    />
+                            </Grid>
+                        </Border>
+
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResource HOVERSubMenuItem}"/>
+                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource WHITE}"/>
+                                <Setter Property="Foreground" TargetName="text_subITEM_name" Value="{DynamicResource WHITE}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Opacity" TargetName="radioButtonBorder" Value=".3"/>
+                                <Setter Property="Opacity" TargetName="path_icon" Value=".3"/>
+                                <Setter Property="Opacity" TargetName="text_subITEM_name" Value=".3"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="true">
+                                <Setter Property="Background" TargetName="radioButtonBorder" Value="{DynamicResource SELECTEDSubMenuItem}"/>
+                                <Setter Property="Fill" TargetName="path_icon" Value="{DynamicResource WHITE}"/>
+                                <Setter Property="Foreground" TargetName="text_subITEM_name" Value="{DynamicResource WHITE}"/>
+                                <Setter Property="Style" TargetName="text_subITEM_name" Value="{DynamicResource text_SUBMENU BOLD}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <RadioButton x:Name="radio_MENU_item" Style="{DynamicResource radio_SUB_MENU_ITEM}"
+                 IsChecked="{Binding SubChecked, ElementName=control_subMENU_item}"
+                 GroupName="{Binding SubCrew, ElementName=control_subMENU_item}"
+                 Checked="on_item_SubCHECKED"
+                 Unchecked="on_item_SubUNCHECKED"
+                 />
+</UserControl>

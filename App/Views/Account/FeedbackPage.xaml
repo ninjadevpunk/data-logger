@@ -1,0 +1,161 @@
+﻿<Page x:Class="Data_Logger_1._3.Views.Account.FeedbackPage"
+      x:ClassModifier="internal"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Data_Logger_1._3.Views.Account" xmlns:components="clr-namespace:Data_Logger_1._3.Components"
+      mc:Ignorable="d"
+      d:Background="White"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      Title="Feedback">
+    
+    <Border Padding="40 60">
+        
+        <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="650"/>
+            <ColumnDefinition Width="50"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- #region FEEDBACK FIELDS SIDE -->
+
+
+        <Grid Margin="20 10 0 10">
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="25" />
+                <RowDefinition Height="45" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+
+            <!-- HEADING -->
+            <TextBlock Grid.Column="0" Grid.Row="0" Style="{DynamicResource HEADING5}"
+                       Text="FEEDBACK"/>
+
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            <!--#region INPUT FIELDS -->
+            <StackPanel Grid.Row="3" VerticalAlignment="Stretch"
+            >
+
+                <!-- Feedback Type -->
+                <components:ComboBoxInputField x:Name="inputText_FEEDBACK_TYPE"
+                                           PlaceholderText="Feedback Type"
+                                           DynamicPlaceholderText="Feedback Type"
+                                           UserTextBoxStyle="{DynamicResource inputText_APP}"
+                                           UserTextBlockStyle="{DynamicResource text_APP_Placeholder}"
+                                           UserComboInput="{Binding}"/>
+
+                <!-- DATE FEEDBACK DATE -->
+                <components:PlainInputField x:Name="feedback_DATE"
+                                            IsEnabled="False"
+                                            UserTextBoxStyle="{DynamicResource inputText_LOGIN}"
+                                            Aligned="Left"
+                                            UserInput="{Binding}"/>
+
+                <!-- Feedback Type -->
+                <components:ComboBoxInputField x:Name="inputText_FEEDBACK"
+                           PlaceholderText="Description"
+                           DynamicPlaceholderText="Description"
+                           UserTextBoxStyle="{DynamicResource inputText}"
+                           UserTextBlockStyle="{DynamicResource text_Placeholder}"
+                           UserComboInput="{Binding}"/>
+                
+                <!-- Question -->
+                <!-- YES -->
+                <Border Padding="10 5">
+                    <Grid>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="auto"/>
+                        </Grid.ColumnDefinitions>
+
+
+
+                        <TextBlock Style="{DynamicResource text_LABEL02}"
+                               HorizontalAlignment="Stretch"
+                               TextAlignment="Left"
+                               Text="Can we contact you fore more information?"/>
+
+                        <CheckBox Grid.Column="1" x:Name="checkBox_CONTACT_STATUS" Style="{DynamicResource check_SIGNUP}"
+                              IsChecked="False"
+                              Margin="10 0"/>
+                    </Grid>
+                </Border>
+            </StackPanel>
+            <!--#endregion-->
+
+
+
+
+
+            <Border Grid.Row="4"
+                Padding="20 5"
+                HorizontalAlignment="Stretch">
+                <Button x:Name="button_FEEDBACK_SUBMIT" Style="{DynamicResource ACTION}"
+                        HorizontalAlignment="Right"
+                        Command="{Binding}">
+                    <TextBlock Style="{DynamicResource text_button01}"
+                           Text="Submit"
+                           />
+                </Button>
+            </Border>
+
+
+            <Border Grid.Row="5"
+                Padding="20 10"
+                HorizontalAlignment="Stretch">
+                
+                <TextBlock x:Name="feedback_SUBMISSION_STATUS" Style="{DynamicResource text_LABEL02}"
+                           Foreground="{Binding}"
+                           TextAlignment="Right"
+                           Text="{Binding}"/>
+            </Border>
+
+
+
+
+        </Grid>
+
+
+
+
+        <!--#endregion-->
+
+
+
+        <!-- #region CONTACT -->
+
+        
+
+
+
+
+
+
+        <!--#endregion-->
+
+
+    </Grid>
+    </Border>
+</Page>

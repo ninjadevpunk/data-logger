@@ -19,7 +19,7 @@ namespace Core.Models.App_Models
 
         public MeasuringUnitClass()
         {
-            
+
         }
 
         public MeasuringUnitClass(string unit)
@@ -45,14 +45,17 @@ namespace Core.Models.App_Models
             return HashCode.Combine(unitID, Unit);
         }
 
-        public static bool operator ==(MeasuringUnitClass left, MeasuringUnitClass right)
+        public static bool operator ==(MeasuringUnitClass? left, MeasuringUnitClass? right)
         {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
             return left.Equals(right);
         }
 
-        public static bool operator !=(MeasuringUnitClass left, MeasuringUnitClass right)
+        public static bool operator !=(MeasuringUnitClass? left, MeasuringUnitClass? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
         }
+
     }
 }

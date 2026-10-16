@@ -17,7 +17,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Remove="appsettings.DevMode.json" />
+		<None Remove="appsettings.json" />
 		<None Remove="Assets\dls_icon.ico" />
+		<None Remove="Setup.exe" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -26,7 +29,6 @@
 
 	<ItemGroup>
 		<Folder Include="Commands\" />
-		<Folder Include="Services\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -36,21 +38,29 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Design\Design.csproj" />
 		<ProjectReference Include="..\FileSys\FileSys.csproj" />
+		<ProjectReference Include="..\Migration\Migration.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="Assets\dls_icon.ico">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</Content>
+		<EmbeddedResource Include="Assets\dls_icon.ico">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<LogicalName>dls_icon.ico</LogicalName>
+		</EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="appsettings.DevMode.json" Condition="'$(Configuration)' == 'Debug'">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="appsettings.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<EmbeddedResource Include="appsettings.DevMode.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<LogicalName>appsettings.DevMode.json</LogicalName>
+		</EmbeddedResource>
+		<EmbeddedResource Include="appsettings.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<LogicalName>appsettings.json</LogicalName>
+		</EmbeddedResource>
+		<EmbeddedResource Include="Setup.exe">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<LogicalName>Setup.exe</LogicalName>
+		</EmbeddedResource>
 	</ItemGroup>
 
 </Project>

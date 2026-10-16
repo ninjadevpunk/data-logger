@@ -1,0 +1,87 @@
+﻿<local:DLSWindow x:Class="Data_Logger_1._3.Views.Splashscreen"
+                 x:ClassModifier="internal"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:local="clr-namespace:Data_Logger_1._3"
+                 AllowsTransparency="True"
+                 Background="Transparent"
+                 mc:Ignorable="d"
+                 Title="Welcome" 
+                 Height="700" 
+                 Width="398"
+                 WindowStyle="None"
+                 WindowStartupLocation="CenterScreen" >
+    <local:DLSWindow.Template>
+        <ControlTemplate TargetType="Window">
+            <Border Background="{DynamicResource PANEL}" CornerRadius="3"
+                    Margin="0"
+                    Padding="0"
+                    >
+                <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+        </ControlTemplate>
+    </local:DLSWindow.Template>
+
+
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="2.5*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <!-- VERSION -->
+        <TextBlock x:Name="VersionText" d:Text="version 1.3" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top" Grid.Column="0" 
+                   Style="{DynamicResource text_VERSION}"/>
+
+        <!--#region Data Logger LOGO -->
+
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="0"
+                    Grid.Column="1">
+
+
+
+            <Grid HorizontalAlignment="Center" Height="38.1" Width="40">
+                <Path Style="{DynamicResource pathLOGO}"/>
+            </Grid>
+
+            <TextBlock Text="DATA LOGGER" Style="{DynamicResource text_logoSPLASHscreen}"/>
+
+        </StackPanel>
+        <!--#endregion-->
+
+
+
+        <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0 0 0 16" >
+
+
+            <TextBlock x:Name="text_progress" d:Text="55%" Margin="0 0 0 16" Style="{DynamicResource text_progressVALUE}" />
+
+            <ProgressBar x:Name="progressBar_splashscreen"
+                         HorizontalAlignment="Stretch"
+                         Foreground="{DynamicResource SplashForeground}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Minimum="0"
+                         Maximum="100"
+                         Height="10"
+                         Value="0"
+                         d:Value="55"
+                         VerticalAlignment="Bottom" >
+
+            </ProgressBar>
+        </StackPanel>
+
+
+
+    </Grid>
+</local:DLSWindow>

@@ -1,0 +1,397 @@
+﻿<Page x:Class="Data_Logger_1._3.Views.Dialogs.LoggerCreatePage"
+      x:ClassModifier="internal"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:components="clr-namespace:Data_Logger_1._3.Components"
+      mc:Ignorable="d"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      d:Background="{DynamicResource WHITE}"
+      d:Width="1145"
+      Title="Create Log" >
+
+    <Border Padding="40 60" >
+
+        <Grid>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- #region LOG FIELDS SIDE -->
+
+
+            <Grid Margin="20 10 0 10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="505" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+
+                <!-- HEADING -->
+                <TextBlock Grid.Column="0" Grid.Row="0" Style="{DynamicResource HEADING5}"
+                   Text="CREATE LOG" />
+
+                <TextBlock Grid.Column="0" Grid.Row="1" x:Name="text_LOG_CATEGORY" Style="{DynamicResource text_SUB HEADING1}"
+                   Text="{Binding LogType}" />
+
+
+
+
+
+
+
+
+                <!--#region INPUT FIELDS -->
+
+
+                <ScrollViewer Grid.Row="3"
+                              HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="5" >
+
+                    <StackPanel VerticalAlignment="Stretch" >
+
+
+                        <!-- AUTHOR -->
+                        <Border Padding="20 2"
+                                BorderThickness="0.6"
+                                BorderBrush="{DynamicResource STROKE}"
+                                Height="30" >
+                            <Grid>
+
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions >
+
+                                <Border x:Name="image_USER" Style="{DynamicResource image_displayPic}"
+                                    BorderThickness="0"
+                                    Height="20"
+                                    Width="20"
+                                    HorizontalAlignment="Left" />
+
+                                <Path x:Name="path_DEFAULT_DP" Style="{DynamicResource path_AUTHOR}"
+                                  Visibility="{Binding DisplayPicVisibility}" />
+
+                                <TextBlock x:Name="text_AUTHOR" Grid.Column="1" Style="{DynamicResource text_Placeholder}"
+                                       Text="{Binding Author}"
+                                       Foreground="{DynamicResource BLACK}"
+                                       HorizontalAlignment="Left" />
+                            </Grid>
+                        </Border>
+
+
+                        <!-- PROJECT -->
+                        <components:ComboBoxInputField x:Name="inputText_PROJECT"
+                                                       Enabled="True"
+                                                       PlaceholderText="PROJECT NAME"
+                                                       DynamicPlaceholderText="PROJECT NAME"
+                                                       UserTextBoxStyle="{DynamicResource inputText_PROJECT}"
+                                                       UserTextBlockStyle="{DynamicResource text_PROJECT_Placeholder}"
+                                                       UserComboInput="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                       Items="{Binding Projects}" />
+
+                        <!-- APPLICATION -->
+                        <components:ComboBoxInputField x:Name="inputText_APP"
+                                                       Enabled="{Binding AppFieldEnabled}"
+                                                       PlaceholderText="Application Name"
+                                                       UserTextBoxStyle="{DynamicResource inputText_APP}"
+                                                       UserTextBlockStyle="{DynamicResource text_APP_Placeholder}"
+                                                       UserComboInput="{Binding ApplicationName, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                       ToolTip="{Binding ApplicationToolTip}"
+                                                       Items="{Binding Applications}" />
+
+                        <!-- #region DATE START -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="93" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- DATE -->
+                            <components:DateInputField Grid.Column="0" x:Name="dateEdit_START"
+                                                   Date="{Binding StartDate, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                            <!-- TIME -->
+                            <components:TimeInputField Grid.Column="2" x:Name="timeEdit_START"
+                                                   Time="{Binding StartTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Hours="{Binding StartHours, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Minutes="{Binding StartMinutes, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Seconds="{Binding StartSeconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Milliseconds="{Binding StartMilliseconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                            <!-- CURRENT DAYTIME-->
+                            <Button x:Name="button_START" Style="{DynamicResource ACTIONCurrentDate}" Grid.Column="4"
+                                Command="{Binding CurrentStartDateCommand}"
+                                    ToolTip="{Binding TimeStartToolTip}">
+
+                                <TextBlock Style="{DynamicResource text_button01}" 
+                                       Text="Current" />
+                            </Button>
+                        </Grid>
+
+                        <!--#endregion-->
+
+
+                        <!-- #region DATE END -->
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="93" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- DATE -->
+                            <components:DateInputField Grid.Column="0" x:Name="dateEdit_END"
+                                                   Date="{Binding EndDate, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                            <!-- TIME -->
+                            <components:TimeInputField Grid.Column="2" x:Name="timeEdit_END"
+                                                   Time="{Binding EndTime, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Hours="{Binding EndHours, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Minutes="{Binding EndMinutes, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Seconds="{Binding EndSeconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Milliseconds="{Binding EndMilliseconds, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                            <!-- CURRENT DAYTIME-->
+                            <Button x:Name="button_END" Style="{DynamicResource ACTIONCurrentDate}" Grid.Column="4"
+                                Command="{Binding CurrentEndDateCommand}"
+                                    ToolTip="{Binding TimeEndToolTip}">
+
+                                <TextBlock Style="{DynamicResource text_button01}"
+                                       Text="Current" />
+                            </Button>
+                        </Grid>
+
+                        <!--#endregion-->
+
+
+                        <!-- OUTPUT -->
+                        <components:ComboBoxField x:Name="inputText_OUTPUT"
+                                                  UserSelection="{Binding Output, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                  Enabled="True"
+                                                  UserTextBoxStyle="{DynamicResource inputText}"
+                                                  UserTextBlockStyle="{DynamicResource text_Placeholder}"
+                                                  ToolTip="{Binding OutputToolTip}"
+                                                  Items="{Binding Outputs}" />
+
+                        <!-- TYPE -->
+                        <components:ComboBoxField x:Name="inputText_TYPE"
+                                                   UserSelection="{Binding Type, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   Enabled="True"
+                                                   UserTextBoxStyle="{DynamicResource inputText}"
+                                                   UserTextBlockStyle="{DynamicResource text_Placeholder}"
+                                                   ToolTip="{Binding TypeToolTip}"
+                                                   Items="{Binding Types}"/>
+
+
+
+
+
+
+
+
+
+                        <!-- LOG VARIED FIELDS -->
+                        <Frame x:Name="frame_VARIATIONS"
+                               NavigationUIVisibility="Hidden" />
+
+                        <!-- ANDROID STUDIO ONLY -->
+                        <Frame x:Name="frame_ANDROIDSTUDIO"
+                               NavigationUIVisibility="Hidden" />
+
+
+
+
+
+
+
+
+
+                    </StackPanel>
+
+
+                </ScrollViewer>
+
+                <!--#endregion-->
+
+
+
+
+
+                <Border Grid.Row="4"
+                        Padding="10 5"
+                        HorizontalAlignment="Stretch" >
+
+                    <Button x:Name="button_SAVE" Style="{DynamicResource SECONDARY}"
+                            HorizontalAlignment="Right" 
+                            Command="{Binding SaveCommand}" >
+
+                        <TextBlock Style="{DynamicResource text_button01}"
+                                   Text="Save" />
+
+                    </Button>
+                </Border>
+
+
+                <Border Grid.Row="5"
+                        Padding="10 5"
+                        HorizontalAlignment="Stretch" >
+
+                    <Button x:Name="button_ANNOTATE" Style="{DynamicResource PRIMARY}"
+                            HorizontalAlignment="Right" 
+                            Command="{Binding AnnotateCommand}" >
+
+                        <TextBlock Style="{DynamicResource text_button01}"
+                                   Text="Annotate" />
+
+                    </Button>
+                </Border>
+
+
+
+
+            </Grid>
+
+
+
+
+            <!--#endregion-->
+
+
+
+            <!-- #region POST ITS SIDE -->
+
+            <Grid Grid.Column="2" Margin="0 10 20 10"
+                  HorizontalAlignment="Stretch" >
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30" />
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="45" />
+                    <RowDefinition Height="505" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+
+                <!-- HEADING -->
+                <TextBlock Grid.Column="0" Grid.Row="0" Style="{DynamicResource HEADING5}"
+                           Text="{Binding LogCount, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+
+                <!-- DATABASE STATUS -->
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center" >
+
+                    <Ellipse x:Name="ellipse_DATABASE_CONNECTION" Style="{DynamicResource ellipse_DATABASE_CONNECTION}"
+                             Fill="{Binding DatabaseStatusFill, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                             VerticalAlignment="Center" />
+
+                    <TextBlock x:Name="text_DATABASE_CONNECTION" Style="{DynamicResource text_minorHEADING1}"
+                               Text="{Binding DatabaseStatus, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                               Padding="10 0" />
+
+                </StackPanel>
+
+                <!--#region LIST OF POST ITS -->
+
+                <Border Grid.Row="3"
+                        CornerRadius="3"
+                        HorizontalAlignment="Stretch"
+                        Padding="0" >
+
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- TOOLBAR -->
+                        <ToolBar Grid.Row="0"  Style="{DynamicResource toolbar_POSTITS_list}" x:Name="tool_POST_IT_LIST"
+                                 Height="30"
+                                 BorderThickness="0" >
+
+                            <Button x:Name="toolbutton_DELETE" Style="{DynamicResource toolbutton_DELETE}"
+                                    HorizontalAlignment="Left" 
+                                    Command="{Binding ClearPostItListCommand}" />
+
+                            <Button x:Name="toolbutton_RESET" Style="{DynamicResource toolbutton_RESET}"
+                                    HorizontalAlignment="Left"
+                                    Command="{Binding ClearLoggerCommand}" />
+
+                        </ToolBar>
+
+
+                        <!-- POST ITS -->
+                        <ListView Grid.Row="1" Style="{DynamicResource listView_POSTITS}"
+                                  ItemsSource="{Binding PostIts, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </Grid>
+                </Border>
+
+
+
+                <!--#endregion-->
+
+
+                <!-- ADD POST IT -->
+
+                <Border Grid.Row="5"
+                        Padding="10 5"
+                        HorizontalAlignment="Stretch" >
+
+                    <Button x:Name="button_POST_IT" Style="{DynamicResource ACTIONCreate}"
+                            Width="auto"
+                            HorizontalAlignment="Right"
+                            Command="{Binding AddPostItCommand}" >
+
+                        <TextBlock Style="{DynamicResource text_button01}"
+                                   Text="Sticky Note" />
+
+                    </Button>
+                </Border>
+
+
+
+
+            </Grid>
+
+
+
+
+
+
+            <!--#endregion-->
+
+
+        </Grid>
+    </Border>
+</Page>

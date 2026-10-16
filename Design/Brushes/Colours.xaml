@@ -10,10 +10,6 @@
     <SolidColorBrush x:Key="SILVER">#C0C0C0</SolidColorBrush>
     
     
-    <!-- BRAND COLOURS -->
-    <SolidColorBrush x:Key="PrimaryColour">#009900</SolidColorBrush>
-    <SolidColorBrush x:Key="HOVERPrimaryColour">#00B200</SolidColorBrush>
-    <SolidColorBrush x:Key="SecondaryColour">#00A4FF</SolidColorBrush>
     
         <!-- White Accent 01 -->
         <SolidColorBrush x:Key="AccentColour">#EAF1E7</SolidColorBrush>
@@ -27,29 +23,7 @@
 
 
     <!-- THEME COLOURS - LIGHT -->
-        <!-- Menu -->
-    <SolidColorBrush x:Key="PANELWHITE">#DED9E0</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTEDMainMenuItem">#009900</SolidColorBrush>
-    <SolidColorBrush x:Key="HOVERMainMenuItem">#00B200</SolidColorBrush>
-    <SolidColorBrush x:Key="MainMenuItem">#000000</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTEDSubMenuItem">#018A01</SolidColorBrush>
-    <SolidColorBrush x:Key="subMenuItem">#EAF1E7</SolidColorBrush>
-    <SolidColorBrush x:Key="HOVERSubMenuItem">#656565</SolidColorBrush>
-
-    <!-- List -->
-    <SolidColorBrush x:Key="SELECTEDListItem">#C5CCC4</SolidColorBrush>
-    <SolidColorBrush x:Key="ListItem">#EAF1E7</SolidColorBrush>
-    
-    <!-- Time Edit -->
-    <SolidColorBrush x:Key="TimeEdit">#E0E0E0</SolidColorBrush>
-    
-    <!-- Calendar -->
-    <SolidColorBrush x:Key="CalendarBackground" Color="#A0A0A0"/>
-    
-    <!-- TOOLBAR-->
-    <SolidColorBrush x:Key="TOOLBAR">#DAE0D7</SolidColorBrush>
-    <SolidColorBrush x:Key="ToolbarItem">#656565</SolidColorBrush>
-    <SolidColorBrush x:Key="SELECTEDToolbutton">#F3FAF0</SolidColorBrush>
+        
 
     <!-- Others -->
     <SolidColorBrush x:Key="iconCOLOURAccent01">#AAAAAA</SolidColorBrush>
@@ -128,7 +102,7 @@
     <!--#endregion-->
 
     <!-- THEME COLOURS - DARK (for Data Logger 1.4) -->
-
-    <SolidColorBrush x:Key="PANEL">#21261F</SolidColorBrush>
+<!--
+    <SolidColorBrush x:Key="PANEL">#21261F</SolidColorBrush> -->
 
 </ResourceDictionary>

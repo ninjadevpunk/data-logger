@@ -1,8 +1,13 @@
-﻿using FileSys.Interfaces;
+﻿using Core.Interfaces;
+using Core.Utilities;
+using FileSys.Interfaces;
 using FileSys.Services;
+using Installer.Services;
 using Microsoft.Win32;
+using Migration.Services;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,14 +20,14 @@ namespace Installer.Views.Pages
     public partial class SetupPage : UserControl
     {
         private readonly MainWindow _mainWindow;
-        private readonly ICacheService _cacheService;
+        private readonly IFileService _fileService;
         private readonly IInstallationRegistry _installationRegistry;
+        private readonly DbMigrationService _databaseMigration;
 
         public readonly string _programDataPath;
-        string installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        private readonly string installPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Data Logger");
-        const int APP_SIZE = 170;
-        public bool ShortcutIsCreated { get; set; } = false;
+        const int APP_SIZE = 300;
         private readonly bool _isReinstall;
 
         public SetupPage(MainWindow mainWindow, bool isReinstall = false)
@@ -32,13 +37,17 @@ namespace Installer.Views.Pages
             _mainWindow = mainWindow;
             _isReinstall = isReinstall;
 
-            _cacheService = new CacheMaster();
+            _fileService = new InstallerFileService();
             _installationRegistry = new InstallationRegistry();
+            _databaseMigration = new DbMigrationService();
 
+#if DEBUG
+            _programDataPath = Path.Combine(AppContext.BaseDirectory, "Data Logger");
+#else
             _programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Data Logger");
-
-            this.textBlock_INSTALL_LOCATION.Text = installPath;
-            this.textBlock_APP_SIZE.Text = $"{APP_SIZE}MB";
+#endif
+            textBlock_INSTALL_LOCATION.Text = installPath;
+            textBlock_APP_SIZE.Text = $"{APP_SIZE}MB";
         }
 
 
@@ -68,7 +77,7 @@ namespace Installer.Views.Pages
                 Marshal.FinalReleaseComObject(shortcut);
                 Marshal.FinalReleaseComObject(shell);
 
-                return _cacheService.Exists(shortcutPath);
+                return _fileService.Exists(shortcutPath);
             }
             catch
             {
@@ -83,7 +92,7 @@ namespace Installer.Views.Pages
                 string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
                 string shortcutPath = Path.Combine(desktopPath, "Data Logger.lnk");
 
-                if (!_cacheService.Exists(shortcutPath))
+                if (!_fileService.Exists(shortcutPath))
                     return false;
 
                 Type shellType = Type.GetTypeFromProgID("Shell.Application")!;
@@ -118,15 +127,30 @@ namespace Installer.Views.Pages
             }
         }
 
+        private string ExtractDlsIcon()
+        {
+            string iconPath = Path.Combine(_programDataPath, "dls_icon.ico");
+
+            using Stream? resource = Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream(Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                        .First(name => name.EndsWith("dls_icon.ico", StringComparison.OrdinalIgnoreCase)))
+                ?? throw new InvalidOperationException("Embedded dls_icon.ico was not found.");
+            using FileStream file = new(iconPath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+            resource.CopyTo(file);
+
+            return iconPath;
+        }
+
         private bool AssociateDlsFiles()
         {
             string progId = "DataLogger.File";
             string exePath = Path.Combine(installPath, "Data Logger.exe");
-            string iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "dls_icon.ico");
+            string iconPath = ExtractDlsIcon();
 
             try
             {
-                if (!_cacheService.Exists(exePath))
+                if (!_fileService.Exists(exePath))
                     return false;
 
                 using RegistryKey extensionKey = Registry.CurrentUser.CreateSubKey(@"Software\Classes\.dls") ?? throw new InvalidOperationException("Failed to create .dls registry key.");
@@ -172,7 +196,7 @@ namespace Installer.Views.Pages
         [DllImport("shell32.dll")]
         private static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
 
-        private void NotifyFileAssociationChanged()
+        private static void NotifyFileAssociationChanged()
         {
             const uint SHCNE_ASSOCCHANGED = 0x08000000;
             const uint SHCNF_IDLIST = 0x0000;
@@ -180,18 +204,50 @@ namespace Installer.Views.Pages
             SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST, IntPtr.Zero, IntPtr.Zero);
         }
 
-
-
-        private void on_CREATE_SHORTCUT_Checked(object sender, RoutedEventArgs e)
+        private bool BackupDatabase(string databasePath, string backupPath)
         {
-            this.grid_SETUP_TASKBAR_PIN.Visibility = Visibility.Visible;
+            try
+            {
+                string? backupDirectory = Path.GetDirectoryName(backupPath);
+
+                if (string.IsNullOrWhiteSpace(backupDirectory))
+                    return false;
+
+                _fileService.CreateDirectory(backupDirectory);
+
+                if (File.Exists(backupPath))
+                    File.Delete(backupPath);
+
+                File.Move(databasePath, backupPath);
+
+                return File.Exists(backupPath) && !File.Exists(databasePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Failed to backup database: {ex.Message}");
+                return false;
+            }
         }
 
-        private void on_CREATE_SHORTCUT_Unchecked(object sender, RoutedEventArgs e)
+
+        private static string ExtractSetup()
         {
-            this.grid_SETUP_TASKBAR_PIN.Visibility = Visibility.Collapsed;
-            this.checkBox_PIN_TASKBAR.IsChecked = false;
+            string resourceName = Assembly.GetExecutingAssembly().GetManifestResourceNames()
+                .First(name => name.EndsWith("Setup.exe", StringComparison.OrdinalIgnoreCase));
+
+            string setupPath = Path.Combine(Path.GetTempPath(), "Setup.exe");
+
+            using Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
+                ?? throw new InvalidOperationException("Embedded Setup.exe was not found.");
+            using FileStream file = new(setupPath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+            resource.CopyTo(file);
+
+            return setupPath;
         }
+
+
+
 
         private async void on_INSTALL_ClickedAsync(object sender, RoutedEventArgs e)
         {
@@ -200,15 +256,18 @@ namespace Installer.Views.Pages
             try
             {
                 // Ensure Disk Space is Sufficient
-                DriveInfo drive = new DriveInfo("C:");
+                DriveInfo drive = new("C:");
                 if (drive.AvailableFreeSpace < APP_SIZE * 1024 * 1024)
                 {
                     _mainWindow.ShowFailedPage("Insufficient storage space available.");
                     return;
                 }
 
-                // Create ProgramData folder
-                if (!_cacheService.CreateDirectory(_programDataPath))
+                // Create ProgramData and Resources folder
+                bool resourcesCreated = _fileService.ResourcesCreated();
+                bool programDataCreated = _fileService.Exists(_programDataPath);
+
+                if (!programDataCreated || !resourcesCreated)
                 {
                     if (!_isReinstall)
                         _mainWindow.ShowFailedPage("Failed to create required folders.");
@@ -218,19 +277,34 @@ namespace Installer.Views.Pages
                     return;
                 }
 
-                // Run installer
-                ProcessStartInfo processInfo = new ProcessStartInfo
+                // Capture the currently installed version
+                string previousVersion = string.Empty;
+
+                string currentExePath = Path.Combine(installPath, "current", "Data Logger.exe");
+
+                if (File.Exists(currentExePath))
                 {
-                    FileName = Path.Combine(AppContext.BaseDirectory, "Setup.exe"),
+                    previousVersion = FileVersionInfo.GetVersionInfo(currentExePath).ProductVersion ?? string.Empty;
+                }
+
+                // Database paths
+#if RELEASE
+                string alpha5DatabasePath = @"C:\DLS\Depository\LOGS.db";
+                string alpha5BackupPath = @"C:\DLS\Depository\_backup\LOGS_OLD_1.3-alpha.5.db";
+                string alpha6DatabasePath = alpha5DatabasePath;
+#endif
+
+
+                string setupPath = ExtractSetup();
+
+                ProcessStartInfo processInfo = new()
+                {
+                    FileName = setupPath,
                     Arguments = $"--silent --installto \"{installPath}\"",
                     UseShellExecute = true
                 };
 
-                Process? process = Process.Start(processInfo);
-
-                if (process == null)
-                    throw new InvalidOperationException("Process failed to start.");
-
+                Process? process = Process.Start(processInfo) ?? throw new InvalidOperationException("Process failed to start.");
                 using (process)
                 {
                     await process.WaitForExitAsync();
@@ -239,6 +313,40 @@ namespace Installer.Views.Pages
                     {
                         _mainWindow.ShowFailedPage(isSecondFailure: _isReinstall);
                         return;
+                    }
+                }
+
+                File.Delete(setupPath);
+
+#if RELEASE
+                /* DATABASE MIGRATION */
+
+                if (previousVersion == "1.3.0-alpha.5")
+                {
+                    // Verify the Alpha 5 database exists
+                    if (File.Exists(alpha5DatabasePath))
+                    {
+                        // Move Alpha 5 database to its backup location
+                        bool backupSuccessful = BackupDatabase(alpha5DatabasePath, alpha5BackupPath);
+
+                        if (!backupSuccessful)
+                        {
+                            _mainWindow.ShowFailedPage(isSecondFailure: _isReinstall);
+                            return;
+                        }
+
+                        try
+                        {
+                            // Create the encrypted Alpha 6 database from the Alpha 5 backup
+                            await DbMigrationService.MigrateAsync(alpha5BackupPath, alpha6DatabasePath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Database migration failed: {ex}");
+
+                            _mainWindow.ShowFailedPage(isSecondFailure: _isReinstall);
+                            return;
+                        }
                     }
                 }
 
@@ -253,25 +361,19 @@ namespace Installer.Views.Pages
                     ShortcutIsCreated = CreateDesktopShortcut();
                 }
 
-                // Taskbar
-                if (this.checkBox_PIN_TASKBAR.IsChecked ?? false)
-                {
-                    if (ShortcutIsCreated)
-                        PinToTaskbar();
-                }
-
                 // .dls file association
                 if (this.checkBox_ASSOCIATE_DLS.IsChecked ?? false)
                 {
                     AssociateDlsFiles();
                 }
 
+#endif
                 _mainWindow.ShowLaunchPage();
                 return;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in on_INSTALL_ClickedAsync(): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} on_INSTALL_ClickedAsync(): {ex.Message}");
             }
 
             _mainWindow.ShowFailedPage(isSecondFailure: _isReinstall);

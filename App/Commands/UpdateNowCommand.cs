@@ -1,0 +1,51 @@
+﻿using Core.Interfaces;
+using Core.Utilities;
+using Data.Interfaces;
+using MVVMEssentials.Commands;
+using System.Windows;
+using Velopack;
+
+namespace Data_Logger_1._3.Commands
+{
+    internal class UpdateNowCommand : AsyncCommandBase
+    {
+        private readonly IDataService _dataService;
+        private readonly IVelopackService _velopackService;
+        private readonly UpdateInfo _updateInfo;
+        private readonly bool _isManualDownload;
+
+
+        public UpdateNowCommand(IDataService dataService, IVelopackService velopackService, UpdateInfo updateInfo, bool isManualDownload = false)
+        {
+            _dataService = dataService;
+            _velopackService = velopackService;
+            _updateInfo = updateInfo;
+            _isManualDownload = isManualDownload;
+        }
+
+
+        protected override async Task ExecuteAsync(object parameter)
+        {
+            try
+            {
+                if (!_isManualDownload)
+                {
+                    await _velopackService.DownloadUpdateAsync(_updateInfo);
+                }
+
+                await _dataService.SignOutUserAsync();
+                _velopackService.ApplyUpdateAndRestart(_updateInfo);
+            }
+            catch (Exception ex)
+            {
+                await _dataService.HandleExceptionAsync(ex, $"{Constants.ExceptionPrefix} UpdateNowCommand.ExecuteAsync");
+                MessageBox.Show("An unexpected error occurred while trying to update the application. We apologise for any inconvenience caused. Please try again later.", 
+                    "Update Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                System.Diagnostics.Process.Start(Environment.ProcessPath!);
+                Application.Current.Shutdown();
+            }
+
+        }
+    }
+}

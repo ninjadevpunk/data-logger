@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces;
+using Core.Utilities;
 using System.Diagnostics;
 using System.Security.Principal;
 
@@ -34,7 +35,7 @@ namespace Core.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Exception occurred in ExecuteElevated(): {ex.Message}");
+                Debug.WriteLine($"{Constants.ExceptionPrefix} ExecuteElevated(): {ex.Message}");
                 return false;
             }
         }

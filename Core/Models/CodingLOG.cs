@@ -8,8 +8,7 @@ namespace Core.Models
 
     /// <summary>
     /// The primary LOG sub class. The Coding class has the most Data Logger support 
-    /// and is used for coding projects in any coding app - 
-    /// especially Qt Creator and Android Studio.
+    /// and is used for coding projects in any coding app.
     /// </summary>
     [Table("CodingLOG")]
     public class CodingLOG : LOG
@@ -78,14 +77,14 @@ namespace Core.Models
             return HashCode.Combine(base.GetHashCode(), Bugs, Success);
         }
 
-        public static bool operator ==(CodingLOG cLOG1, CodingLOG cLOG2)
+        public static bool operator ==(CodingLOG? cLOG1, CodingLOG? cLOG2)
         {
-            return cLOG1.Equals(cLOG2);
+            return Equals(cLOG1, cLOG2);
         }
 
-        public static bool operator !=(CodingLOG cLOG1, CodingLOG cLOG2)
+        public static bool operator !=(CodingLOG? cLOG1, CodingLOG? cLOG2)
         {
-            return !cLOG1.Equals(cLOG2);
+            return !Equals(cLOG1, cLOG2);
         }
 
 

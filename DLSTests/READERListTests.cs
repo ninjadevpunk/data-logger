@@ -1,8 +1,4 @@
-﻿using Data_Logger_1._3.Models;
-using Data_Logger_1._3.Services;
-using Microsoft.EntityFrameworkCore;
-
-namespace DLSTests
+﻿namespace DLSTests
 {
     public class READERListTests
     {

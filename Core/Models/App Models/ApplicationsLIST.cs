@@ -9,14 +9,19 @@
 
         public void Add(string applicationName)
         {
-            ApplicationClass app = new(this.Count + 1, applicationName);
-            this.Add(app);
+            this.Add(new ApplicationClass
+            {
+                Name = applicationName,
+            });
         }
 
         public void Add(string applicationName, LOG.CATEGORY category)
         {
-            ApplicationClass app = new(this.Count + 1, applicationName, category);
-            this.Add(app);
+            this.Add(new ApplicationClass
+            {
+                Name = applicationName,
+                Category = category
+            });
         }
 
         public new void Add(ApplicationClass application)
@@ -31,7 +36,7 @@
             }
             catch (Exception)
             {
-                //
+                // TODO
             }
 
             base.Add(application);

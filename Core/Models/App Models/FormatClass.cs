@@ -13,7 +13,7 @@ namespace Core.Models.App_Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int formatID { get; set; }
 
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 
@@ -23,7 +23,7 @@ namespace Core.Models.App_Models
 
         public FormatClass()
         {
-            
+
         }
 
         public FormatClass(string format)
@@ -43,7 +43,7 @@ namespace Core.Models.App_Models
         {
             return obj is FormatClass @class &&
                    formatID == @class.formatID &&
-                   User.Equals(@class.User) &&
+                   User == @class.User &&
                    Format == @class.Format &&
                    Category == @class.Category;
         }
@@ -53,14 +53,17 @@ namespace Core.Models.App_Models
             return HashCode.Combine(formatID, User, Format, Category);
         }
 
-        public static bool operator ==(FormatClass left, FormatClass right)
+        public static bool operator ==(FormatClass? left, FormatClass? right)
         {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
             return left.Equals(right);
         }
 
-        public static bool operator !=(FormatClass left, FormatClass right)
+        public static bool operator !=(FormatClass? left, FormatClass? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
         }
+
     }
 }

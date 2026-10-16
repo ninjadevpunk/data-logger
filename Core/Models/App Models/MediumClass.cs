@@ -15,7 +15,7 @@ namespace Core.Models.App_Models
         public int mediumID { get; set; }
 
 
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 
@@ -29,7 +29,7 @@ namespace Core.Models.App_Models
 
         public MediumClass()
         {
-            
+
         }
 
         public MediumClass(string medium)
@@ -49,7 +49,7 @@ namespace Core.Models.App_Models
         {
             return obj is MediumClass @class &&
                    mediumID == @class.mediumID &&
-                   User.Equals(@class.User) &&
+                   User == @class.User &&
                    Medium == @class.Medium &&
                    Category == @class.Category;
         }
@@ -59,14 +59,17 @@ namespace Core.Models.App_Models
             return HashCode.Combine(mediumID, User, Medium, Category);
         }
 
-        public static bool operator ==(MediumClass left, MediumClass right)
+        public static bool operator ==(MediumClass? left, MediumClass? right)
         {
+            if (ReferenceEquals(left, right)) return true;
+            if (left is null || right is null) return false;
             return left.Equals(right);
         }
 
-        public static bool operator !=(MediumClass left, MediumClass right)
+        public static bool operator !=(MediumClass? left, MediumClass? right)
         {
-            return !left.Equals(right);
+            return !(left == right);
         }
+
     }
 }

@@ -18,19 +18,19 @@ namespace Core.Models.App_Models
         public LOG.CATEGORY Category { get; set; } = LOG.CATEGORY.CODING;
 
 
-        public ACCOUNT User { get; set; }
+        public ACCOUNT? User { get; set; }
 
         public int accountID { get; set; }
 
 
-        public string Subject { get; set; } = "";
+        public string Subject { get; set; } = string.Empty;
 
         public int projectID { get; set; }
-        public ProjectClass Project { get; set; }
+        public ProjectClass? Project { get; set; }
 
 
         public int appID { get; set; }
-        public ApplicationClass Application { get; set; }
+        public ApplicationClass? Application { get; set; }
 
         public SubjectClass()
         {
@@ -74,8 +74,8 @@ namespace Core.Models.App_Models
                    Category == @class.Category &&
                    User == @class.User &&
                    Subject == @class.Subject &&
-                   Project.Equals(@class.Project) &&
-                   Application.Equals(@class.Application);
+                   Project == @class.Project &&
+                   Application == @class.Application;
         }
 
         public override int GetHashCode()

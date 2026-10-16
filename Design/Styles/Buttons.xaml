@@ -17,8 +17,8 @@
 
     <!-- PRIMARY BUTTON -->
     <Style x:Key="PRIMARY" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource PrimaryColour}" />
-        <Setter Property="Foreground" Value="{DynamicResource WHITE}" />
+        <Setter Property="Background" Value="{DynamicResource PrimaryButton}" />
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryButtonText}" />
         <Setter Property="Padding" Value="15,10" />
         <Setter Property="FontSize" Value="14" />
         <Setter Property="BorderThickness" Value="0" />
@@ -453,7 +453,7 @@
     
     <!-- RETURN TO DASHBOARD -->
     <Style x:Key="ACTIONReturnToDashboard" TargetType="Button">
-        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Background" Value="White" />
         <Setter Property="Foreground" Value="{DynamicResource BLACK}" />
         <Setter Property="Padding" Value="15,10" />
         <Setter Property="FontSize" Value="14" />
@@ -712,18 +712,21 @@
                         Width="{TemplateBinding Width}"
                         CornerRadius="2" >
                         
-                        <ContentPresenter x:Name="contentPresenter" Focusable="False" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        <ContentPresenter x:Name="contentPresenter" Focusable="False" 
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" 
+                                          Margin="{TemplateBinding Padding}" 
+                                          RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" 
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsDefaulted" Value="true">
                             <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource WHITE}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource PANELSupportButtonHOVEREDBackground}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="true">
-                            <Setter Property="Background" TargetName="border" Value="{DynamicResource WhiteAccent02}"/>
-                            <Setter Property="BorderBrush" TargetName="border" Value="{DynamicResource WhiteAccent02}"/>
+                            <Setter Property="Background" TargetName="border" Value="{DynamicResource PANELSupportButtonPRESSED}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="false">
                             <Setter Property="Background" TargetName="border" Value="Transparent"/>

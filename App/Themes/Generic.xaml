@@ -1,0 +1,291 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:components="clr-namespace:Data_Logger_1._3.Components"
+    xmlns:themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.AeroLite">
+
+
+
+    <!-- TOGGLE BUTTON -->
+    <Style x:Key="comboBox_TOGGLEBUTTON" TargetType="{x:Type ToggleButton}">
+        <Setter Property="OverridesDefaultStyle" Value="true"/>
+        <Setter Property="IsTabStop" Value="false"/>
+        <Setter Property="Focusable" Value="false"/>
+        <Setter Property="ClickMode" Value="Press"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Border x:Name="templateRoot" Background="{TemplateBinding Background}"
+                    BorderThickness="0"
+                    SnapsToDevicePixels="true">
+                        <Grid>
+                            <Grid Height="30" Width="30" Background="Transparent">
+                                <Path Grid.Column="1" x:Name="arrow" Style="{DynamicResource path_SEARCH_ICON}"/>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Fill" TargetName="arrow" Value="{DynamicResource PrimaryColour}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="true">
+                            <Setter Property="Fill" TargetName="arrow" Value="Black"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Opacity" TargetName="arrow" Value=".2"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- SEARTCH RESULT DATA TEMPLATE -->
+    <DataTemplate x:Key="SearchResultDataTemplate">
+        <Border x:Name="border" Padding="40 20" Background="Transparent">
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="70" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="180" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- ICON -->
+                <Border Padding="20" Height="70">
+                    <Grid>
+                        <Path Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"
+                            Style="{Binding IconStyle}" Visibility="{Binding IconStyle, TargetNullValue=Collapsed}"/>
+                        <ContentControl Content="{Binding IconContainer}" Visibility="{Binding IconContainer, TargetNullValue=Collapsed}"/>
+                    </Grid>
+                </Border>
+
+                <!-- PROJECT -->
+                <Grid Grid.Column="2" Height="70">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="0.8*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="text_PROJECT" Style="{DynamicResource text_LABEL01}"
+                       TextAlignment="Left" VerticalAlignment="Bottom" Text="{Binding Project}" />
+                    <TextBlock Grid.Row="2" x:Name="text_DATE" Style="{DynamicResource text_NOTE_DATE02}"
+                       Padding="0" VerticalAlignment="Top" Text="{Binding Date}"/>
+                </Grid>
+
+                <!-- POST IT -->
+                <Grid Grid.Column="4">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35"/>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition Height="86"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="text_SUBJECT" Style="{DynamicResource text_LIST_LABEL_ERSO}"
+                       Text="{Binding Subject}"/>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="87" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock x:Name="text_POSTIT_CONTENT" Style="{DynamicResource text_LABEL03}"
+                           Text="{Binding Content}"/>
+
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+
+                            <Button x:Name="button_REPORT_VIEW" Style="{DynamicResource ACTIONSearchItem}"
+                            Command="{Binding ViewLogCommand}" CommandParameter="{Binding}">
+                                <TextBlock Style="{DynamicResource text_button03}" Text="View" />
+                            </Button>
+
+                            <Button Grid.Row="2" x:Name="button_REPORT_EDIT" Style="{DynamicResource ACTIONSearchItem}"
+                            Command="{Binding OpenUpdaterCommand}" CommandParameter="{Binding}">
+                                <TextBlock Style="{DynamicResource text_button03}" Text="Edit" />
+                            </Button>
+
+                            <Button Grid.Row="4" x:Name="button_REPORT_DELETE" Style="{DynamicResource ACTIONSearchItem}"
+                            Command="{Binding DeleteLogCommand}" CommandParameter="{Binding}">
+                                <TextBlock Style="{DynamicResource text_button03}" Text="Delete" />
+                            </Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+    <!-- SEARCH RESULT CONTAINER STYLE -->
+    <Style x:Key="SearchResultItemStyle" TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource STROKE}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,0.6"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Width="{TemplateBinding Width}">
+                        <ContentPresenter/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentColour}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource iconCOLOURAccent01}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- CONTENT CONTROL STYLE -->
+    <Style x:Key="ContentControlStyle" TargetType="ContentControl">
+
+        <!-- Default content when empty -->
+        <Setter Property="Content">
+            <Setter.Value>
+                <TextBlock Text="No Logs Found." Style="{DynamicResource text_NOTE_HEADING}"
+                                   HorizontalAlignment="Stretch"
+                                   FontSize="10"
+                                   TextAlignment="Center"
+                                   Padding="20" />
+            </Setter.Value>
+        </Setter>
+
+        <Style.Triggers>
+            <!-- When there are results, replace content with ListBox -->
+            <DataTrigger Binding="{Binding HasNoResults, RelativeSource={RelativeSource AncestorType=components:SearchBarControl}}" Value="False">
+                <Setter Property="Content">
+                    <Setter.Value>
+                        <ListBox ItemsSource="{Binding SearchResults}"
+                                 ItemTemplate="{StaticResource SearchResultDataTemplate}"
+                                 ItemContainerStyle="{StaticResource SearchResultItemStyle}"
+                                 Background="Transparent"
+                                 MaxHeight="500"
+                                 Width="{Binding ActualWidth, ElementName=templateRoot}"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                                 ScrollViewer.CanContentScroll="True">
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <VirtualizingStackPanel VirtualizingStackPanel.IsVirtualizing="True"
+                                                            VirtualizingStackPanel.VirtualizationMode="Recycling"
+                                                            VirtualizingStackPanel.ScrollUnit="Pixel" />
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                        </ListBox>
+                    </Setter.Value>
+                </Setter>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+
+    <!-- SEARCH BAR CONTROL TEMPLATE -->
+    <Style TargetType="{x:Type components:SearchBarControl}">
+        <Setter Property="Background" Value="{DynamicResource WHITE}"/>
+        <Setter Property="Foreground" Value="Transparent"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="BorderThickness" Value="0.6"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource STROKE}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type components:SearchBarControl}">
+                    <Border x:Name="templateRoot" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3" >
+
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="93"/>
+                            </Grid.ColumnDefinitions>
+
+
+                            <!-- RESULTS -->
+                            <Popup x:Name="PART_Popup"
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   PopupAnimation="{DynamicResource {x:Static SystemParameters.ComboBoxPopupAnimationKey}}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   StaysOpen="False"
+                                   MinWidth="{Binding ActualWidth, ElementName=templateRoot}"
+                                   DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                                <themes:SystemDropShadowChrome x:Name="shadow" Color="Silver">
+                                    <Border Width="{Binding ActualWidth, ElementName=templateRoot}" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="1">
+                                        <ContentControl Style="{StaticResource ContentControlStyle}" />
+                                    </Border>
+                                </themes:SystemDropShadowChrome>
+                            </Popup>
+
+
+                            <!-- SEARCH BUTTON -->
+                            <ToggleButton x:Name="toggleButton"
+                                          Grid.Column="1"
+                                          IsChecked="{Binding IsDropDownOpen, TargetNullValue=False, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          Style="{StaticResource comboBox_TOGGLEBUTTON}"
+                                          Command="{TemplateBinding EnterInternalCommand}"
+                                          Cursor="Hand" />
+
+                            <Grid>
+                                <!-- PLACEHOLDER TEXT -->
+                                <TextBlock x:Name="text_Placeholdertext" 
+                                           Style="{Binding UserTextBlockStyle, RelativeSource={RelativeSource TemplatedParent}}"
+                                           Background="Transparent"
+                                           Text="{TemplateBinding DynamicPlaceholderText}"
+                                           IsHitTestVisible="False" />
+
+                                <!-- TEXT -->
+                                <TextBox x:Name="PART_EditableTextBox"
+                                         Style="{DynamicResource inputText}"
+                                         Text="{Binding UserComboInput, RelativeSource={RelativeSource TemplatedParent}, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                                    <TextBox.InputBindings>
+                                        <KeyBinding Key="Return"
+                                                    Command="{TemplateBinding EnterInternalCommand}" />
+                                    </TextBox.InputBindings>
+                                </TextBox>
+                            </Grid>
+
+                        </Grid>
+
+
+
+
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="BorderBrush" TargetName="templateRoot" Value="{DynamicResource PrimaryColour}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+
+    </Style>
+
+</ResourceDictionary>

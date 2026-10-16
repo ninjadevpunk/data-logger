@@ -4,6 +4,4 @@
     <FontFamily x:Key="Red Hat Display">./#Red Hat Display</FontFamily>
     <FontFamily x:Key="Zekton Light">./#Zekton Light</FontFamily>
 
-
-
 </ResourceDictionary>

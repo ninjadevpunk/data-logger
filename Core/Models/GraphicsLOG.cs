@@ -14,15 +14,15 @@ namespace Core.Models
 
         /* MEMBER VARIABLES */
 
-        public MediumClass Medium { get; set; }
+        public MediumClass? Medium { get; set; }
         public int mediumID { get; set; }
 
 
-        public FormatClass Format { get; set; }
+        public FormatClass? Format { get; set; }
         public int formatID { get; set; }
 
 
-        public string Brush { get; set; } = "";
+        public string Brush { get; set; } = string.Empty;
 
 
         public double Height { get; set; } = 0.0;
@@ -31,7 +31,7 @@ namespace Core.Models
         public double Width { get; set; } = 0.0;
 
 
-        public MeasuringUnitClass Unit { get; set; }
+        public MeasuringUnitClass? Unit { get; set; }
         public int unitID { get; set; }
 
 

@@ -1,0 +1,467 @@
+﻿<local:DLSWindow x:Class="Data_Logger_1._3.MainWindow"
+                 x:ClassModifier="internal"
+                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:local="clr-namespace:Data_Logger_1._3" xmlns:components="clr-namespace:Data_Logger_1._3.Components"
+                 mc:Ignorable="d"
+                 AllowsTransparency="True"
+                 Background="Transparent"
+                 WindowStyle="None"
+                 Title="Data Logger 1.3" Height="899" Width="1394"
+                 WindowStartupLocation="CenterScreen">
+
+    <local:DLSWindow.Template>
+        <ControlTemplate TargetType="Window">
+            <Border Background="{DynamicResource WHITE}"
+                    CornerRadius="3"
+                    Margin="0"
+                    Padding="0"
+                    >
+                <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </Border>
+        </ControlTemplate>
+    </local:DLSWindow.Template>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="249"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+
+        <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3" Background="{DynamicResource WHITE}"
+                CornerRadius="2 2 0 0"
+                Visibility="Collapsed" />
+
+        
+        <!-- TITLE BAR -->
+        <Border x:Name="customTITLEBar_MAINWINDOW" Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"
+                Background="{DynamicResource WHITE}"
+                d:Background="Yellow"
+                Margin="30 0 0 0"
+                HorizontalAlignment="Stretch"
+                CornerRadius="0 3 0 0"
+                MouseLeftButtonDown="on_customTitleBar_pressed"
+                >
+
+            <Grid HorizontalAlignment="Stretch">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="auto" />
+                </Grid.ColumnDefinitions>
+
+
+
+                <!-- NAVIGATION ARROWS -->
+                <StackPanel Orientation="Horizontal" Grid.Column="0"
+                            HorizontalAlignment="Left"
+                            Margin="30 0" >                    
+                    <Button x:Name="button_BACK" Style="{DynamicResource button_TITLE_bar}"
+                            IsEnabled="{Binding BackEnabled}"
+                            Command="{Binding GoBackCommand}" >
+                        <Path x:Name="icon_BACK" Style="{DynamicResource path_ARROW_BACK}"
+                              Fill="{Binding IconBackFill}"
+                        />
+
+                    </Button>
+
+                    <Rectangle Width="30" Height="1"></Rectangle>
+
+                    <Button x:Name="button_FORWARD" Style="{DynamicResource button_TITLE_bar}"
+                            IsEnabled="{Binding ForwardEnabled}">
+
+
+                        <Path x:Name="icon_FORWARD"  Style="{DynamicResource path_ARROW_FORWARD}"
+                              Fill="{Binding IconForwardFill}"
+                        />
+
+
+                    </Button>
+                </StackPanel>
+
+
+                <StackPanel Orientation="Horizontal" Grid.Column="1"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="10 5">
+
+
+
+                    <!-- Update Button -->
+                    <Grid x:Name="grid_UPDATE_AVAILABLE" Margin="0 0 10 0"
+                          Visibility="{Binding UpdaterButtonVisible, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}">
+                        <Button Style="{DynamicResource ACTION}"
+                                Height="auto"
+                                Width="auto"
+                                Background="Transparent"
+                                Command="">
+                            <StackPanel Orientation="Horizontal">
+                                <Path Style="{DynamicResource path_UPDATE_AVAILABLE}" Margin="0 0 12 0" />
+                                <TextBlock Text="Update Available!" Style="{DynamicResource text_LABEL02}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource PrimaryColour}"
+                                           VerticalAlignment="Center"
+                                           />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- MINIMISE -->
+                    <Button x:Name="button_MINIMISE" Style="{DynamicResource button_TITLE_bar}"
+                            Margin="0 5 10 5"
+                            Click="on_MINIMISE_clicked">
+
+                        <Path Style="{DynamicResource path_MINIMISE}" />
+                    </Button>
+
+                    <!-- MAX -->
+                    <Button x:Name="button_MAXIMISE" Style="{DynamicResource button_TITLE_bar}"
+                            Margin="0 5 10 5"
+                            Click="on_MAXIMISE_clicked">
+
+                        <Grid>
+                            <Path Style="{DynamicResource path_MAXIMISE1}" />
+                            <Path Style="{DynamicResource path_MAXIMISE2}" />
+                        </Grid>
+
+                    </Button>
+
+                    <!-- CLOSE -->
+                    <Button x:Name="button_CLOSE" Style="{DynamicResource button_TITLE_bar}"
+                            Click="on_CLOSE_clicked">
+
+                        <Path Style="{DynamicResource path_CLOSE}" />
+                    </Button>
+
+
+                </StackPanel>
+            </Grid>
+        </Border>
+
+
+
+
+
+
+
+
+
+
+        <!-- PANEL -->
+        <Border x:Name="panel" Grid.Column="0" Grid.Row="0" Grid.RowSpan="3" Background="{DynamicResource PANEL}"
+                CornerRadius="3 0 0 3"
+                BorderBrush="{DynamicResource PANELOutline}"
+                BorderThickness="0 0 1 0">
+
+            <Grid HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Margin="0 40"
+                  >
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="50"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="2*"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- LOGO -->
+                <Grid Grid.Row="0" Height="60" HorizontalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0" Margin="10 0"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Height="26" Width="26">
+                        <Path Style="{DynamicResource path_PANEL_logo1}"/>
+                        <Path Style="{DynamicResource path_PANEL_logo2}"/>
+                        <Path Style="{DynamicResource path_PANEL_logo3}"/>
+                        <Path Style="{DynamicResource path_PANEL_logo4}"/>
+                        <Path Style="{DynamicResource path_PANEL_logo5}"/>
+                        <Path Style="{DynamicResource path_PANEL_logo6}"/>
+                    </Grid>
+
+                    <TextBlock Grid.Column="1" Style="{DynamicResource text_logoTEXT02}"
+                               />
+                </Grid>
+
+
+
+
+
+
+
+
+
+
+
+                <Grid Grid.Row="1" Height="50" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- #region MENU ITEMS -->
+                <components:MENURadioButton Grid.Row="2" x:Name="radio_CODING"
+                                            MENUIcon="{DynamicResource path_CODING}"
+                                            Category="CODING"
+                                            Checked="{Binding CodingChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            Crew="Menu"
+                                            IsEnabled="{Binding MenuActivated, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            />
+
+                <!--#region CODING SUB MENU -->
+
+                <StackPanel Grid.Row="3" x:Name="STACK_CODING">
+
+                    <!-- Qt -->
+                    <components:SubMENURadioButton x:Name="radio_Qt"
+                                                   SubMENUIcon="{DynamicResource path_Qt}"
+                                                   SubCategory="Qt"
+                                                   SubChecked="{Binding CodingQtChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="CODING_SubMenu"
+                                                   IsEnabled="False"
+                                                   SubRadioCheck="on_Qt_checked" />
+
+                    
+
+
+                    <!-- Android Studio -->
+                    <components:SubMENURadioButton x:Name="radio_Android"
+                                                   SubMENUIcon="{DynamicResource path_AS}"
+                                                   SubCategory="Android Studio"
+                                                   SubChecked="{Binding CodingAndroidChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="CODING_SubMenu"
+                                                   IsEnabled="False"
+                                                   SubRadioCheck="on_AndroidStudio_checked" />
+
+                    <!-- Generic CODE Logs -->
+                    <components:SubMENURadioButton x:Name="radio_VS"
+                                                   SubMENUIcon="{DynamicResource path_VS}"
+                                                   SubCategory="Generic"
+                                                   SubChecked="{Binding CodingGenericChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="CODING_SubMenu"
+                                                   IsEnabled="{Binding MenuActivated, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubRadioCheck="on_GenericCoding_checked"
+                                                   />
+
+                </StackPanel>
+
+
+
+
+                <!--#endregion-->
+
+
+
+
+                <!-- GRAPHICS -->
+                <components:MENURadioButton Grid.Row="4" x:Name="radio_GRAPHICS"
+                                            MENUIcon="{DynamicResource path_GRAPHICS}"
+                                            Category="GRAPHICS"
+                                            Checked="{Binding GraphicsChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            Crew="Menu"
+                                            IsEnabled="False"
+                                            Visibility="Collapsed"/>
+
+                <!-- FILM -->
+                <components:MENURadioButton Grid.Row="5" x:Name="radio_FILM"
+                                            MENUIcon="{DynamicResource path_FILM}"
+                                            Category="FILM"
+                                            Checked="{Binding FilmChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            Crew="Menu"
+                                            IsEnabled="False"
+                                            Visibility="Collapsed"/>
+
+
+                <!-- NOTES -->
+                <components:MENURadioButton Grid.Row="6" x:Name="radio_NOTES"
+                                            MENUIcon="{DynamicResource path_NOTES}"
+                                            Category="NOTES"
+                                            Checked="{Binding NotesChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            Crew="Menu"
+                                            IsEnabled="{Binding MenuActivated, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                            RadioCheck="on_NOTES_checked"
+                    />
+
+
+
+                <!--#region NOTES SUB MENU -->
+
+                <StackPanel Grid.Row="7" x:Name="STACK_NOTES" Height="0">
+
+                    <!-- FREE FORM NOTES -->
+                    <components:SubMENURadioButton x:Name="radio_FREE_NOTES"
+                                                   SubMENUIcon="{DynamicResource path_FREE_NOTES}"
+                                                   SubCategory="Create Notes"
+                                                   SubChecked="{Binding GenericNotesChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="NOTES_SubMenu"
+                                                   IsEnabled="{Binding MenuActivated, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubRadioCheck="on_GenericNotes_checked"
+                                   />
+
+                    <!-- CHECKLIST -->
+                    <components:SubMENURadioButton x:Name="radio_CHECKLIST"
+                                                   SubMENUIcon="{DynamicResource path_CHECKLIST}"
+                                                   SubCategory="Create Checklist"
+                                                   SubChecked="{Binding ChecklistNotesChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="NOTES_SubMenu"
+                                                   IsEnabled="False"
+                                    />
+
+                    <!-- OTHER -->
+                    <components:SubMENURadioButton x:Name="radio_OTHER"
+                                                   SubMENUIcon="{DynamicResource path_OTHER}"
+                                                   SubCategory="Other"
+                                                   SubChecked="{Binding FlexiChecked, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"
+                                                   SubCrew="NOTES_SubMenu"
+                                                   IsEnabled="False"
+                                                   Visibility="Collapsed"/>
+
+                </StackPanel>
+
+
+
+
+                <!--#endregion-->
+
+
+
+
+                <!--#endregion-->
+
+
+                <Grid Grid.Row="8" Height="106" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                <!-- #region SUPPORT -->
+                <Grid Grid.Row="10" Height="84">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Center"
+                                Margin="0"
+                                >
+
+                        <!-- ACCOUNT -->
+                        <Button Grid.Column="0"  x:Name="button_ACCOUNT" Style="{DynamicResource button_SUPPORT}"
+                                Command="{Binding LogOutCommand}"
+                                >
+                            <Grid>
+                                <Border x:Name="image_USER" Style="{DynamicResource image_displayPic}"
+                                        BorderThickness="0"
+                                        Height="25"
+                                        Width="25"
+                                        HorizontalAlignment="Left" />
+                                
+                                <Path Style="{DynamicResource path_USER}"
+                                      Fill="{DynamicResource PANELForeground}"
+                                      Visibility="{Binding ShowDefault}"/>
+                            </Grid>
+                        </Button>
+
+
+                        <!-- HELP -->
+                        <Button Grid.Column="0" x:Name="button_HELP" Style="{DynamicResource button_SUPPORT}"
+                                IsEnabled="False">
+                            <Path Style="{DynamicResource path_HELP}"
+                                      Fill="{DynamicResource PANELForeground}"
+                                  />
+                        </Button>
+
+                        <!-- FEEDBACK -->
+                        <Button Grid.Column="0" x:Name="button_FEEDBACK" Style="{DynamicResource button_SUPPORT}"
+                                IsEnabled="False"
+                                >
+                            <Path Style="{DynamicResource path_FEEDBACK}"
+                                      Fill="{DynamicResource PANELForeground}"
+                                />
+                        </Button>
+
+                        <!-- SETTINGS -->
+                        <Button Grid.Column="0" x:Name="button_SETTINGS" Style="{DynamicResource button_SUPPORT}"
+                                IsEnabled="True"
+                                Command="{Binding SettingsCommand}"
+                                >
+                            <Path Style="{DynamicResource path_SETTINGS}"
+                                      Fill="{DynamicResource PANELForeground}"
+                                />
+                        </Button>
+                    </StackPanel>
+
+
+
+                </Grid>
+
+                <!--#endregion-->
+
+
+
+            </Grid>
+
+        </Border>
+        
+        
+        
+        
+        
+        
+        <!-- APP NAVIGATOR -->
+        <Frame Grid.Column="1" Grid.Row="0" Grid.RowSpan="2" x:Name="frame_MAINWINDOW"
+               NavigationUIVisibility="Hidden"
+               Source="/Views/LogPages/LogCachePage.xaml"
+               HorizontalAlignment="Stretch"
+               VerticalAlignment="Stretch"
+               JournalOwnership="OwnsJournal" />
+
+       
+
+    </Grid>
+</local:DLSWindow>
