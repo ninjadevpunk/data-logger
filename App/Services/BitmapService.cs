@@ -55,7 +55,6 @@ namespace Data_Logger_1._3.Services
             }
             catch (Exception ex)
             {
-                //App.LogExceptionAsync(ex);
                 Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} TempSaveResizedImage");
                 return string.Empty;
             }

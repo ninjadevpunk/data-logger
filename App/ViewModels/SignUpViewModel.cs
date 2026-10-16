@@ -37,7 +37,7 @@ namespace Data_Logger_1._3.ViewModels
             MessageGood = Extensions.MessageGood;
             MessageBad = Extensions.MessageBad;
 
-            DisplayPicCommand = new DisplayPicCommand(this, _authService, _cacheService);
+            DisplayPicCommand = new DisplayPicCommand(this, _cacheService);
             EmailSignUpCommand = new EmailSignUpCommand(this, _authService, _navigationService);
             GoogleSignInCommand = new GoogleSignInCommand(this, _authService);
             NavigateToLoginCommand = new NavigateToLoginCommand(_navigationService, this);

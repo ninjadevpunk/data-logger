@@ -90,7 +90,7 @@ namespace Data.Services
         /// Thrown if the provided email address is invalid.
         /// </exception>
         public async Task<Result> SignUpAsync(string dp, string email, string password, string displayName, string surname, bool isEmployee,
-    string companyName, string companyAddress, string companyLogo)
+            string companyName, string companyAddress, string companyLogo)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             string currentProfilePicPath = string.Empty;
@@ -166,6 +166,8 @@ namespace Data.Services
                             PublicMessageType = Result.MessageType.Warning
                         };
                     }
+
+                    Account.ProfilePic = currentProfilePicPath;
 
 
                     return new Result { Success = currentUserSet };
@@ -271,10 +273,10 @@ namespace Data.Services
                     var temporaryAccount = new UserSettings
                     {
                         Id = userDTO.UserId,
+                        ProfilePic = userDTO.ProfilePic,
                         Name = userDTO.Name,
                         Surname = userDTO.Surname,
                         Email = userDTO.Email,
-                        ProfilePic = userDTO.ProfilePic,
                         IsCompanyEmployee = userDTO.IsEmployee,
                         CompanyName = userDTO.CompanyName,
                         CompanyAddress = userDTO.CompanyAddress,

@@ -1,10 +1,10 @@
-﻿using Core.DTOs;
-using Core.DTOs.Data;
+﻿using Core.DTOs.Data;
 using Core.DTOs.Identity;
 using Core.Models;
 using Core.Models.App_Models;
 using Core.Utilities;
 using Data.Exceptions;
+using Data.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
@@ -472,26 +472,52 @@ namespace Data.Services
 
             try
             {
-                var account = await master.Accounts
-                    .SingleAsync(a => a.Email == emailAddress);
+                var account = await master.Accounts.SingleOrDefaultAsync(a => a.Email == emailAddress);
 
-                if (account != null && VerifyPassword(account, password))
+                if (account == null)
+                    return null;
+
+                bool needsRehash = false;
+
+                if (account.Password.StartsWith("pbkdf2-sha256$", StringComparison.Ordinal))
                 {
-                    return new UserDTO
-                    {
-                        UserId = account.accountID,
-                        ProfilePic = account.ProfilePic,
-                        Name = account.FirstName,
-                        Surname = account.LastName,
-                        Email = account.Email,
-                        IsEmployee = account.IsEmployee,
-                        CompanyName = account.CompanyName,
-                        CompanyAddress = account.CompanyAddress,
-                        CompanyLogo = account.CompanyLogo,
-                    };
+                    if (!Extensions.VerifyPassword(password, account.Password))
+                        return null;
+                }
+                else
+                {
+                    if (!LegacyPasswordCompatibility.VerifyLegacyPassword(account, password))
+                        return null;
+
+                    needsRehash = true;
                 }
 
-                return null;
+                if (needsRehash)
+                {
+                    account.Password = Extensions.HashPassword(password);
+
+                    try
+                    {
+                        await master.SaveChangesAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        await writer.HandleExceptionAsync(ex);
+                    }
+                }
+
+                return new UserDTO
+                {
+                    UserId = account.accountID,
+                    ProfilePic = account.ProfilePic,
+                    Name = account.FirstName,
+                    Surname = account.LastName,
+                    Email = account.Email,
+                    IsEmployee = account.IsEmployee,
+                    CompanyName = account.CompanyName,
+                    CompanyAddress = account.CompanyAddress,
+                    CompanyLogo = account.CompanyLogo,
+                };
             }
             catch (Exception ex)
             {
@@ -894,7 +920,7 @@ namespace Data.Services
         {
             try
             {
-                string hashedPassword = EntityWriter.SaltedSHA256Hash(password, account.accountID.ToString());
+                string hashedPassword = Extensions.SaltedSHA256Hash(password, account.accountID.ToString());
                 return hashedPassword == account.Password;
             }
             catch (Exception ex)

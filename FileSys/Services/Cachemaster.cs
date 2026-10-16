@@ -158,7 +158,8 @@ namespace FileSys.Services
 
                 Directory.CreateDirectory(folder);
 
-                string newPath = Path.Combine(folder, $"{Guid.NewGuid()}.png");
+                string extension = Path.GetExtension(tempPath);
+                string newPath = Path.Combine(folder, $"{Guid.NewGuid()}{extension}");
 
                 if (tempPath.Contains("/Assets"))
                     return string.Empty;
@@ -169,7 +170,6 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                //App.LogExceptionAsync(ex);
                 Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} SaveProfilePicture");
                 return string.Empty;
             }
@@ -202,7 +202,6 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                //App.LogExceptionAsync(ex);
                 Debug.WriteLine(ex, $"{Constants.ExceptionPrefix} DeleteTempProfilePics");
             }
         }
@@ -243,7 +242,6 @@ namespace FileSys.Services
             }
             catch (Exception ex)
             {
-                // Handle exception
                 Debug.WriteLine($"Exception found near DeleteLogCache(identifier, cacheContext): {ex.Message}");
             }
         }

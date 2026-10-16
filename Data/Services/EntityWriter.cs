@@ -5,12 +5,11 @@ using Core.Enums;
 using Core.Models;
 using Core.Models.App_Models;
 using Data.Exceptions;
+using Data.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
 using static Core.Models.FeedbackMessage;
 
 namespace Data.Services
@@ -113,55 +112,42 @@ namespace Data.Services
         /// Adds an account that is provided as an argument to the database.
         /// </summary>
         /// <param name="account">The account that will be added to the database.</param>
-        /// <returns">A boolean value that indicated if the process was successful or not.</returns>
+        /// <returns>A boolean value indicating whether the process was successful and the account ID.</returns>
         public async Task<(bool, int)> AddAccount(ACCOUNT account)
         {
             await using var scope = _serviceProvider.CreateAsyncScope();
             var master = scope.ServiceProvider.GetRequiredService<EntityMaster>();
-            var reader = scope.ServiceProvider.GetRequiredService<EntityReader>();
 
             bool accountCreated = false;
+            int accountID = 0;
 
             try
             {
                 if (account == null)
                     throw new ArgumentNullException(nameof(account), "Account is null!");
 
-
                 if (await EntityReader.EmailExists(scope, account.Email))
                     throw new EmailConflictException("Email exists!");
 
                 account.IsOnline = false;
-
-                var hiddenPassword = account.Password;
-                account.Password = string.Empty;
-
+                account.Password = Extensions.HashPassword(account.Password);
 
                 await master.Accounts.AddAsync(account);
                 await master.SaveChangesAsync();
 
-                account.Password = SaltedSHA256Hash(hiddenPassword, account.accountID.ToString());
-
-                await master.SaveChangesAsync();
-
-
+                accountID = account.accountID;
                 accountCreated = true;
             }
             catch (EmailConflictException mailex)
             {
                 await HandleExceptionAsync(mailex);
             }
-            catch (ArgumentNullException nullex)
-            {
-                await HandleExceptionAsync(nullex);
-            }
             catch (Exception ex)
             {
                 await HandleExceptionAsync(ex);
             }
 
-            return (accountCreated, account.accountID);
-
+            return (accountCreated, accountID);
         }
 
 
@@ -386,27 +372,12 @@ namespace Data.Services
 
 
 
-        public static string SaltedSHA256Hash(string value, string accountID)
-        {
-            Encoding enc = Encoding.UTF8;
 
-            string input = value + accountID;
-            byte[] result = SHA256.HashData(enc.GetBytes(input));
-
-            StringBuilder hashedStringBuilder = new StringBuilder();
-            foreach (byte b in result)
-            {
-                hashedStringBuilder.Append(b.ToString("x2"));
-            }
-
-            return hashedStringBuilder.ToString();
-        }
 
 
 
 
         #endregion
-
 
 
 

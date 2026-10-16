@@ -380,7 +380,7 @@ namespace Data.Services
                 var account = await master.Accounts
                     .FirstOrDefaultAsync(a => a.Email == email) 
                     ?? throw new ArgumentNullException(null, "Account not found!");
-                account.Password = EntityWriter.SaltedSHA256Hash(newPassword, account.accountID.ToString());
+                account.Password = Extensions.SaltedSHA256Hash(newPassword, account.accountID.ToString());
                 await master.SaveChangesAsync();
 
                 isUpdated = true;
