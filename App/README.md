@@ -25,7 +25,7 @@ Extract the folder anywhere on your system.
 Run `Data Logger 1.3.exe`. The app will request permission to create the SQLite database and its folder.
 
 
-Optionally, you can open the project in Visual Studio (requires .NET 8) and run from there.
+Optionally, you can open the project in Visual Studio (requires .NET 8) and run from there
 
 
 ## Tech Stack & Dependencies
